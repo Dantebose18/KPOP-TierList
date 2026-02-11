@@ -288,15 +288,31 @@ function createCard(song){
 }
 
 /* DRAG CONTAINER */
-function setupContainer(container,tier){
-  container.addEventListener("dragover",e=>{
+function setupContainer(container, tier){
+  container.addEventListener("dragover", e=>{
     e.preventDefault();
-    const after=getAfterElement(container,e.clientX);
-    if(!draggedCard) return;
-
-    if(after==null) container.appendChild(draggedCard);
-    else container.insertBefore(draggedCard,after);
   });
+
+  container.addEventListener("drop", ()=>{
+    if(!draggedData) return;
+
+    // Supprime la carte de partout
+    data.pool = data.pool.filter(s => s.id !== draggedData.id);
+    data.tiers.forEach(t=>{
+      t.songs = t.songs.filter(s => s.id !== draggedData.id);
+    });
+
+    // Ajoute à la bonne place
+    if(tier){
+      tier.songs.push(draggedData);
+    } else {
+      data.pool.push(draggedData);
+    }
+
+    save();
+    render();
+  });
+}
 
   container.addEventListener("drop",()=>{
     if(!draggedData) return;
