@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>Music Tier List</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
 :root{
@@ -12,13 +12,6 @@
   --card:#ffffff;
   --text:#1f2937;
   --border:#e5e7eb;
-}
-
-body.dark{
-  --bg:#0f172a;
-  --card:#1e293b;
-  --text:#f8fafc;
-  --border:#334155;
 }
 
 body{
@@ -36,11 +29,10 @@ header{
   align-items:center;
 }
 
-button,input,select{
-  padding:10px 14px;
-  border-radius:10px;
+button,input{
+  padding:8px 12px;
+  border-radius:8px;
   border:1px solid var(--border);
-  font-size:14px;
 }
 
 button{cursor:pointer}
@@ -49,44 +41,33 @@ button.primary{background:#111;color:white;border:none}
 .main{
   max-width:1300px;
   margin:auto;
-  padding-bottom:200px;
+  padding-bottom:220px;
 }
 
-/* --------- TIER TITLE EDITABLE --------- */
-
+/* Titre modifiable */
 .tierlist-title{
-  font-size:28px;
+  font-size:26px;
   font-weight:600;
   margin:20px 0;
   border:none;
   background:transparent;
-  color:var(--text);
 }
 
-/* --------- TIERS --------- */
-
+/* TIERS */
 .tier{
   background:var(--card);
-  border-radius:18px;
+  border-radius:16px;
   margin-bottom:18px;
   box-shadow:0 6px 18px rgba(0,0,0,0.08);
 }
 
 .tier-header{
+  padding:10px;
+  color:white;
   display:flex;
-  align-items:center;
   gap:10px;
-  padding:12px;
-  border-radius:18px 18px 0 0;
-  color:white;
-}
-
-.tier-header input[type=text]{
-  background:rgba(255,255,255,0.2);
-  border:none;
-  color:white;
-  font-weight:600;
-  width:100px;
+  align-items:center;
+  border-radius:16px 16px 0 0;
 }
 
 .cards{
@@ -97,11 +78,10 @@ button.primary{background:#111;color:white;border:none}
   min-height:140px;
 }
 
-/* --------- BIGGER CARDS --------- */
-
+/* CARTES */
 .card{
-  width:120px;
-  height:120px;
+  width:140px;
+  height:140px;
   border-radius:16px;
   background-size:cover;
   background-position:center;
@@ -111,395 +91,290 @@ button.primary{background:#111;color:white;border:none}
 }
 
 .card:hover{
-  transform:scale(1.8);
+  transform:scale(1.7);
   z-index:50;
   box-shadow:0 20px 40px rgba(0,0,0,.4);
 }
+
 .card.dragging{
-  opacity:0.5;
-  transform:scale(1.05);
+  opacity:0.4;
 }
 
 .card-overlay{
   position:absolute;
   bottom:0;
   width:100%;
-  padding:8px;
+  padding:6px;
   background:linear-gradient(to top,rgba(0,0,0,.8),transparent);
   color:white;
   font-size:12px;
   border-radius:0 0 16px 16px;
 }
 
-.card button{
-  position:absolute;
-  top:6px;
-  right:6px;
-  background:rgba(0,0,0,.6);
-  border:none;
-  color:white;
-  border-radius:6px;
-  padding:2px 6px;
-  cursor:pointer;
-}
-
 .card-tools{
   position:absolute;
   top:6px;
-  right:6px;
+  left:6px;
   display:flex;
   gap:6px;
+}
+
+.card-tools button{
+  background:rgba(0,0,0,.6);
+  color:white;
+  border:none;
+  border-radius:6px;
+  padding:3px 6px;
+  font-size:12px;
 }
 
 .hidden-tools .card-tools{
   display:none;
 }
 
-/* --------- POOL FIXED --------- */
-
+/* POOL FIXE */
 .pool-container{
   position:fixed;
   bottom:0;
   left:0;
   right:0;
-  background:var(--bg);
+  background:white;
   padding:14px;
   border-top:2px solid var(--border);
   box-shadow:0 -6px 20px rgba(0,0,0,0.08);
-}
-
-.pool-title{
-  margin:0 0 10px 0;
-  font-weight:600;
 }
 
 .pool{
   display:flex;
   gap:14px;
   flex-wrap:wrap;
-  min-height:150px;
+  min-height:140px;
 }
-
 </style>
 </head>
-
 <body>
 
 <header>
   <button onclick="addTier()">➕ Tier</button>
-  <button onclick="addTierList()">👥 Tier List</button>
-  <button onclick="toggleDark()">🌙</button>
-  <button onclick="exportPNG()">📤 Export</button>
   <button onclick="toggleEditMode()" id="editToggle">✏️ Mode édition : ON</button>
 </header>
 
 <div class="main">
+<input id="tierListTitle" class="tierlist-title">
 
-<input class="tierlist-title" id="tierListTitle">
-
-<div style="display:flex;gap:12px;margin-bottom:25px;">
+<div style="display:flex;gap:10px;margin-bottom:20px;">
   <input id="artistInput" placeholder="Artiste">
-  <input id="titleInput" placeholder="Titre de la chanson">
+  <input id="titleInput" placeholder="Titre">
   <button class="primary" onclick="addSong()">Ajouter</button>
 </div>
 
 <div id="tiers"></div>
-
 </div>
 
-<!-- POOL FIXED -->
 <div class="pool-container">
-  <h3 class="pool-title">🎵 Pool</h3>
-  <div class="pool" id="pool"></div>
+<h3>🎵 Pool</h3>
+<div id="pool" class="pool"></div>
 </div>
 
 <script>
-let tierLists=JSON.parse(localStorage.getItem('tierLists'))||[
-{
-  name:'Ma Tier List',
+let tierList={
+  name:"Ma Tier List",
   tiers:[
-    {id:'S',name:'S',color:'#ef4444',songs:[]},
-    {id:'A',name:'A',color:'#22c55e',songs:[]},
-    {id:'B',name:'B',color:'#eab308',songs:[]},
-    {id:'C',name:'C',color:'#9ca3af',songs:[]}
+    {id:"S",name:"S",color:"#ef4444",songs:[]},
+    {id:"A",name:"A",color:"#22c55e",songs:[]},
+    {id:"B",name:"B",color:"#eab308",songs:[]},
+    {id:"C",name:"C",color:"#9ca3af",songs:[]}
   ],
   pool:[]
-}];
+};
 
-let current=0;
 let dragged=null;
+let editMode=true;
 
+/* SAVE */
 function save(){
-  localStorage.setItem('tierLists',JSON.stringify(tierLists));
+  localStorage.setItem("tierList",JSON.stringify(tierList));
 }
 
-/* --------- RENDER --------- */
+function load(){
+  const saved=localStorage.getItem("tierList");
+  if(saved) tierList=JSON.parse(saved);
+}
 
+load();
+
+/* RENDER */
 function render(){
-  const list=tierLists[current];
-  document.getElementById('tierListTitle').value=list.name;
+  document.getElementById("tierListTitle").value=tierList.name;
 
-  const tiers=document.getElementById('tiers');
-  tiers.innerHTML='';
+  const tiersDiv=document.getElementById("tiers");
+  tiersDiv.innerHTML="";
 
-  list.tiers.forEach(t=>{
-    const tier=document.createElement('div');
-    tier.className='tier';
+  tierList.tiers.forEach(t=>{
+    const tier=document.createElement("div");
+    tier.className="tier";
 
-    const header=document.createElement('div');
-    header.className='tier-header';
+    const header=document.createElement("div");
+    header.className="tier-header";
     header.style.background=t.color;
+    header.innerHTML=`<strong>${t.name}</strong>`;
 
-    const name=document.createElement('input');
-    name.type='text';
-    name.value=t.name;
-    name.oninput=e=>{t.name=e.target.value;save();};
-
-    const color=document.createElement('input');
-    color.type='color';
-    color.value=t.color;
-    color.onchange=e=>{
-      t.color=e.target.value;
-      header.style.background=t.color;
-      save();
-    };
-
-    const del=document.createElement('button');
-    del.textContent='❌';
-    del.onclick=()=>{
-      list.tiers=list.tiers.filter(x=>x.id!==t.id);
-      save();
-      render();
-    };
-
-    header.append(name,color,del);
-
-    const cards=document.createElement('div');
-    cards.className='cards';
-    setupContainerDrag(cards, t.id);
+    const cards=document.createElement("div");
+    cards.className="cards";
+    setupDragContainer(cards,t);
 
     t.songs.forEach(s=>cards.appendChild(createCard(s)));
 
     tier.append(header,cards);
-    tiers.appendChild(tier);
+    tiersDiv.appendChild(tier);
   });
 
-  renderPool();
+  const pool=document.getElementById("pool");
+  pool.innerHTML="";
+  setupDragContainer(pool,null);
+  tierList.pool.forEach(s=>pool.appendChild(createCard(s)));
 }
 
-function renderPool(){
-  const list=tierLists[current];
-  const pool=document.getElementById('pool');
-  pool.innerHTML='';
-  pool.ondragover=e=>e.preventDefault();
-  pool.ondrop=()=>dropSong(null);
-  list.pool.forEach(s=>pool.appendChild(createCard(s)));
-  setupContainerDrag(pool, null);
-}
-
-/* --------- CARD --------- */
-
+/* CREATE CARD */
 function createCard(song){
-  const c=document.createElement('div');
-  c.className='card';
-  c.draggable=true;
-  c.dataset.id=song.id;
-  c.style.backgroundImage=`url(${song.cover||''})`;
+  const card=document.createElement("div");
+  card.className="card";
+  card.draggable=true;
+  card.dataset.id=song.id;
+  card.style.backgroundImage=`url(${song.cover||''})`;
 
-  /* DRAG */
-  c.addEventListener('dragstart',()=>{
+  card.addEventListener("dragstart",()=>{
     dragged=song;
-    c.classList.add('dragging');
+    card.classList.add("dragging");
   });
 
-  c.addEventListener('dragend',()=>{
-    c.classList.remove('dragging');
+  card.addEventListener("dragend",()=>{
+    card.classList.remove("dragging");
     dragged=null;
   });
 
-  /* OVERLAY TEXTE EDITABLE */
-  const overlay=document.createElement('div');
-  overlay.className='card-overlay';
+  const overlay=document.createElement("div");
+  overlay.className="card-overlay";
+  overlay.innerHTML=`<strong>${song.artist}</strong><br>${song.title}`;
 
-  const artist=document.createElement('div');
-  artist.textContent=song.artist;
-  artist.contentEditable=false;
+  const tools=document.createElement("div");
+  tools.className="card-tools";
 
-  const title=document.createElement('div');
-  title.textContent=song.title;
-  title.contentEditable=false;
-
-  overlay.appendChild(artist);
-  overlay.appendChild(title);
-
-  /* TOOLS */
-  const tools=document.createElement('div');
-  tools.className='card-tools';
-
-  const editBtn=document.createElement('button');
-  editBtn.textContent='✏️';
+  const editBtn=document.createElement("button");
+  editBtn.innerHTML="✏️";
   editBtn.onclick=()=>{
-    const editing=artist.contentEditable==="true";
-    artist.contentEditable=!editing;
-    title.contentEditable=!editing;
-
-    if(editing){
-      song.artist=artist.textContent;
-      song.title=title.textContent;
-      save();
-    }
+    overlay.innerHTML=`
+      <div contenteditable="true">${song.artist}</div>
+      <div contenteditable="true">${song.title}</div>
+    `;
+    overlay.querySelectorAll("div").forEach((el,i)=>{
+      el.onblur=()=>{
+        if(i===0) song.artist=el.innerText;
+        else song.title=el.innerText;
+        save();
+        render();
+      };
+    });
   };
 
-  const del=document.createElement('button');
-  del.textContent='🗑️';
-  del.onclick=()=>deleteSong(song.id);
+  const delBtn=document.createElement("button");
+  delBtn.innerHTML="🗑️";
+  delBtn.onclick=()=>deleteSong(song.id);
 
-  tools.append(editBtn,del);
-
-  c.append(overlay,tools);
-  return c;
+  tools.append(editBtn,delBtn);
+  card.append(overlay,tools);
+  return card;
 }
 
-/* --------- DRAG LOGIC --------- */
-
-function setupContainerDrag(container, tierId){
-  container.addEventListener('dragover',e=>{
+/* DRAG CONTAINER */
+function setupDragContainer(container,tier){
+  container.addEventListener("dragover",e=>{
     e.preventDefault();
-
-    const afterElement=getDragAfterElement(container,e.clientX);
-    const draggable=document.querySelector('.dragging');
+    const after=getAfterElement(container,e.clientX);
+    const draggable=document.querySelector(".dragging");
     if(!draggable) return;
 
-    if(afterElement==null){
-      container.appendChild(draggable);
-    }else{
-      container.insertBefore(draggable,afterElement);
-    }
+    if(after==null) container.appendChild(draggable);
+    else container.insertBefore(draggable,after);
   });
 
-  container.addEventListener('drop',()=>{
+  container.addEventListener("drop",()=>{
     if(!dragged) return;
 
-    const list=tierLists[current];
+    tierList.pool=tierList.pool.filter(s=>s!==dragged);
+    tierList.tiers.forEach(t=>t.songs=t.songs.filter(s=>s!==dragged));
 
-    list.pool=list.pool.filter(s=>s!==dragged);
-    list.tiers.forEach(t=>t.songs=t.songs.filter(s=>s!==dragged));
+    const order=[...container.querySelectorAll(".card")]
+      .map(c=>findSong(c.dataset.id));
 
-    const newOrder=[...container.querySelectorAll('.card')]
-      .map(card=>{
-        const id=card.dataset.id;
-        return findSongById(id);
-      });
-
-    if(tierId===null){
-      list.pool=newOrder;
-    }else{
-      list.tiers.find(t=>t.id===tierId).songs=newOrder;
-    }
+    if(tier) tier.songs=order;
+    else tierList.pool=order;
 
     save();
   });
 }
 
-function getDragAfterElement(container,x){
-  const elements=[...container.querySelectorAll('.card:not(.dragging)')];
-
-  return elements.reduce((closest,child)=>{
+function getAfterElement(container,x){
+  const els=[...container.querySelectorAll(".card:not(.dragging)")];
+  return els.reduce((closest,child)=>{
     const box=child.getBoundingClientRect();
     const offset=x-box.left-box.width/2;
     if(offset<0 && offset>closest.offset){
       return {offset:offset,element:child};
-    }else{
-      return closest;
-    }
+    }else return closest;
   },{offset:Number.NEGATIVE_INFINITY}).element;
 }
 
-function findSongById(id){
-  const list=tierLists[current];
-  return [...list.pool,...list.tiers.flatMap(t=>t.songs)]
+function findSong(id){
+  return [...tierList.pool,...tierList.tiers.flatMap(t=>t.songs)]
     .find(s=>s.id==id);
 }
 
-/* --------- SONG --------- */
-
+/* ACTIONS */
 async function addSong(){
-  const artist=document.getElementById('artistInput').value.trim();
-  const title=document.getElementById('titleInput').value.trim();
-  if(!artist||!title)return;
+  const artist=document.getElementById("artistInput").value.trim();
+  const title=document.getElementById("titleInput").value.trim();
+  if(!artist||!title) return;
 
-  const res=await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(title+' '+artist)}&entity=song&limit=1`);
+  const res=await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(title+" "+artist)}&entity=song&limit=1`);
   const data=await res.json();
-  const cover=data.results[0]?.artworkUrl100?.replace('100x100','300x300')||'';
+  const cover=data.results[0]?.artworkUrl100?.replace("100x100","300x300")||"";
 
-  tierLists[current].pool.push({
+  tierList.pool.push({
     id:Date.now()+Math.random(),
-    artist,
-    title,
-    cover
+    artist,title,cover
   });
-
-  document.getElementById('artistInput').value='';
-  document.getElementById('titleInput').value='';
 
   save();
   render();
 }
 
-/* --------- OTHER --------- */
-
 function deleteSong(id){
-  const list=tierLists[current];
-  list.pool=list.pool.filter(s=>s.id!==id);
-  list.tiers.forEach(t=>t.songs=t.songs.filter(s=>s.id!==id));
+  tierList.pool=tierList.pool.filter(s=>s.id!==id);
+  tierList.tiers.forEach(t=>t.songs=t.songs.filter(s=>s.id!==id));
   save();
   render();
 }
 
 function addTier(){
-  const n=prompt("Nom du tier");
-  if(!n)return;
-  tierLists[current].tiers.push({id:Date.now(),name:n,color:'#3b82f6',songs:[]});
+  const name=prompt("Nom du tier ?");
+  if(!name) return;
+  tierList.tiers.push({id:Date.now(),name,color:"#3b82f6",songs:[]});
   save();
   render();
 }
-
-function addTierList(){
-  const n=prompt("Nom de la tier list");
-  if(!n)return;
-  tierLists.push(JSON.parse(JSON.stringify(tierLists[0])));
-  tierLists.at(-1).name=n;
-  current=tierLists.length-1;
-  save();
-  render();
-}
-
-document.getElementById('tierListTitle').oninput=e=>{
-  tierLists[current].name=e.target.value;
-  save();
-};
-
-function toggleDark(){
-  document.body.classList.toggle('dark');
-}
-
-function exportPNG(){
-  html2canvas(document.body).then(c=>{
-    const a=document.createElement('a');
-    a.download='tierlist.png';
-    a.href=c.toDataURL();
-    a.click();
-  });
-}
-
-let editMode=true;
 
 function toggleEditMode(){
   editMode=!editMode;
-  document.body.classList.toggle('hidden-tools',!editMode);
-  document.getElementById('editToggle').textContent=
-    editMode ? "✏️ Mode édition : ON" : "✏️ Mode édition : OFF";
+  document.body.classList.toggle("hidden-tools",!editMode);
+  document.getElementById("editToggle").textContent=
+    editMode?"✏️ Mode édition : ON":"✏️ Mode édition : OFF";
 }
+
+document.getElementById("tierListTitle").oninput=e=>{
+  tierList.name=e.target.value;
+  save();
+};
 
 render();
 </script>
