@@ -5,6 +5,7 @@
 <title>Music Tier List</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
 <style>
 :root{
   --bg:#f6f7f9;
@@ -12,54 +13,70 @@
   --text:#1f2937;
   --border:#e5e7eb;
 }
-body.dark{--bg:#0f172a;--card:#1e293b;--text:#f8fafc;--border:#334155}
-body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text)}
+
+body.dark{
+  --bg:#0f172a;
+  --card:#1e293b;
+  --text:#f8fafc;
+  --border:#334155;
+}
+
+body{
+  margin:0;
+  font-family:'Inter',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
 
 header{
   padding:20px;
   display:flex;
   gap:12px;
-  align-items:center;
   flex-wrap:wrap;
+  align-items:center;
 }
 
 button,input,select{
   padding:10px 14px;
   border-radius:10px;
   border:1px solid var(--border);
-  background:white;
   font-size:14px;
 }
-button{cursor:pointer;font-weight:500}
+
+button{cursor:pointer}
 button.primary{background:#111;color:white;border:none}
 
 .main{
-  max-width:1200px;
+  max-width:1300px;
   margin:auto;
+  padding-bottom:200px;
 }
 
-.input-section{
-  display:flex;
-  gap:12px;
-  margin-bottom:30px;
+/* --------- TIER TITLE EDITABLE --------- */
+
+.tierlist-title{
+  font-size:28px;
+  font-weight:600;
+  margin:20px 0;
+  border:none;
+  background:transparent;
+  color:var(--text);
 }
 
-.input-section input{flex:1}
-
-.tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+/* --------- TIERS --------- */
 
 .tier{
   background:var(--card);
   border-radius:18px;
-  margin-bottom:14px;
-  box-shadow:0 6px 18px rgba(0,0,0,0.06);
+  margin-bottom:18px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.08);
 }
 
 .tier-header{
   display:flex;
   align-items:center;
   gap:10px;
-  padding:10px;
+  padding:12px;
   border-radius:18px 18px 0 0;
   color:white;
 }
@@ -69,50 +86,50 @@ button.primary{background:#111;color:white;border:none}
   border:none;
   color:white;
   font-weight:600;
-  width:80px;
+  width:100px;
 }
 
 .cards{
   display:flex;
-  gap:10px;
-  padding:12px;
+  gap:14px;
+  padding:14px;
   flex-wrap:wrap;
-  overflow:visible;
-  min-height:110px;
+  min-height:140px;
 }
+
+/* --------- BIGGER CARDS --------- */
 
 .card{
-  width:90px;
-  height:90px;
-  border-radius:14px;
+  width:140px;
+  height:140px;
+  border-radius:16px;
   background-size:cover;
   background-position:center;
-  cursor:grab;
   position:relative;
-  transition:transform .25s ease, box-shadow .25s ease;
+  cursor:grab;
+  transition:transform .15s ease;
 }
 
-.card:hover{
-  transform:scale(2.1);
-  z-index:50;
-  box-shadow:0 25px 45px rgba(0,0,0,.45);
+.card.dragging{
+  opacity:0.5;
+  transform:scale(1.05);
 }
 
 .card-overlay{
   position:absolute;
   bottom:0;
   width:100%;
-  padding:6px;
+  padding:8px;
   background:linear-gradient(to top,rgba(0,0,0,.8),transparent);
   color:white;
-  font-size:10px;
-  border-radius:0 0 14px 14px;
+  font-size:12px;
+  border-radius:0 0 16px 16px;
 }
 
 .card button{
   position:absolute;
-  top:4px;
-  right:4px;
+  top:6px;
+  right:6px;
   background:rgba(0,0,0,.6);
   border:none;
   color:white;
@@ -121,115 +138,276 @@ button.primary{background:#111;color:white;border:none}
   cursor:pointer;
 }
 
-.pool{
-  background:var(--card);
-  border-radius:18px;
+/* --------- POOL FIXED --------- */
+
+.pool-container{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:var(--bg);
   padding:14px;
-  min-height:120px;
-  box-shadow:0 6px 18px rgba(0,0,0,0.06);
+  border-top:2px solid var(--border);
+  box-shadow:0 -6px 20px rgba(0,0,0,0.08);
 }
 
-.template-youtube .tier{
-  border:3px solid black;
+.pool-title{
+  margin:0 0 10px 0;
+  font-weight:600;
 }
+
+.pool{
+  display:flex;
+  gap:14px;
+  flex-wrap:wrap;
+  min-height:150px;
+}
+
 </style>
 </head>
+
 <body>
+
 <header>
   <button onclick="addTier()">➕ Tier</button>
   <button onclick="addTierList()">👥 Tier List</button>
-  <select onchange="changeTemplate(this.value)">
-    <option value="default">Template normal</option>
-    <option value="youtube">YouTuber</option>
-  </select>
   <button onclick="toggleDark()">🌙</button>
   <button onclick="exportPNG()">📤 Export</button>
 </header>
 
 <div class="main">
 
-<div class="input-section">
-  <input id="titleInput" placeholder="Titre de la chanson">
+<input class="tierlist-title" id="tierListTitle">
+
+<div style="display:flex;gap:12px;margin-bottom:25px;">
   <input id="artistInput" placeholder="Artiste">
+  <input id="titleInput" placeholder="Titre de la chanson">
   <button class="primary" onclick="addSong()">Ajouter</button>
 </div>
 
-<div class="tabs" id="tabs"></div>
 <div id="tiers"></div>
 
-<h3>🎵 Pool</h3>
-<div class="pool cards" id="pool"></div>
+</div>
+
+<!-- POOL FIXED -->
+<div class="pool-container">
+  <h3 class="pool-title">🎵 Pool</h3>
+  <div class="pool" id="pool"></div>
 </div>
 
 <script>
-let tierLists=JSON.parse(localStorage.getItem('tierLists'))||[{name:'Ma Tier List',tiers:[{id:'S',name:'S',color:'#ef4444',songs:[]},{id:'A',name:'A',color:'#22c55e',songs:[]},{id:'B',name:'B',color:'#eab308',songs:[]},{id:'C',name:'C',color:'#9ca3af',songs:[]}],pool:[]}];
-let current=0,dragged=null;
+let tierLists=JSON.parse(localStorage.getItem('tierLists'))||[
+{
+  name:'Ma Tier List',
+  tiers:[
+    {id:'S',name:'S',color:'#ef4444',songs:[]},
+    {id:'A',name:'A',color:'#22c55e',songs:[]},
+    {id:'B',name:'B',color:'#eab308',songs:[]},
+    {id:'C',name:'C',color:'#9ca3af',songs:[]}
+  ],
+  pool:[]
+}];
 
-function save(){localStorage.setItem('tierLists',JSON.stringify(tierLists))}
+let current=0;
+let dragged=null;
 
-function renderTabs(){
-  const t=document.getElementById('tabs');t.innerHTML='';
-  tierLists.forEach((l,i)=>{const b=document.createElement('button');b.textContent=l.name;b.onclick=()=>{current=i;render()};t.appendChild(b)})
+function save(){
+  localStorage.setItem('tierLists',JSON.stringify(tierLists));
 }
 
+/* --------- RENDER --------- */
+
 function render(){
-  renderTabs();
   const list=tierLists[current];
-  const tiers=document.getElementById('tiers');tiers.innerHTML='';
+  document.getElementById('tierListTitle').value=list.name;
+
+  const tiers=document.getElementById('tiers');
+  tiers.innerHTML='';
 
   list.tiers.forEach(t=>{
-    const tier=document.createElement('div');tier.className='tier';tier.ondragover=e=>e.preventDefault();tier.ondrop=()=>dropToTier(t.id);
-    const h=document.createElement('div');h.className='tier-header';h.style.background=t.color;
+    const tier=document.createElement('div');
+    tier.className='tier';
 
-    const name=document.createElement('input');name.type='text';name.value=t.name;name.oninput=e=>{t.name=e.target.value;save()};
-    const color=document.createElement('input');color.type='color';color.value=t.color;color.oninput=e=>{t.color=e.target.value;save();render()};
-    const del=document.createElement('button');del.textContent='❌';del.onclick=()=>{list.tiers=list.tiers.filter(x=>x.id!==t.id);save();render()};
+    const header=document.createElement('div');
+    header.className='tier-header';
+    header.style.background=t.color;
 
-    h.append(name,color,del);
-    const cards=document.createElement('div');cards.className='cards';
+    const name=document.createElement('input');
+    name.type='text';
+    name.value=t.name;
+    name.oninput=e=>{t.name=e.target.value;save();};
+
+    const color=document.createElement('input');
+    color.type='color';
+    color.value=t.color;
+    color.onchange=e=>{
+      t.color=e.target.value;
+      header.style.background=t.color;
+      save();
+    };
+
+    const del=document.createElement('button');
+    del.textContent='❌';
+    del.onclick=()=>{
+      list.tiers=list.tiers.filter(x=>x.id!==t.id);
+      save();
+      render();
+    };
+
+    header.append(name,color,del);
+
+    const cards=document.createElement('div');
+    cards.className='cards';
+    cards.ondragover=e=>e.preventDefault();
+    cards.ondrop=()=>dropSong(t.id);
+
     t.songs.forEach(s=>cards.appendChild(createCard(s)));
-    tier.append(h,cards);tiers.appendChild(tier);
+
+    tier.append(header,cards);
+    tiers.appendChild(tier);
   });
 
-  const pool=document.getElementById('pool');pool.innerHTML='';
+  renderPool();
+}
+
+function renderPool(){
+  const list=tierLists[current];
+  const pool=document.getElementById('pool');
+  pool.innerHTML='';
+  pool.ondragover=e=>e.preventDefault();
+  pool.ondrop=()=>dropSong(null);
   list.pool.forEach(s=>pool.appendChild(createCard(s)));
 }
 
+/* --------- CARD --------- */
+
 function createCard(song){
-  const c=document.createElement('div');c.className='card';c.draggable=true;c.style.backgroundImage=`url(${song.cover||''})`;
-  c.ondragstart=()=>dragged=song;
-  c.ondragover=e=>e.preventDefault();
-  c.ondrop=()=>reorder(song);
+  const c=document.createElement('div');
+  c.className='card';
+  c.draggable=true;
+  c.style.backgroundImage=`url(${song.cover||''})`;
 
-  const o=document.createElement('div');o.className='card-overlay';o.innerHTML=`<strong>${song.title}</strong><br>${song.artist}`;
-  const d=document.createElement('button');d.textContent='🗑️';d.onclick=()=>deleteSong(song.id);
+  c.ondragstart=e=>{
+    dragged=song;
+    c.classList.add('dragging');
+  };
 
-  c.append(o,d);return c;
+  c.ondragend=()=>{
+    c.classList.remove('dragging');
+    dragged=null;
+  };
+
+  c.ondblclick=()=>{
+    const newArtist=prompt("Modifier artiste",song.artist);
+    const newTitle=prompt("Modifier titre",song.title);
+    if(newArtist) song.artist=newArtist;
+    if(newTitle) song.title=newTitle;
+    save();
+    render();
+  };
+
+  const overlay=document.createElement('div');
+  overlay.className='card-overlay';
+  overlay.innerHTML=`<strong>${song.artist}</strong><br>${song.title}`;
+
+  const del=document.createElement('button');
+  del.textContent='🗑️';
+  del.onclick=()=>deleteSong(song.id);
+
+  c.append(overlay,del);
+  return c;
 }
 
-function dropToTier(id){if(!dragged)return;const l=tierLists[current];l.pool=l.pool.filter(s=>s!==dragged);l.tiers.forEach(t=>t.songs=t.songs.filter(s=>s!==dragged));l.tiers.find(t=>t.id===id).songs.push(dragged);save();render()}
+/* --------- DRAG LOGIC --------- */
 
-function reorder(target){const l=tierLists[current];l.tiers.forEach(t=>{const i=t.songs.indexOf(dragged);if(i>-1)t.songs.splice(i,1)});l.pool=l.pool.filter(s=>s!==dragged);l.tiers.forEach(t=>{const i=t.songs.indexOf(target);if(i>-1)t.songs.splice(i,0,dragged)});save();render()}
+function dropSong(tierId){
+  if(!dragged) return;
 
-function deleteSong(id){const l=tierLists[current];l.pool=l.pool.filter(s=>s.id!==id);l.tiers.forEach(t=>t.songs=t.songs.filter(s=>s.id!==id));save();render()}
+  const list=tierLists[current];
+
+  list.pool=list.pool.filter(s=>s!==dragged);
+  list.tiers.forEach(t=>t.songs=t.songs.filter(s=>s!==dragged));
+
+  if(tierId===null){
+    list.pool.push(dragged);
+  }else{
+    list.tiers.find(t=>t.id===tierId).songs.push(dragged);
+  }
+
+  save();
+  render();
+}
+
+/* --------- SONG --------- */
 
 async function addSong(){
-  const title=document.getElementById('titleInput').value.trim();
   const artist=document.getElementById('artistInput').value.trim();
-  if(!title||!artist)return;
+  const title=document.getElementById('titleInput').value.trim();
+  if(!artist||!title)return;
+
   const res=await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(title+' '+artist)}&entity=song&limit=1`);
   const data=await res.json();
   const cover=data.results[0]?.artworkUrl100?.replace('100x100','300x300')||'';
-  tierLists[current].pool.push({id:Date.now()+Math.random(),title,artist,cover});
-  document.getElementById('titleInput').value='';document.getElementById('artistInput').value='';
-  save();render();
+
+  tierLists[current].pool.push({
+    id:Date.now()+Math.random(),
+    artist,
+    title,
+    cover
+  });
+
+  document.getElementById('artistInput').value='';
+  document.getElementById('titleInput').value='';
+
+  save();
+  render();
 }
 
-function addTier(){const n=prompt('Nom du tier');if(!n)return;tierLists[current].tiers.push({id:Date.now(),name:n,color:'#3b82f6',songs:[]});save();render()}
-function addTierList(){const n=prompt('Nom de la tier list');if(!n)return;tierLists.push(JSON.parse(JSON.stringify(tierLists[0])));tierLists.at(-1).name=n;current=tierLists.length-1;save();render()}
-function toggleDark(){document.body.classList.toggle('dark')}
-function changeTemplate(t){document.body.className=t==='youtube'?'template-youtube':''}
-function exportPNG(){html2canvas(document.body).then(c=>{const a=document.createElement('a');a.download='tierlist.png';a.href=c.toDataURL();a.click()})}
+/* --------- OTHER --------- */
+
+function deleteSong(id){
+  const list=tierLists[current];
+  list.pool=list.pool.filter(s=>s.id!==id);
+  list.tiers.forEach(t=>t.songs=t.songs.filter(s=>s.id!==id));
+  save();
+  render();
+}
+
+function addTier(){
+  const n=prompt("Nom du tier");
+  if(!n)return;
+  tierLists[current].tiers.push({id:Date.now(),name:n,color:'#3b82f6',songs:[]});
+  save();
+  render();
+}
+
+function addTierList(){
+  const n=prompt("Nom de la tier list");
+  if(!n)return;
+  tierLists.push(JSON.parse(JSON.stringify(tierLists[0])));
+  tierLists.at(-1).name=n;
+  current=tierLists.length-1;
+  save();
+  render();
+}
+
+document.getElementById('tierListTitle').oninput=e=>{
+  tierLists[current].name=e.target.value;
+  save();
+};
+
+function toggleDark(){
+  document.body.classList.toggle('dark');
+}
+
+function exportPNG(){
+  html2canvas(document.body).then(c=>{
+    const a=document.createElement('a');
+    a.download='tierlist.png';
+    a.href=c.toDataURL();
+    a.click();
+  });
+}
 
 render();
 </script>
