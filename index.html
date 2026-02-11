@@ -100,16 +100,21 @@ button.primary{background:#111;color:white;border:none}
 /* --------- BIGGER CARDS --------- */
 
 .card{
-  width:140px;
-  height:140px;
+  width:120px;
+  height:120px;
   border-radius:16px;
   background-size:cover;
   background-position:center;
   position:relative;
   cursor:grab;
-  transition:transform .15s ease;
+  transition:transform .2s ease, box-shadow .2s ease;
 }
 
+.card:hover{
+  transform:scale(1.8);
+  z-index:50;
+  box-shadow:0 20px 40px rgba(0,0,0,.4);
+}
 .card.dragging{
   opacity:0.5;
   transform:scale(1.05);
@@ -136,6 +141,18 @@ button.primary{background:#111;color:white;border:none}
   border-radius:6px;
   padding:2px 6px;
   cursor:pointer;
+}
+
+.card-tools{
+  position:absolute;
+  top:6px;
+  right:6px;
+  display:flex;
+  gap:6px;
+}
+
+.hidden-tools .card-tools{
+  display:none;
 }
 
 /* --------- POOL FIXED --------- */
@@ -173,6 +190,7 @@ button.primary{background:#111;color:white;border:none}
   <button onclick="addTierList()">👥 Tier List</button>
   <button onclick="toggleDark()">🌙</button>
   <button onclick="exportPNG()">📤 Export</button>
+  <button onclick="toggleEditMode()" id="editToggle">✏️ Mode édition : ON</button>
 </header>
 
 <div class="main">
@@ -258,8 +276,7 @@ function render(){
 
     const cards=document.createElement('div');
     cards.className='cards';
-    cards.ondragover=e=>e.preventDefault();
-    cards.ondrop=()=>dropSong(t.id);
+    setupContainerDrag(cards, t.id);
 
     t.songs.forEach(s=>cards.appendChild(createCard(s)));
 
@@ -277,6 +294,7 @@ function renderPool(){
   pool.ondragover=e=>e.preventDefault();
   pool.ondrop=()=>dropSong(null);
   list.pool.forEach(s=>pool.appendChild(createCard(s)));
+  setupContainerDrag(pool, null);
 }
 
 /* --------- CARD --------- */
@@ -285,57 +303,122 @@ function createCard(song){
   const c=document.createElement('div');
   c.className='card';
   c.draggable=true;
+  c.dataset.id=song.id;
   c.style.backgroundImage=`url(${song.cover||''})`;
 
-  c.ondragstart=e=>{
+  /* DRAG */
+  c.addEventListener('dragstart',()=>{
     dragged=song;
     c.classList.add('dragging');
-  };
+  });
 
-  c.ondragend=()=>{
+  c.addEventListener('dragend',()=>{
     c.classList.remove('dragging');
     dragged=null;
-  };
+  });
 
-  c.ondblclick=()=>{
-    const newArtist=prompt("Modifier artiste",song.artist);
-    const newTitle=prompt("Modifier titre",song.title);
-    if(newArtist) song.artist=newArtist;
-    if(newTitle) song.title=newTitle;
-    save();
-    render();
-  };
-
+  /* OVERLAY TEXTE EDITABLE */
   const overlay=document.createElement('div');
   overlay.className='card-overlay';
-  overlay.innerHTML=`<strong>${song.artist}</strong><br>${song.title}`;
+
+  const artist=document.createElement('div');
+  artist.textContent=song.artist;
+  artist.contentEditable=false;
+
+  const title=document.createElement('div');
+  title.textContent=song.title;
+  title.contentEditable=false;
+
+  overlay.appendChild(artist);
+  overlay.appendChild(title);
+
+  /* TOOLS */
+  const tools=document.createElement('div');
+  tools.className='card-tools';
+
+  const editBtn=document.createElement('button');
+  editBtn.textContent='✏️';
+  editBtn.onclick=()=>{
+    const editing=artist.contentEditable==="true";
+    artist.contentEditable=!editing;
+    title.contentEditable=!editing;
+
+    if(editing){
+      song.artist=artist.textContent;
+      song.title=title.textContent;
+      save();
+    }
+  };
 
   const del=document.createElement('button');
   del.textContent='🗑️';
   del.onclick=()=>deleteSong(song.id);
 
-  c.append(overlay,del);
+  tools.append(editBtn,del);
+
+  c.append(overlay,tools);
   return c;
 }
 
 /* --------- DRAG LOGIC --------- */
 
-function dropSong(tierId){
-  if(!dragged) return;
+function setupContainerDrag(container, tierId){
+  container.addEventListener('dragover',e=>{
+    e.preventDefault();
 
+    const afterElement=getDragAfterElement(container,e.clientX);
+    const draggable=document.querySelector('.dragging');
+    if(!draggable) return;
+
+    if(afterElement==null){
+      container.appendChild(draggable);
+    }else{
+      container.insertBefore(draggable,afterElement);
+    }
+  });
+
+  container.addEventListener('drop',()=>{
+    if(!dragged) return;
+
+    const list=tierLists[current];
+
+    list.pool=list.pool.filter(s=>s!==dragged);
+    list.tiers.forEach(t=>t.songs=t.songs.filter(s=>s!==dragged));
+
+    const newOrder=[...container.querySelectorAll('.card')]
+      .map(card=>{
+        const id=card.dataset.id;
+        return findSongById(id);
+      });
+
+    if(tierId===null){
+      list.pool=newOrder;
+    }else{
+      list.tiers.find(t=>t.id===tierId).songs=newOrder;
+    }
+
+    save();
+  });
+}
+
+function getDragAfterElement(container,x){
+  const elements=[...container.querySelectorAll('.card:not(.dragging)')];
+
+  return elements.reduce((closest,child)=>{
+    const box=child.getBoundingClientRect();
+    const offset=x-box.left-box.width/2;
+    if(offset<0 && offset>closest.offset){
+      return {offset:offset,element:child};
+    }else{
+      return closest;
+    }
+  },{offset:Number.NEGATIVE_INFINITY}).element;
+}
+
+function findSongById(id){
   const list=tierLists[current];
-
-  list.pool=list.pool.filter(s=>s!==dragged);
-  list.tiers.forEach(t=>t.songs=t.songs.filter(s=>s!==dragged));
-
-  if(tierId===null){
-    list.pool.push(dragged);
-  }else{
-    list.tiers.find(t=>t.id===tierId).songs.push(dragged);
-  }
-
-  save();
-  render();
+  return [...list.pool,...list.tiers.flatMap(t=>t.songs)]
+    .find(s=>s.id==id);
 }
 
 /* --------- SONG --------- */
@@ -407,6 +490,15 @@ function exportPNG(){
     a.href=c.toDataURL();
     a.click();
   });
+}
+
+let editMode=true;
+
+function toggleEditMode(){
+  editMode=!editMode;
+  document.body.classList.toggle('hidden-tools',!editMode);
+  document.getElementById('editToggle').textContent=
+    editMode ? "✏️ Mode édition : ON" : "✏️ Mode édition : OFF";
 }
 
 render();
