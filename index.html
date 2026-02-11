@@ -59,6 +59,13 @@ button{cursor:pointer}
   color:white;
   font-weight:600;
   border-radius:14px 14px 0 0;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.tier-header span{
+  cursor:pointer;
 }
 
 .cards{
@@ -69,7 +76,6 @@ button{cursor:pointer}
   min-height:150px;
 }
 
-/* CARD */
 .card{
   width:140px;
   height:140px;
@@ -78,24 +84,16 @@ button{cursor:pointer}
   background-position:center;
   position:relative;
   cursor:grab;
-  transition:transform .2s ease;
-}
-
-.card:hover{
-  transform:scale(1.6);
-  z-index:10;
-}
-
-.card.dragging{
-  opacity:.4;
+  overflow:hidden;
 }
 
 .card-overlay{
   position:absolute;
   bottom:0;
   width:100%;
-  padding:6px;
-  background:linear-gradient(to top,rgba(0,0,0,.8),transparent);
+  padding:8px;
+  background:rgba(0,0,0,0.55);
+  backdrop-filter:blur(4px);
   color:white;
   font-size:12px;
 }
@@ -103,10 +101,9 @@ button{cursor:pointer}
 .card-tools{
   position:absolute;
   top:6px;
-  left:6px;
   right:6px;
   display:flex;
-  justify-content:space-between;
+  gap:6px;
 }
 
 .card-tools button{
@@ -118,11 +115,11 @@ button{cursor:pointer}
   font-size:12px;
 }
 
-.hidden-tools .card-tools{
+.hidden .card-tools,
+.hidden .tier-tools{
   display:none;
 }
 
-/* POOL */
 .pool-container{
   position:fixed;
   bottom:0;
@@ -145,11 +142,12 @@ button{cursor:pointer}
 
 <header>
   <button onclick="addTier()">➕ Tier</button>
-  <button onclick="toggleEditMode()" id="editToggle">✏️ Mode édition : ON</button>
-  <button onclick="toggleDark()">🌙 Dark Mode</button>
+  <button onclick="toggleEdit()" id="editBtn">✏️ Mode édition : OFF</button>
+  <button onclick="toggleDark()">🌙 Dark</button>
 </header>
 
 <div class="main">
+
 <div style="display:flex;gap:10px;margin:20px 0;">
   <input id="artistInput" placeholder="Artiste">
   <input id="titleInput" placeholder="Titre">
@@ -165,16 +163,11 @@ button{cursor:pointer}
 </div>
 
 <script>
-let draggedCard=null;
-let draggedData=null;
-let editMode=true;
+/* ======================
+   DATA SAFE SYSTEM
+====================== */
 
-/* SAFE LOAD */
-function loadData(){
-  try{
-    const data=JSON.parse(localStorage.getItem("tierData"));
-    if(data && data.tiers && data.pool) return data;
-  }catch(e){}
+function getDefaultData(){
   return {
     tiers:[
       {id:"S",name:"S",color:"#ef4444",songs:[]},
@@ -186,13 +179,28 @@ function loadData(){
   };
 }
 
-let data=loadData();
-
-function save(){
-  localStorage.setItem("tierData",JSON.stringify(data));
+function loadData(){
+  try{
+    const raw=localStorage.getItem("tierData");
+    if(!raw) return getDefaultData();
+    const parsed=JSON.parse(raw);
+    if(parsed && parsed.tiers && parsed.pool) return parsed;
+  }catch(e){}
+  return getDefaultData();
 }
 
-/* RENDER */
+function saveData(){
+  localStorage.setItem("tierData", JSON.stringify(data));
+}
+
+let data=loadData();
+let editMode=false;
+let draggedId=null;
+
+/* ======================
+   RENDER
+====================== */
+
 function render(){
   const tiersDiv=document.getElementById("tiers");
   tiersDiv.innerHTML="";
@@ -204,14 +212,41 @@ function render(){
     const header=document.createElement("div");
     header.className="tier-header";
     header.style.background=t.color;
-    header.textContent=t.name;
+
+    const title=document.createElement("span");
+    title.textContent=t.name;
+
+    if(editMode){
+      title.onclick=()=>{
+        const newName=prompt("Nouveau nom :",t.name);
+        if(newName){
+          t.name=newName;
+          saveData();
+          render();
+        }
+      };
+    }
+
+    const colorInput=document.createElement("input");
+    colorInput.type="color";
+    colorInput.value=t.color;
+    colorInput.className="tier-tools";
+    colorInput.onchange=(e)=>{
+      t.color=e.target.value;
+      saveData();
+      render();
+    };
+
+    header.append(title,colorInput);
 
     const container=document.createElement("div");
     container.className="cards";
-    setupContainer(container,t);
+
+    container.ondragover=e=>e.preventDefault();
+    container.ondrop=()=>moveCard(t.id);
 
     t.songs.forEach(song=>{
-      if(song) container.appendChild(createCard(song));
+      container.appendChild(createCard(song));
     });
 
     tier.append(header,container);
@@ -220,33 +255,27 @@ function render(){
 
   const pool=document.getElementById("pool");
   pool.innerHTML="";
-  setupContainer(pool,null);
+  pool.ondragover=e=>e.preventDefault();
+  pool.ondrop=()=>moveCard(null);
+
   data.pool.forEach(song=>{
-    if(song) pool.appendChild(createCard(song));
+    pool.appendChild(createCard(song));
   });
+
+  document.body.classList.toggle("hidden",!editMode);
 }
 
-/* CREATE CARD */
-function createCard(song){
-  if(!song) return document.createElement("div");
+/* ======================
+   CARD
+====================== */
 
+function createCard(song){
   const card=document.createElement("div");
   card.className="card";
   card.draggable=true;
-  card.dataset.id=song.id;
   card.style.backgroundImage=`url(${song.cover||""})`;
 
-  card.addEventListener("dragstart",()=>{
-    draggedCard=card;
-    draggedData=song;
-    card.classList.add("dragging");
-  });
-
-  card.addEventListener("dragend",()=>{
-    card.classList.remove("dragging");
-    draggedCard=null;
-    draggedData=null;
-  });
+  card.ondragstart=()=>draggedId=song.id;
 
   const overlay=document.createElement("div");
   overlay.className="card-overlay";
@@ -258,28 +287,19 @@ function createCard(song){
   const editBtn=document.createElement("button");
   editBtn.textContent="✏️";
   editBtn.onclick=()=>{
-    overlay.innerHTML=`
-      <div contenteditable="true">${song.artist}</div>
-      <div contenteditable="true">${song.title}</div>
-    `;
-    overlay.querySelectorAll("div").forEach((el,i)=>{
-      el.onblur=()=>{
-        if(i===0) song.artist=el.innerText;
-        else song.title=el.innerText;
-        save();
-        render();
-      };
-    });
+    const a=prompt("Artiste :",song.artist);
+    const t=prompt("Titre :",song.title);
+    if(a!==null && t!==null){
+      song.artist=a.trim();
+      song.title=t.trim();
+      saveData();
+      render();
+    }
   };
 
   const delBtn=document.createElement("button");
   delBtn.textContent="🗑️";
-  delBtn.onclick=()=>{
-    data.pool=data.pool.filter(s=>s.id!==song.id);
-    data.tiers.forEach(t=>t.songs=t.songs.filter(s=>s.id!==song.id));
-    save();
-    render();
-  };
+  delBtn.onclick=()=>removeSong(song.id);
 
   tools.append(editBtn,delBtn);
   card.append(overlay,tools);
@@ -287,98 +307,89 @@ function createCard(song){
   return card;
 }
 
-/* DRAG CONTAINER */
-function setupContainer(container,tier){
-  container.addEventListener("dragover",e=>{
-    e.preventDefault();
-    const after=getAfterElement(container,e.clientX);
-    if(!draggedCard) return;
+/* ======================
+   LOGIC
+====================== */
 
-    if(after==null) container.appendChild(draggedCard);
-    else container.insertBefore(draggedCard,after);
+function removeSong(id){
+  data.pool=data.pool.filter(s=>s.id!==id);
+  data.tiers.forEach(t=>{
+    t.songs=t.songs.filter(s=>s.id!==id);
   });
-
-  container.addEventListener("drop",()=>{
-    if(!draggedData) return;
-
-    data.pool=data.pool.filter(s=>s.id!==draggedData.id);
-    data.tiers.forEach(t=>t.songs=t.songs.filter(s=>s.id!==draggedData.id));
-
-    const ordered=[...container.querySelectorAll(".card")]
-      .map(c=>findSong(c.dataset.id))
-      .filter(Boolean);
-
-    if(tier) tier.songs=ordered;
-    else data.pool=ordered;
-
-    save();
-  });
+  saveData();
+  render();
 }
 
-function getAfterElement(container,x){
-  const els=[...container.querySelectorAll(".card:not(.dragging)")];
-  let closest=null;
-  let closestOffset=-Infinity;
+function moveCard(targetTierId){
+  if(!draggedId) return;
 
-  els.forEach(child=>{
-    const box=child.getBoundingClientRect();
-    const offset=x-box.left-box.width/2;
-    if(offset<0 && offset>closestOffset){
-      closestOffset=offset;
-      closest=child;
-    }
-  });
+  let song=findSong(draggedId);
+  if(!song) return;
 
-  return closest;
+  removeSong(draggedId);
+
+  if(targetTierId){
+    const tier=data.tiers.find(t=>t.id===targetTierId);
+    tier.songs.push(song);
+  }else{
+    data.pool.push(song);
+  }
+
+  saveData();
+  render();
 }
 
 function findSong(id){
   return [...data.pool,...data.tiers.flatMap(t=>t.songs)]
-    .find(s=>s && s.id==id);
+    .find(s=>s.id===id);
 }
 
-/* ACTIONS */
+/* ======================
+   ACTIONS
+====================== */
+
 async function addSong(){
   const artist=document.getElementById("artistInput").value.trim();
   const title=document.getElementById("titleInput").value.trim();
   if(!artist||!title) return;
 
-  // ID compatible Safari
-  const id = Date.now().toString() + Math.random().toString(16).slice(2);
+  const id=Date.now().toString()+Math.random().toString(16).slice(2);
 
   let cover="";
-
   try{
     const res=await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(title+" "+artist)}&entity=song&limit=1`);
     const json=await res.json();
     cover=json.results[0]?.artworkUrl100?.replace("100x100","300x300")||"";
-  }catch(e){
-    console.log("Erreur récupération image");
-  }
+  }catch(e){}
 
   data.pool.push({id,artist,title,cover});
-
-  save();
+  saveData();
   render();
 
   document.getElementById("artistInput").value="";
   document.getElementById("titleInput").value="";
 }
 
-
 function addTier(){
   const name=prompt("Nom du tier ?");
   if(!name) return;
-  data.tiers.push({id:Date.now(),name,color:"#3b82f6",songs:[]});
-  save();
+
+  data.tiers.push({
+    id:Date.now().toString(),
+    name,
+    color:"#3b82f6",
+    songs:[]
+  });
+
+  saveData();
   render();
 }
 
-function toggleEditMode(){
+function toggleEdit(){
   editMode=!editMode;
-  document.body.classList.toggle("hidden-tools",!editMode);
-  document.getElementById("editToggle").textContent=
+  document.getElementById("editBtn").textContent=
     editMode?"✏️ Mode édition : ON":"✏️ Mode édition : OFF";
+  render();
 }
 
 function toggleDark(){
