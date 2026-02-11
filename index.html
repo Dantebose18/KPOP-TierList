@@ -64,8 +64,10 @@ button{cursor:pointer}
   align-items:center;
 }
 
-.tier-header span{
-  cursor:pointer;
+.tier-controls{
+  display:flex;
+  gap:6px;
+  align-items:center;
 }
 
 .cards{
@@ -76,6 +78,8 @@ button{cursor:pointer}
   min-height:150px;
 }
 
+/* CARDS */
+
 .card{
   width:140px;
   height:140px;
@@ -84,7 +88,16 @@ button{cursor:pointer}
   background-position:center;
   position:relative;
   cursor:grab;
-  overflow:hidden;
+  transition:transform .2s ease;
+}
+
+.card:hover{
+  transform:scale(1.5);
+  z-index:10;
+}
+
+.card.dragging{
+  opacity:.4;
 }
 
 .card-overlay{
@@ -115,8 +128,18 @@ button{cursor:pointer}
   font-size:12px;
 }
 
+/* DROP PREVIEW */
+
+.placeholder{
+  width:140px;
+  height:140px;
+  border-radius:16px;
+  border:2px dashed #888;
+  background:rgba(0,0,0,0.05);
+}
+
 .hidden .card-tools,
-.hidden .tier-tools{
+.hidden .tier-controls{
   display:none;
 }
 
@@ -163,11 +186,9 @@ button{cursor:pointer}
 </div>
 
 <script>
-/* ======================
-   DATA SAFE SYSTEM
-====================== */
+/* ================= DATA ================= */
 
-function getDefaultData(){
+function defaultData(){
   return {
     tiers:[
       {id:"S",name:"S",color:"#ef4444",songs:[]},
@@ -179,27 +200,26 @@ function getDefaultData(){
   };
 }
 
-function loadData(){
+function load(){
   try{
     const raw=localStorage.getItem("tierData");
-    if(!raw) return getDefaultData();
+    if(!raw) return defaultData();
     const parsed=JSON.parse(raw);
-    if(parsed && parsed.tiers && parsed.pool) return parsed;
+    if(parsed?.tiers && parsed?.pool) return parsed;
   }catch(e){}
-  return getDefaultData();
+  return defaultData();
 }
 
-function saveData(){
-  localStorage.setItem("tierData", JSON.stringify(data));
+function save(){
+  localStorage.setItem("tierData",JSON.stringify(data));
 }
 
-let data=loadData();
+let data=load();
 let editMode=false;
 let draggedId=null;
+let placeholder=null;
 
-/* ======================
-   RENDER
-====================== */
+/* ================= RENDER ================= */
 
 function render(){
   const tiersDiv=document.getElementById("tiers");
@@ -216,34 +236,43 @@ function render(){
     const title=document.createElement("span");
     title.textContent=t.name;
 
-    if(editMode){
-      title.onclick=()=>{
-        const newName=prompt("Nouveau nom :",t.name);
-        if(newName){
-          t.name=newName;
-          saveData();
-          render();
-        }
-      };
-    }
+    const controls=document.createElement("div");
+    controls.className="tier-controls";
 
     const colorInput=document.createElement("input");
     colorInput.type="color";
     colorInput.value=t.color;
-    colorInput.className="tier-tools";
-    colorInput.onchange=(e)=>{
+    colorInput.oninput=e=>{
       t.color=e.target.value;
-      saveData();
+      save();
       render();
     };
 
-    header.append(title,colorInput);
+    const renameBtn=document.createElement("button");
+    renameBtn.textContent="✏️";
+    renameBtn.onclick=()=>{
+      const n=prompt("Nouveau nom :",t.name);
+      if(n){ t.name=n; save(); render(); }
+    };
+
+    const delBtn=document.createElement("button");
+    delBtn.textContent="🗑️";
+    delBtn.onclick=()=>{
+      if(confirm("Supprimer cette catégorie ?")){
+        data.pool.push(...t.songs);
+        data.tiers=data.tiers.filter(x=>x.id!==t.id);
+        save();
+        render();
+      }
+    };
+
+    controls.append(colorInput,renameBtn,delBtn);
+    header.append(title,controls);
 
     const container=document.createElement("div");
     container.className="cards";
 
-    container.ondragover=e=>e.preventDefault();
-    container.ondrop=()=>moveCard(t.id);
+    setupDrop(container,t.id);
 
     t.songs.forEach(song=>{
       container.appendChild(createCard(song));
@@ -255,8 +284,7 @@ function render(){
 
   const pool=document.getElementById("pool");
   pool.innerHTML="";
-  pool.ondragover=e=>e.preventDefault();
-  pool.ondrop=()=>moveCard(null);
+  setupDrop(pool,null);
 
   data.pool.forEach(song=>{
     pool.appendChild(createCard(song));
@@ -265,17 +293,24 @@ function render(){
   document.body.classList.toggle("hidden",!editMode);
 }
 
-/* ======================
-   CARD
-====================== */
+/* ================= CARD ================= */
 
 function createCard(song){
   const card=document.createElement("div");
   card.className="card";
   card.draggable=true;
+  card.dataset.id=song.id;
   card.style.backgroundImage=`url(${song.cover||""})`;
 
-  card.ondragstart=()=>draggedId=song.id;
+  card.addEventListener("dragstart",()=>{
+    draggedId=song.id;
+    card.classList.add("dragging");
+  });
+
+  card.addEventListener("dragend",()=>{
+    card.classList.remove("dragging");
+    if(placeholder) placeholder.remove();
+  });
 
   const overlay=document.createElement("div");
   overlay.className="card-overlay";
@@ -292,7 +327,7 @@ function createCard(song){
     if(a!==null && t!==null){
       song.artist=a.trim();
       song.title=t.trim();
-      saveData();
+      save();
       render();
     }
   };
@@ -307,36 +342,64 @@ function createCard(song){
   return card;
 }
 
-/* ======================
-   LOGIC
-====================== */
+/* ================= DRAG SYSTEM ================= */
+
+function setupDrop(container,tierId){
+  container.addEventListener("dragover",e=>{
+    e.preventDefault();
+    const after=getDragAfterElement(container,e.clientX);
+    if(!placeholder){
+      placeholder=document.createElement("div");
+      placeholder.className="placeholder";
+    }
+    if(after==null) container.appendChild(placeholder);
+    else container.insertBefore(placeholder,after);
+  });
+
+  container.addEventListener("drop",()=>{
+    if(!draggedId) return;
+    const song=findSong(draggedId);
+    removeSong(draggedId);
+
+    const index=[...container.children].indexOf(placeholder);
+
+    if(tierId){
+      const tier=data.tiers.find(t=>t.id===tierId);
+      tier.songs.splice(index,0,song);
+    }else{
+      data.pool.splice(index,0,song);
+    }
+
+    placeholder.remove();
+    save();
+    render();
+  });
+}
+
+function getDragAfterElement(container,x){
+  const els=[...container.querySelectorAll(".card:not(.dragging)")];
+  let closest=null;
+  let offsetClosest=-Infinity;
+
+  els.forEach(child=>{
+    const box=child.getBoundingClientRect();
+    const offset=x-box.left-box.width/2;
+    if(offset<0 && offset>offsetClosest){
+      offsetClosest=offset;
+      closest=child;
+    }
+  });
+
+  return closest;
+}
+
+/* ================= LOGIC ================= */
 
 function removeSong(id){
   data.pool=data.pool.filter(s=>s.id!==id);
   data.tiers.forEach(t=>{
     t.songs=t.songs.filter(s=>s.id!==id);
   });
-  saveData();
-  render();
-}
-
-function moveCard(targetTierId){
-  if(!draggedId) return;
-
-  let song=findSong(draggedId);
-  if(!song) return;
-
-  removeSong(draggedId);
-
-  if(targetTierId){
-    const tier=data.tiers.find(t=>t.id===targetTierId);
-    tier.songs.push(song);
-  }else{
-    data.pool.push(song);
-  }
-
-  saveData();
-  render();
 }
 
 function findSong(id){
@@ -344,9 +407,7 @@ function findSong(id){
     .find(s=>s.id===id);
 }
 
-/* ======================
-   ACTIONS
-====================== */
+/* ================= ACTIONS ================= */
 
 async function addSong(){
   const artist=document.getElementById("artistInput").value.trim();
@@ -363,7 +424,7 @@ async function addSong(){
   }catch(e){}
 
   data.pool.push({id,artist,title,cover});
-  saveData();
+  save();
   render();
 
   document.getElementById("artistInput").value="";
@@ -373,15 +434,13 @@ async function addSong(){
 function addTier(){
   const name=prompt("Nom du tier ?");
   if(!name) return;
-
   data.tiers.push({
     id:Date.now().toString(),
     name,
     color:"#3b82f6",
     songs:[]
   });
-
-  saveData();
+  save();
   render();
 }
 
