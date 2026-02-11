@@ -69,6 +69,7 @@ button{cursor:pointer}
   min-height:150px;
 }
 
+/* CARD */
 .card{
   width:140px;
   height:140px;
@@ -77,6 +78,16 @@ button{cursor:pointer}
   background-position:center;
   position:relative;
   cursor:grab;
+  transition:transform .2s ease;
+}
+
+.card:hover{
+  transform:scale(1.6);
+  z-index:10;
+}
+
+.card.dragging{
+  opacity:.4;
 }
 
 .card-overlay{
@@ -107,6 +118,11 @@ button{cursor:pointer}
   font-size:12px;
 }
 
+.hidden-tools .card-tools{
+  display:none;
+}
+
+/* POOL */
 .pool-container{
   position:fixed;
   bottom:0;
@@ -129,6 +145,7 @@ button{cursor:pointer}
 
 <header>
   <button onclick="addTier()">➕ Tier</button>
+  <button onclick="toggleEditMode()" id="editToggle">✏️ Mode édition : ON</button>
   <button onclick="toggleDark()">🌙 Dark Mode</button>
 </header>
 
@@ -148,11 +165,213 @@ button{cursor:pointer}
 </div>
 
 <script>
-/* =========================
-   DATA MANAGEMENT
-========================= */
+let draggedCard=null;
+let draggedData=null;
+let editMode=true;
 
-function defaultData(){
+/* SAFE LOAD */
+function loadData(){
+  try{
+    const data=JSON.parse(localStorage.getItem("tierData"));
+    if(data && data.tiers && data.pool) return data;
+  }catch(e){}
   return {
     tiers:[
-      {i
+      {id:"S",name:"S",color:"#ef4444",songs:[]},
+      {id:"A",name:"A",color:"#22c55e",songs:[]},
+      {id:"B",name:"B",color:"#eab308",songs:[]},
+      {id:"C",name:"C",color:"#9ca3af",songs:[]}
+    ],
+    pool:[]
+  };
+}
+
+let data=loadData();
+
+function save(){
+  localStorage.setItem("tierData",JSON.stringify(data));
+}
+
+/* RENDER */
+function render(){
+  const tiersDiv=document.getElementById("tiers");
+  tiersDiv.innerHTML="";
+
+  data.tiers.forEach(t=>{
+    const tier=document.createElement("div");
+    tier.className="tier";
+
+    const header=document.createElement("div");
+    header.className="tier-header";
+    header.style.background=t.color;
+    header.textContent=t.name;
+
+    const container=document.createElement("div");
+    container.className="cards";
+    setupContainer(container,t);
+
+    t.songs.forEach(song=>{
+      if(song) container.appendChild(createCard(song));
+    });
+
+    tier.append(header,container);
+    tiersDiv.appendChild(tier);
+  });
+
+  const pool=document.getElementById("pool");
+  pool.innerHTML="";
+  setupContainer(pool,null);
+  data.pool.forEach(song=>{
+    if(song) pool.appendChild(createCard(song));
+  });
+}
+
+/* CREATE CARD */
+function createCard(song){
+  if(!song) return document.createElement("div");
+
+  const card=document.createElement("div");
+  card.className="card";
+  card.draggable=true;
+  card.dataset.id=song.id;
+  card.style.backgroundImage=`url(${song.cover||""})`;
+
+  card.addEventListener("dragstart",()=>{
+    draggedCard=card;
+    draggedData=song;
+    card.classList.add("dragging");
+  });
+
+  card.addEventListener("dragend",()=>{
+    card.classList.remove("dragging");
+    draggedCard=null;
+    draggedData=null;
+  });
+
+  const overlay=document.createElement("div");
+  overlay.className="card-overlay";
+  overlay.innerHTML=`<strong>${song.artist}</strong><br>${song.title}`;
+
+  const tools=document.createElement("div");
+  tools.className="card-tools";
+
+  const editBtn=document.createElement("button");
+  editBtn.textContent="✏️";
+  editBtn.onclick=()=>{
+    overlay.innerHTML=`
+      <div contenteditable="true">${song.artist}</div>
+      <div contenteditable="true">${song.title}</div>
+    `;
+    overlay.querySelectorAll("div").forEach((el,i)=>{
+      el.onblur=()=>{
+        if(i===0) song.artist=el.innerText;
+        else song.title=el.innerText;
+        save();
+        render();
+      };
+    });
+  };
+
+  const delBtn=document.createElement("button");
+  delBtn.textContent="🗑️";
+  delBtn.onclick=()=>{
+    data.pool=data.pool.filter(s=>s.id!==song.id);
+    data.tiers.forEach(t=>t.songs=t.songs.filter(s=>s.id!==song.id));
+    save();
+    render();
+  };
+
+  tools.append(editBtn,delBtn);
+  card.append(overlay,tools);
+
+  return card;
+}
+
+/* DRAG CONTAINER */
+function setupContainer(container,tier){
+  container.addEventListener("dragover",e=>{
+    e.preventDefault();
+    const after=getAfterElement(container,e.clientX);
+    if(!draggedCard) return;
+
+    if(after==null) container.appendChild(draggedCard);
+    else container.insertBefore(draggedCard,after);
+  });
+
+  container.addEventListener("drop",()=>{
+    if(!draggedData) return;
+
+    data.pool=data.pool.filter(s=>s.id!==draggedData.id);
+    data.tiers.forEach(t=>t.songs=t.songs.filter(s=>s.id!==draggedData.id));
+
+    const ordered=[...container.querySelectorAll(".card")]
+      .map(c=>findSong(c.dataset.id))
+      .filter(Boolean);
+
+    if(tier) tier.songs=ordered;
+    else data.pool=ordered;
+
+    save();
+  });
+}
+
+function getAfterElement(container,x){
+  const els=[...container.querySelectorAll(".card:not(.dragging)")];
+  let closest=null;
+  let closestOffset=-Infinity;
+
+  els.forEach(child=>{
+    const box=child.getBoundingClientRect();
+    const offset=x-box.left-box.width/2;
+    if(offset<0 && offset>closestOffset){
+      closestOffset=offset;
+      closest=child;
+    }
+  });
+
+  return closest;
+}
+
+function findSong(id){
+  return [...data.pool,...data.tiers.flatMap(t=>t.songs)]
+    .find(s=>s && s.id==id);
+}
+
+/* ACTIONS */
+async function addSong(){
+  const artist=document.getElementById("artistInput").value.trim();
+  const title=document.getElementById("titleInput").value.trim();
+  if(!artist||!title) return;
+
+  const res=await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(title+" "+artist)}&entity=song&limit=1`);
+  const json=await res.json();
+  const cover=json.results[0]?.artworkUrl100?.replace("100x100","300x300")||"";
+
+  data.pool.push({id:Date.now()+Math.random(),artist,title,cover});
+  save();
+  render();
+}
+
+function addTier(){
+  const name=prompt("Nom du tier ?");
+  if(!name) return;
+  data.tiers.push({id:Date.now(),name,color:"#3b82f6",songs:[]});
+  save();
+  render();
+}
+
+function toggleEditMode(){
+  editMode=!editMode;
+  document.body.classList.toggle("hidden-tools",!editMode);
+  document.getElementById("editToggle").textContent=
+    editMode?"✏️ Mode édition : ON":"✏️ Mode édition : OFF";
+}
+
+function toggleDark(){
+  document.body.classList.toggle("dark");
+}
+
+render();
+</script>
+</body>
+</html>
