@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Music Tier List</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f7f9;
+  --card:#ffffff;
+  --text:#1f2937;
+  --border:#e5e7eb;
+}
+body.dark{--bg:#0f172a;--card:#1e293b;--text:#f8fafc;--border:#334155}
+body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text)}
+
+header{
+  padding:20px;
+  display:flex;
+  gap:12px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+button,input,select{
+  padding:10px 14px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:white;
+  font-size:14px;
+}
+button{cursor:pointer;font-weight:500}
+button.primary{background:#111;color:white;border:none}
+
+.main{
+  max-width:1200px;
+  margin:auto;
+}
+
+.input-section{
+  display:flex;
+  gap:12px;
+  margin-bottom:30px;
+}
+
+.input-section input{flex:1}
+
+.tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+
+.tier{
+  background:var(--card);
+  border-radius:18px;
+  margin-bottom:14px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.06);
+}
+
+.tier-header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px;
+  border-radius:18px 18px 0 0;
+  color:white;
+}
+
+.tier-header input[type=text]{
+  background:rgba(255,255,255,0.2);
+  border:none;
+  color:white;
+  font-weight:600;
+  width:80px;
+}
+
+.cards{
+  display:flex;
+  gap:10px;
+  padding:12px;
+  flex-wrap:wrap;
+  overflow:visible;
+  min-height:110px;
+}
+
+.card{
+  width:90px;
+  height:90px;
+  border-radius:14px;
+  background-size:cover;
+  background-position:center;
+  cursor:grab;
+  position:relative;
+  transition:transform .25s ease, box-shadow .25s ease;
+}
+
+.card:hover{
+  transform:scale(2.1);
+  z-index:50;
+  box-shadow:0 25px 45px rgba(0,0,0,.45);
+}
+
+.card-overlay{
+  position:absolute;
+  bottom:0;
+  width:100%;
+  padding:6px;
+  background:linear-gradient(to top,rgba(0,0,0,.8),transparent);
+  color:white;
+  font-size:10px;
+  border-radius:0 0 14px 14px;
+}
+
+.card button{
+  position:absolute;
+  top:4px;
+  right:4px;
+  background:rgba(0,0,0,.6);
+  border:none;
+  color:white;
+  border-radius:6px;
+  padding:2px 6px;
+  cursor:pointer;
+}
+
+.pool{
+  background:var(--card);
+  border-radius:18px;
+  padding:14px;
+  min-height:120px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.06);
+}
+
+.template-youtube .tier{
+  border:3px solid black;
+}
+</style>
+</head>
+<body>
+<header>
+  <button onclick="addTier()">➕ Tier</button>
+  <button onclick="addTierList()">👥 Tier List</button>
+  <select onchange="changeTemplate(this.value)">
+    <option value="default">Template normal</option>
+    <option value="youtube">YouTuber</option>
+  </select>
+  <button onclick="toggleDark()">🌙</button>
+  <button onclick="exportPNG()">📤 Export</button>
+</header>
+
+<div class="main">
+
+<div class="input-section">
+  <input id="titleInput" placeholder="Titre de la chanson">
+  <input id="artistInput" placeholder="Artiste">
+  <button class="primary" onclick="addSong()">Ajouter</button>
+</div>
+
+<div class="tabs" id="tabs"></div>
+<div id="tiers"></div>
+
+<h3>🎵 Pool</h3>
+<div class="pool cards" id="pool"></div>
+</div>
+
+<script>
+let tierLists=JSON.parse(localStorage.getItem('tierLists'))||[{name:'Ma Tier List',tiers:[{id:'S',name:'S',color:'#ef4444',songs:[]},{id:'A',name:'A',color:'#22c55e',songs:[]},{id:'B',name:'B',color:'#eab308',songs:[]},{id:'C',name:'C',color:'#9ca3af',songs:[]}],pool:[]}];
+let current=0,dragged=null;
+
+function save(){localStorage.setItem('tierLists',JSON.stringify(tierLists))}
+
+function renderTabs(){
+  const t=document.getElementById('tabs');t.innerHTML='';
+  tierLists.forEach((l,i)=>{const b=document.createElement('button');b.textContent=l.name;b.onclick=()=>{current=i;render()};t.appendChild(b)})
+}
+
+function render(){
+  renderTabs();
+  const list=tierLists[current];
+  const tiers=document.getElementById('tiers');tiers.innerHTML='';
+
+  list.tiers.forEach(t=>{
+    const tier=document.createElement('div');tier.className='tier';tier.ondragover=e=>e.preventDefault();tier.ondrop=()=>dropToTier(t.id);
+    const h=document.createElement('div');h.className='tier-header';h.style.background=t.color;
+
+    const name=document.createElement('input');name.type='text';name.value=t.name;name.oninput=e=>{t.name=e.target.value;save()};
+    const color=document.createElement('input');color.type='color';color.value=t.color;color.oninput=e=>{t.color=e.target.value;save();render()};
+    const del=document.createElement('button');del.textContent='❌';del.onclick=()=>{list.tiers=list.tiers.filter(x=>x.id!==t.id);save();render()};
+
+    h.append(name,color,del);
+    const cards=document.createElement('div');cards.className='cards';
+    t.songs.forEach(s=>cards.appendChild(createCard(s)));
+    tier.append(h,cards);tiers.appendChild(tier);
+  });
+
+  const pool=document.getElementById('pool');pool.innerHTML='';
+  list.pool.forEach(s=>pool.appendChild(createCard(s)));
+}
+
+function createCard(song){
+  const c=document.createElement('div');c.className='card';c.draggable=true;c.style.backgroundImage=`url(${song.cover||''})`;
+  c.ondragstart=()=>dragged=song;
+  c.ondragover=e=>e.preventDefault();
+  c.ondrop=()=>reorder(song);
+
+  const o=document.createElement('div');o.className='card-overlay';o.innerHTML=`<strong>${song.title}</strong><br>${song.artist}`;
+  const d=document.createElement('button');d.textContent='🗑️';d.onclick=()=>deleteSong(song.id);
+
+  c.append(o,d);return c;
+}
+
+function dropToTier(id){if(!dragged)return;const l=tierLists[current];l.pool=l.pool.filter(s=>s!==dragged);l.tiers.forEach(t=>t.songs=t.songs.filter(s=>s!==dragged));l.tiers.find(t=>t.id===id).songs.push(dragged);save();render()}
+
+function reorder(target){const l=tierLists[current];l.tiers.forEach(t=>{const i=t.songs.indexOf(dragged);if(i>-1)t.songs.splice(i,1)});l.pool=l.pool.filter(s=>s!==dragged);l.tiers.forEach(t=>{const i=t.songs.indexOf(target);if(i>-1)t.songs.splice(i,0,dragged)});save();render()}
+
+function deleteSong(id){const l=tierLists[current];l.pool=l.pool.filter(s=>s.id!==id);l.tiers.forEach(t=>t.songs=t.songs.filter(s=>s.id!==id));save();render()}
+
+async function addSong(){
+  const title=document.getElementById('titleInput').value.trim();
+  const artist=document.getElementById('artistInput').value.trim();
+  if(!title||!artist)return;
+  const res=await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(title+' '+artist)}&entity=song&limit=1`);
+  const data=await res.json();
+  const cover=data.results[0]?.artworkUrl100?.replace('100x100','300x300')||'';
+  tierLists[current].pool.push({id:Date.now()+Math.random(),title,artist,cover});
+  document.getElementById('titleInput').value='';document.getElementById('artistInput').value='';
+  save();render();
+}
+
+function addTier(){const n=prompt('Nom du tier');if(!n)return;tierLists[current].tiers.push({id:Date.now(),name:n,color:'#3b82f6',songs:[]});save();render()}
+function addTierList(){const n=prompt('Nom de la tier list');if(!n)return;tierLists.push(JSON.parse(JSON.stringify(tierLists[0])));tierLists.at(-1).name=n;current=tierLists.length-1;save();render()}
+function toggleDark(){document.body.classList.toggle('dark')}
+function changeTemplate(t){document.body.className=t==='youtube'?'template-youtube':''}
+function exportPNG(){html2canvas(document.body).then(c=>{const a=document.createElement('a');a.download='tierlist.png';a.href=c.toDataURL();a.click()})}
+
+render();
+</script>
+</body>
+</html>
