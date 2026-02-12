@@ -29,10 +29,10 @@ body{
 
 /* --- DESIGN HEADER --- */
 header{
-  padding:20px;
+  padding:15px 25px;
   display:flex;
   gap:15px;
-  flex-wrap:wrap;
+  align-items: center;
   background: var(--card);
   border-bottom: 1px solid var(--border);
 }
@@ -40,34 +40,41 @@ header{
 /* --- DESIGN INPUTS --- */
 .input-container {
   display: flex;
-  gap: 10px;
-  margin: 20px 0;
-  padding: 0 15px;
+  gap: 12px;
+  margin: 25px 0;
+  padding: 0 20px;
+  justify-content: center;
 }
 
-input {
-  padding: 10px 15px;
+input[type="text"] {
+  padding: 10px 16px;
   border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--card);
   color: var(--text);
   outline: none;
-  transition: border-color 0.2s;
+  font-family: inherit;
+  transition: all 0.2s;
 }
 
-input:focus {
+input[type="text"]:focus {
   border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 button{
-  padding:8px 12px;
+  padding:8px 16px;
   border-radius:8px;
   border:1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-weight: 600;
   cursor:pointer;
-  transition: opacity 0.2s;
+  transition: all 0.2s;
 }
 
-button:hover{ opacity: 0.8; }
+button:hover{ background: #f9fafb; }
+body.dark button:hover { background: #1e293b; }
 
 .main{
   max-width:1200px;
@@ -79,11 +86,11 @@ button:hover{ opacity: 0.8; }
   background:var(--card);
   border-radius:14px;
   margin-bottom:18px;
-  overflow: visible; /* Autorise le zoom à sortir du cadre */
+  overflow: visible;
 }
 
 .tier-header{
-  padding:10px;
+  padding:10px 20px;
   color:white;
   font-weight:600;
   border-radius:14px 14px 0 0;
@@ -94,7 +101,7 @@ button:hover{ opacity: 0.8; }
 
 .tier-controls{
   display:flex;
-  gap:6px;
+  gap:8px;
   align-items:center;
 }
 
@@ -104,10 +111,10 @@ button:hover{ opacity: 0.8; }
   padding:14px;
   flex-wrap:wrap;
   min-height:150px;
-  overflow: visible; /* Important pour le zoom */
+  overflow: visible;
 }
 
-/* --- CARDS REDESIGN --- */
+/* --- CARDS DESIGN --- */
 
 .card{
   width:140px;
@@ -117,34 +124,30 @@ button:hover{ opacity: 0.8; }
   background-position:center;
   position:relative;
   cursor:grab;
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.25s cubic-bezier(0.2, 1, 0.3, 1);
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
-.card:hover{
-  transform:scale(1.4); /* Zoom augmenté */
+/* Zoom 1.25 uniquement si la carte n'est PAS dans le pool */
+#tiers .card:hover{
+  transform:scale(1.25);
   z-index:100;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.2);
 }
 
-.card.dragging{
-  opacity:.1;
-}
-
-/* Effet de sélection discret */
-.card::before {
+/* Sélection discrète */
+.card:hover::after {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: 16px;
-  background: rgba(0,0,0,0);
-  transition: background 0.2s;
-  z-index: 1;
+  background: rgba(0,0,0,0.1);
+  border: 1px solid rgba(255,255,255,0.3);
+  pointer-events: none;
 }
 
-.card:hover::before {
-  background: rgba(0,0,0,0.1);
-  border: 2px solid rgba(255,255,255,0.5);
+.card.dragging{
+  opacity:.2;
 }
 
 .card-overlay{
@@ -155,9 +158,8 @@ button:hover{ opacity: 0.8; }
   background: linear-gradient(transparent, rgba(0,0,0,0.8));
   border-radius: 0 0 16px 16px;
   color:white;
-  font-size:12px;
+  font-size:11px;
   box-sizing: border-box;
-  z-index: 2;
 }
 
 .card-tools{
@@ -165,8 +167,7 @@ button:hover{ opacity: 0.8; }
   top:6px;
   right:6px;
   display:flex;
-  gap:6px;
-  z-index: 3;
+  gap:4px;
 }
 
 .card-tools button{
@@ -175,7 +176,7 @@ button:hover{ opacity: 0.8; }
   color:white;
   border-radius:6px;
   padding:3px 6px;
-  font-size:12px;
+  font-size:10px;
 }
 
 /* DROP PREVIEW */
@@ -199,7 +200,7 @@ button:hover{ opacity: 0.8; }
   left:0;
   right:0;
   background:var(--bg);
-  padding:14px;
+  padding:14px 25px;
   border-top:2px solid var(--border);
   z-index: 1000;
 }
@@ -223,8 +224,8 @@ button:hover{ opacity: 0.8; }
 <div class="main">
 
 <div class="input-container">
-  <input id="artistInput" placeholder="Artiste">
-  <input id="titleInput" placeholder="Titre">
+  <input type="text" id="artistInput" placeholder="Artiste">
+  <input type="text" id="titleInput" placeholder="Titre">
   <button onclick="addSong()" style="background: #3b82f6; color: white; border: none;">Ajouter</button>
 </div>
 
@@ -232,7 +233,7 @@ button:hover{ opacity: 0.8; }
 </div>
 
 <div class="pool-container">
-<h3>🎵 Pool</h3>
+<h3 style="margin-top:0; font-size: 14px; opacity: 0.7;">🎵 Pool</h3>
 <div id="pool" class="pool"></div>
 </div>
 
@@ -293,7 +294,8 @@ function render(){
     const colorInput=document.createElement("input");
     colorInput.type="color";
     colorInput.value=t.color;
-    colorInput.oninput=e=>{
+    // Correction du bug couleur : "change" au lieu de "input" pour ne pas casser le focus
+    colorInput.onchange=e=>{
       t.color=e.target.value;
       save();
       render();
@@ -353,7 +355,6 @@ function createCard(song){
   card.dataset.id=song.id;
   card.style.backgroundImage=`url(${song.cover||""})`;
 
-  // Redirection YouTube au clic (hors mode édition)
   card.onclick = () => {
     if(!editMode && song.youtubeUrl) window.open(song.youtubeUrl, '_blank');
   };
@@ -378,13 +379,12 @@ function createCard(song){
   const editBtn=document.createElement("button");
   editBtn.textContent="✏️";
   editBtn.onclick=(e)=>{
-    e.stopPropagation(); // Empêche YouTube de s'ouvrir
+    e.stopPropagation();
     const a=prompt("Artiste :",song.artist);
     const t=prompt("Titre :",song.title);
     if(a!==null && t!==null){
       song.artist=a.trim();
       song.title=t.trim();
-      // Met à jour le lien YouTube aussi
       song.youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(song.artist + ' ' + song.title + ' official mv')}`;
       save();
       render();
@@ -394,7 +394,7 @@ function createCard(song){
   const delBtn=document.createElement("button");
   delBtn.textContent="🗑️";
   delBtn.onclick=(e)=>{
-    e.stopPropagation(); // Empêche YouTube de s'ouvrir
+    e.stopPropagation();
     removeSong(song.id);
     save();
     render();
@@ -406,7 +406,7 @@ function createCard(song){
   return card;
 }
 
-/* ================= DRAG SYSTEM (CORRIGÉ) ================= */
+/* ================= DRAG SYSTEM ================= */
 
 function setupDrop(container,tierId){
   container.addEventListener("dragover",e=>{
@@ -425,7 +425,6 @@ function setupDrop(container,tierId){
     const song=findSong(draggedId);
     removeSong(draggedId);
 
-    // Calcul de l'index réel basé sur la position du placeholder
     const children = [...container.querySelectorAll('.card:not(.dragging)')];
     const index = children.indexOf(placeholder.nextElementSibling);
     const finalIndex = index === -1 ? children.length : index;
@@ -486,7 +485,6 @@ async function addSong(){
     cover=json.results[0]?.artworkUrl100?.replace("100x100","300x300")||"";
   }catch(e){}
 
-  // Ajout du lien vers le clip YouTube
   const youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`;
 
   data.pool.push({id,artist,title,cover,youtubeUrl});
