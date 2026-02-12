@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KPOP Tier List Ultra</title>
+<title>KPOP Tier List</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 
 <style>
@@ -279,7 +279,9 @@ body.compact-active .card:hover .card-overlay {
 /* --- CARD TOOLS --- */
 .card-tools {
   position: absolute; top: 8px; right: 8px;
-  display: flex; flex-direction: column; gap: 6px;
+  display: flex;
+  flex-direction: column-reverse; 
+  gap: 6px;
   opacity: 0; transform: translateY(-10px);
   transition: all 0.2s ease;
 }
@@ -295,13 +297,14 @@ body.compact-active .card:hover .card-overlay {
 
 /* MODIFICATION: Outils en Mode Compact (Éditer Gauche / Supprimer Droite) */
 body.compact-active .card-tools {
-  top: 0; bottom: 0;
-  left: 0; right: 0; /* Prend tout l'espace */
-  padding: 0 8px; /* Marges latérales */
-  flex-direction: row; /* Horizontal */
-  justify-content: space-between; /* Ecartement max */
-  align-items: center; /* Centré verticalement */
-  transform: none; /* Pas de décalage initial */
+  top: 0; 
+  bottom: auto; /* On annule le bottom:0 pour qu'ils restent en haut */
+  left: 0; right: 0;
+  padding: 4px 6px; /* Petite marge pour ne pas coller aux bords */
+  flex-direction: row; /* Alignement horizontal */
+  justify-content: space-between; /* Un à gauche, un à droite */
+  align-items: flex-start; /* FORCE L'ALIGNEMENT EN HAUT */
+  transform: none;
   opacity: 0;
 }
 /* On garde l'effet hover */
