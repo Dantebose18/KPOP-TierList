@@ -206,7 +206,7 @@ input[type="color"] {
   align-content: flex-start;
 }
 
-/* --- CARDS --- */
+/* --- CARDS (Style Standard) --- */
 .card {
   width: 140px;
   height: 140px;
@@ -215,24 +215,21 @@ input[type="color"] {
   background-position: center;
   position: relative;
   cursor: grab;
-  /* Transition fluide par défaut */
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, height 0.2s ease;
+  /* Correction Jitter: la transition sur transform est souvent la cause. On la garde douce mais rapide. */
+  transition: transform 0.1s ease-out, box-shadow 0.2s, border-color 0.2s, height 0.3s ease;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.1);
   background-color: var(--card-bg);
 }
 
-/* ANTI-TREMBLEMENT : On coupe les animations pendant le drag */
-body.is-dragging .card {
-  transition: none !important;
-}
-
+/* IMPORTANT POUR CORRIGER LE TREMBLEMENT : On désactive les interactions sur la carte en cours de drag */
 .card.dragging {
   opacity: 0.4;
   transform: scale(0.95);
   grayscale: 100%;
-  pointer-events: none; /* La souris traverse la carte fantôme */
+  pointer-events: none; /* Crucial pour le jitter */
+  transition: none !important; 
 }
 
 #tiers .card:hover {
@@ -259,17 +256,29 @@ body.is-dragging .card {
 }
 
 /* --- MODE COMPACT --- */
-body.compact-active .card { height: 70px; }
+body.compact-active .card {
+  height: 70px;
+}
+
 body.compact-active .card-overlay {
-  top: 0; padding: 5px; background: rgba(0,0,0,0.7); 
+  top: 0; padding: 5px;
+  background: rgba(0,0,0,0.7); 
   justify-content: center; gap: 2px;
 }
-body.compact-active .card-overlay strong { font-size: 12px; margin: 0; white-space: normal; line-height: 1.1; }
-body.compact-active .card-overlay span { font-size: 11px; opacity: 0.9; line-height: 1.1; }
+
+body.compact-active .card-overlay strong {
+  font-size: 12px; margin: 0; white-space: normal; line-height: 1.1;
+}
+
+body.compact-active .card-overlay span {
+  font-size: 11px; opacity: 0.9; line-height: 1.1;
+}
 
 body.compact-active .card:hover {
-  height: 140px; transform: scale(1.15) translateY(-5px); z-index: 100; background-blend-mode: normal;
+  height: 140px; transform: scale(1.15) translateY(-5px); z-index: 100;
+  background-blend-mode: normal;
 }
+
 body.compact-active .card:hover .card-overlay {
   top: auto; bottom: 0;
   background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
@@ -284,7 +293,9 @@ body.compact-active .card:hover .card-overlay {
   opacity: 0; transform: translateY(-10px);
   transition: all 0.2s ease;
 }
+
 .card:hover .card-tools, body.edit-active .card-tools { opacity: 1; transform: translateY(0); }
+
 .card-tools button {
   background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
   border: 1px solid rgba(255,255,255,0.2); color: white;
@@ -294,12 +305,13 @@ body.compact-active .card:hover .card-overlay {
 }
 .card-tools button:hover { background: var(--accent-secondary); border-color: transparent; }
 
-/* Placeholder */
+/* Placeholder FIX JITTER */
 .placeholder {
   width: 140px; height: 140px; border-radius: var(--radius-md);
   border: 2px dashed var(--text-muted); background: rgba(100,100,100,0.05);
   opacity: 0.5; animation: pulse 1.5s infinite; 
-  transition: none; pointer-events: none;
+  transition: none;
+  pointer-events: none; /* CRUCIAL: Empêche la souris de détecter le placeholder comme cible */
 }
 body.compact-active .placeholder { height: 70px; }
 
@@ -313,15 +325,18 @@ body.compact-active .placeholder { height: 70px; }
   padding: 20px; border: var(--card-border); border-radius: var(--radius-lg);
   box-shadow: 0 -10px 40px rgba(0,0,0,0.1); z-index: 100;
 }
+
 .pool-header {
   font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
   color: var(--text-muted); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;
 }
 .pool-header::after { content:''; flex:1; height:1px; background: var(--text-muted); opacity: 0.2; }
+
 .pool {
   display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; min-height: 150px;
   scrollbar-width: thin; scrollbar-color: var(--accent-primary) transparent;
 }
+
 .pool::-webkit-scrollbar { height: 6px; }
 .pool::-webkit-scrollbar-track { background: transparent; }
 .pool::-webkit-scrollbar-thumb { background-color: var(--text-muted); border-radius: 10px; }
@@ -332,12 +347,18 @@ body.compact-active .placeholder { height: 70px; }
   background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
   z-index: 2000; display: none; justify-content: center; align-items: center;
 }
+
 .modal-content {
-  background: var(--card-bg); border: var(--card-border);
-  width: 90%; max-width: 500px; border-radius: var(--radius-lg); padding: 30px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.2); color: var(--text-main);
+  background: var(--card-bg);
+  border: var(--card-border);
+  width: 90%; max-width: 500px;
+  border-radius: var(--radius-lg);
+  padding: 30px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+  color: var(--text-main);
   max-height: 80vh; overflow-y: auto;
 }
+
 .modal-content h2 { margin-top: 0; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; border-bottom: 1px solid rgba(128,128,128,0.1); padding-bottom: 5px; }
 .stat-row strong { font-weight: 600; }
@@ -348,9 +369,12 @@ body.compact-active .placeholder { height: 70px; }
 .rank-pos { font-weight: 800; color: var(--accent-primary); width: 25px; }
 .rank-name { flex: 1; font-weight: 600; }
 .rank-avg { font-size: 12px; padding: 2px 6px; background: var(--accent-secondary); color: white; border-radius: 4px; min-width: 35px; text-align: center;}
+
+/* Styles spécifiques TOP et FLOP */
 .rank-item.top { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); }
 .rank-item.top .rank-pos { color: #10b981; }
 .rank-item.top .rank-avg { background: #10b981; }
+
 .rank-item.flop { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); }
 .rank-item.flop .rank-pos { color: #ef4444; }
 .rank-item.flop .rank-avg { background: #ef4444; }
@@ -366,9 +390,12 @@ body.edit-active .card-tools { display: flex !important; opacity: 1; transform: 
   <div class="header-btns">
     <button onclick="exportJson()">💾 Sauver</button>
     <button onclick="document.getElementById('fileInput').click()">📂 Charger</button>
+    
     <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;"></div>
+    
     <button onclick="showStats()" class="icon-btn" title="Statistiques">📊</button>
     <button onclick="toggleCompact()" id="compactBtn" class="icon-btn" title="Vue Compacte">☰</button>
+    
     <button onclick="toggleEdit()" id="editBtn" class="icon-btn">✏️</button>
     <button onclick="addTier()" class="icon-btn">➕ Tier</button>
     <button onclick="toggleDark()" class="icon-btn">🌙</button>
@@ -394,6 +421,7 @@ body.edit-active .card-tools { display: flex !important; opacity: 1; transform: 
     <input type="text" id="titleInput" placeholder="Titre (ex: Dash)">
     <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
   </div>
+
   <div id="tiers"></div>
 </div>
 
@@ -465,7 +493,7 @@ function importJson(input) {
   input.value = '';
 }
 
-/* --- STATS --- */
+/* --- LOGIQUE STATISTIQUES (TOP 3 & FLOP 3) --- */
 function showStats() {
   const modal = document.getElementById('statsModal');
   const body = document.getElementById('statsBody');
@@ -474,6 +502,7 @@ function showStats() {
   let artistStats = {};
   const maxScore = data.tiers.length;
   
+  // Calculs
   data.tiers.forEach((tier, index) => {
     const score = maxScore - index;
     tier.songs.forEach(song => {
@@ -484,6 +513,7 @@ function showStats() {
       artistStats[name].count++;
     });
   });
+
   data.pool.forEach(song => { totalSongs++; });
 
   let rankings = Object.keys(artistStats).map(key => {
@@ -494,12 +524,17 @@ function showStats() {
     };
   });
 
+  // Tri global
   rankings.sort((a, b) => b.avg - a.avg);
   
+  // Séparation TOP 3 et FLOP 3
   const top3 = rankings.slice(0, 3);
+  // Pour le Flop, on prend les 3 derniers et on inverse pour avoir le pire en premier ou dernier selon préférence
+  // Ici : Slice les 3 derniers, reverse pour afficher le "moins pire" en haut du flop, ou l'inverse.
+  // Logique : Flop 1 = Le pire du pire (donc la toute dernière position).
   let flop3 = [];
   if (rankings.length > 3) {
-      flop3 = rankings.slice(-3).reverse(); 
+      flop3 = rankings.slice(-3).reverse(); // Le dernier du tableau (le pire) devient le premier de la liste flop
   }
 
   const uniqueArtists = new Set([...rankings.map(r=>r.name), ...data.pool.map(s=>s.artist.trim())]).size;
@@ -514,7 +549,7 @@ function showStats() {
         <div class="rank-item top">
           <span class="rank-pos">#${i+1}</span>
           <span class="rank-name">${r.name}</span>
-          <span class="rank-avg">${r.avg}</span>
+          <span class="rank-avg" title="Moyenne">${r.avg}</span>
         </div>
       `).join('') : '<div style="opacity:0.5; font-size:13px">Pas assez de données.</div>'}
     </div>
@@ -525,25 +560,33 @@ function showStats() {
         <div class="rank-item flop">
           <span class="rank-pos">#${i+1}</span>
           <span class="rank-name">${r.name}</span>
-          <span class="rank-avg">${r.avg}</span>
+          <span class="rank-avg" title="Moyenne">${r.avg}</span>
         </div>
-      `).join('') : '<div style="opacity:0.5; font-size:13px">Tout le monde est bon.</div>'}
+      `).join('') : '<div style="opacity:0.5; font-size:13px">Tout le monde est bon (pour l\'instant).</div>'}
     </div>
   `;
+  
   body.innerHTML = html;
   modal.style.display = 'flex';
 }
 
 function closeStats(e) {
-  if(e.target.id === 'statsModal') document.getElementById('statsModal').style.display = 'none';
+  if(e.target.id === 'statsModal') {
+    document.getElementById('statsModal').style.display = 'none';
+  }
 }
+
+/* ------------------------ */
 
 function render(){
   const tiersDiv = document.getElementById("tiers");
   tiersDiv.innerHTML = "";
-  
-  document.body.classList.toggle('edit-active', editMode);
-  document.body.classList.toggle('compact-active', compactMode);
+
+  if(editMode) document.body.classList.add('edit-active');
+  else document.body.classList.remove('edit-active');
+
+  if(compactMode) document.body.classList.add('compact-active');
+  else document.body.classList.remove('compact-active');
 
   data.tiers.forEach(t=>{
     const tier = document.createElement("div");
@@ -604,12 +647,10 @@ function createCard(song){
 
   card.addEventListener("dragstart", () => {
     draggedId = song.id;
-    document.body.classList.add("is-dragging");
     setTimeout(() => card.classList.add("dragging"), 0);
   });
 
   card.addEventListener("dragend", () => {
-    document.body.classList.remove("is-dragging");
     card.classList.remove("dragging");
     if(placeholder) placeholder.remove();
     draggedId = null;
@@ -628,11 +669,12 @@ function createCard(song){
   return card;
 }
 
-/* --- LOGIQUE DRAG & DROP "SMART GRID" --- */
 function setupDrop(container, tierId){
   container.addEventListener("dragover", e => {
     e.preventDefault();
     if(!draggedId) return;
+
+    // FIX JITTER : Si on survole le placeholder ou l'élément draggué (via pointer-events, mais double sécu ici)
     if(e.target.classList.contains('placeholder') || e.target.classList.contains('dragging')) return;
 
     if(!placeholder) { 
@@ -640,7 +682,6 @@ function setupDrop(container, tierId){
         placeholder.className = "placeholder"; 
     }
     
-    // NOUVELLE LOGIQUE
     const after = getDragAfterElement(container, e.clientX, e.clientY);
     if(after == null) container.appendChild(placeholder);
     else container.insertBefore(placeholder, after);
@@ -664,42 +705,41 @@ function setupDrop(container, tierId){
     else data.pool.splice(finalIndex, 0, song);
 
     draggedId = null;
-    document.body.classList.remove("is-dragging");
-    save(); render();
+    save();
+    render();
   });
 }
 
-// Fonction intelligente pour la grille
-function getDragAfterElement(container, x, y){
-  const draggableElements = [...container.querySelectorAll('.card:not(.dragging)')];
+// Amélioration de la détection (X et Y pour le wrap)
+function getDragAfterElement(container, x, y) {
+  const elements = [...container.querySelectorAll(".card:not(.dragging)")];
 
-  // 1. Trouver le voisin le plus proche (Distance)
-  const closest = draggableElements.reduce((closest, child) => {
-    const box = child.getBoundingClientRect();
-    const offsetX = x - (box.left + box.width / 2);
-    const offsetY = y - (box.top + box.height / 2);
-    const dist = Math.hypot(offsetX, offsetY);
+  let closest = null;
+  let closestDistance = Number.POSITIVE_INFINITY;
 
-    if (dist < closest.dist) {
-      return { dist: dist, element: child, offsetX: offsetX };
-    } else {
-      return closest;
+  elements.forEach(el => {
+    const box = el.getBoundingClientRect();
+
+    const centerX = box.left + box.width / 2;
+    const centerY = box.top + box.height / 2;
+
+    const dx = x - centerX;
+    const dy = y - centerY;
+
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    // On ne considère que les cartes qui sont à droite ou en dessous du curseur
+    if ((y < centerY || Math.abs(y - centerY) < box.height / 2) && x < centerX) {
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closest = el;
+      }
     }
-  }, { dist: Number.POSITIVE_INFINITY });
+  });
 
-  // 2. Décider si on insère AVANT ou APRÈS ce voisin
-  if (closest.element) {
-     // Si la souris est à droite du centre de l'élément (> 0), on insère APRÈS.
-     // Donc on retourne le SUIVANT de cet élément pour que insertBefore le place après.
-     if (closest.offsetX > 0) {
-         return closest.element.nextElementSibling;
-     } else {
-         return closest.element;
-     }
-  }
-  
-  return null;
+  return closest;
 }
+
 
 function removeSong(id){
   data.pool = data.pool.filter(s => s.id !== id);
@@ -758,6 +798,7 @@ async function addSong(){
 
   data.pool.push({ id: Date.now().toString(), artist, title, cover, youtubeUrl });
   save(); render();
+  
   document.getElementById("artistInput").value = "";
   document.getElementById("titleInput").value = "";
   btn.innerText = originalText;
@@ -770,11 +811,19 @@ function addTier(){
 
 function toggleEdit(){
   editMode = !editMode;
+  const btn = document.getElementById("editBtn");
+  btn.innerHTML = editMode ? "✅" : "✏️";
+  btn.style.background = editMode ? "var(--accent-secondary)" : "";
+  btn.style.color = editMode ? "white" : "";
   render();
 }
 
 function toggleCompact(){
   compactMode = !compactMode;
+  const btn = document.getElementById("compactBtn");
+  btn.innerHTML = compactMode ? "⊞" : "☰";
+  btn.style.background = compactMode ? "var(--accent-primary)" : "";
+  btn.style.color = compactMode ? "white" : "";
   render();
 }
 
