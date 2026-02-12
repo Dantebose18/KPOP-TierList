@@ -76,21 +76,24 @@ header {
   letter-spacing: -0.5px;
 }
 
-.header-btns { display: flex; gap: 12px; }
+.header-btns { display: flex; gap: 8px; align-items: center; }
 
 /* --- BOUTONS --- */
 button {
-  padding: 10px 16px;
+  padding: 8px 14px;
   border-radius: var(--radius-sm);
   border: var(--card-border);
   background: var(--card-bg);
   color: var(--text-main);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
   font-family: 'Outfit', sans-serif;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 button:hover {
@@ -104,6 +107,8 @@ button:hover {
   color: white;
   border: none;
   box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  padding: 10px 18px;
+  font-size: 14px;
 }
 
 .btn-primary:hover {
@@ -144,8 +149,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 
 /* --- MAIN LAYOUT --- */
 .main {
-  /* MODIFICATION: Largeur calculée pour exactement 8 cartes */
-  /* 8 cartes (1120) + 7 espaces (112) + 2 paddings (40) + marge main (40) = ~1312px */
+  /* Largeur pour 8 cartes exactement */
   max-width: 1320px; 
   margin: auto;
   padding: 0 20px 240px 20px;
@@ -197,7 +201,7 @@ input[type="color"] {
 .cards {
   display: flex;
   gap: 16px;
-  padding: 20px; /* Padding égal gauche/droite */
+  padding: 20px;
   flex-wrap: wrap;
   min-height: 160px;
   align-content: flex-start;
@@ -303,17 +307,24 @@ body.edit-active .card-tools { display: flex !important; opacity: 1; transform: 
 <header>
   <div class="logo">K-TIER ✨</div>
   <div class="header-btns">
+    <button onclick="exportJson()">💾 Sauver</button>
+    <button onclick="document.getElementById('fileInput').click()">📂 Charger</button>
+    
+    <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;"></div>
+    
     <button onclick="toggleEdit()" id="editBtn" class="icon-btn">✏️</button>
     <button onclick="addTier()" class="icon-btn">➕ Tier</button>
     <button onclick="toggleDark()" class="icon-btn">🌙</button>
   </div>
 </header>
 
+<input type="file" id="fileInput" style="display:none" accept=".json" onchange="importJson(this)">
+
 <div class="main">
   <div class="input-section">
-    <input type="text" id="artistInput" placeholder="Artiste (ex: NMIXX)">
+    <input type="text" id="artistInput" placeholder="Artiste (ex: BTS)">
     <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
-    <input type="text" id="titleInput" placeholder="Titre (ex: Blue Valentine)">
+    <input type="text" id="titleInput" placeholder="Titre (ex: Dynamite)">
     <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
   </div>
 
@@ -329,12 +340,7 @@ body.edit-active .card-tools { display: flex !important; opacity: 1; transform: 
 // ==========================================
 // CONFIGURATION
 // ==========================================
-
-// 1. Allez sur Google Cloud Console
-// 2. Créez un projet et activez "YouTube Data API v3"
-// 3. Créez des identifiants (API KEY) et collez la clé ci-dessous entre les guillemets.
 const YOUTUBE_API_KEY = "AIzaSyBzRO4J6W-M8uSt2k9vd1HJHECCwdKdiGM"; 
-
 // ==========================================
 
 let data = load();
@@ -362,6 +368,46 @@ function load(){
 }
 
 function save(){ localStorage.setItem("tierData", JSON.stringify(data)); }
+
+// --- NOUVELLES FONCTIONS IMPORT / EXPORT ---
+
+function exportJson() {
+  const dataStr = JSON.stringify(data, null, 2);
+  const blob = new Blob([dataStr], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+  
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = "kpop_tierlist_backup.json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importJson(input) {
+  const file = input.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const json = JSON.parse(e.target.result);
+      if(!json.tiers || !json.pool) throw new Error("Format invalide");
+      
+      data = json;
+      save(); // Sauvegarde aussi dans le navigateur
+      render();
+      alert("Sauvegarde chargée avec succès !");
+    } catch(err) {
+      alert("Erreur : Le fichier sélectionné n'est pas une sauvegarde valide.");
+    }
+  };
+  reader.readAsText(file);
+  input.value = ''; // Reset l'input pour pouvoir recharger le même fichier si besoin
+}
+
+// -------------------------------------------
 
 function render(){
   const tiersDiv = document.getElementById("tiers");
@@ -433,7 +479,6 @@ function createCard(song){
   });
 
   card.addEventListener("dragend", () => {
-    // Correction Ghosting : nettoyage forcé
     card.classList.remove("dragging");
     if(placeholder) placeholder.remove();
     draggedId = null;
@@ -465,26 +510,20 @@ function setupDrop(container, tierId){
     e.preventDefault();
     if(!draggedId) return;
     
-    // Correction Ghosting : on récupère les données
     const song = findSong(draggedId);
     
-    // Calcul de l'index basé sur le placeholder AVANT de le supprimer
     const children = [...container.querySelectorAll('.card:not(.dragging)')];
     const index = children.indexOf(placeholder.nextElementSibling);
     const finalIndex = index === -1 ? children.length : index;
 
-    // Suppression immédiate du placeholder pour éviter le glitch visuel
     if(placeholder) placeholder.remove();
     placeholder = null;
 
-    // Mise à jour des données
     removeSong(draggedId);
     if(tierId) data.tiers.find(t => t.id === tierId).songs.splice(finalIndex, 0, song);
     else data.pool.splice(finalIndex, 0, song);
 
-    // Reset immédiat de l'ID drag pour éviter que le render ne le reprenne
     draggedId = null;
-
     save();
     render();
   });
@@ -515,7 +554,6 @@ function editSong(id){
   const t = prompt("Titre :", s.title);
   if(a && t) { 
     s.artist = a; s.title = t; 
-    // On relance une recherche YT simple si on édite manuellement pour éviter de consommer l'API pour rien, ou vous pouvez adapter
     s.youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(a + ' ' + t + ' official mv')}`;
     save(); render(); 
   }
@@ -539,28 +577,20 @@ async function addSong(){
 
   if(!cover) cover = "https://via.placeholder.com/300/6366f1/ffffff?text=" + artist.charAt(0);
 
-  // --- LOGIQUE YOUTUBE ---
   let youtubeUrl = "";
-  
   if(YOUTUBE_API_KEY) {
       try {
-          // Appel API YouTube : Recherche du clip vidéo
           const query = `${artist} ${title} Official MV`;
           const ytRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
           const ytJson = await ytRes.json();
-          
           if(ytJson.items && ytJson.items.length > 0) {
               const videoId = ytJson.items[0].id.videoId;
               youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
-          } else {
-              throw new Error("No video found");
-          }
+          } else { throw new Error("No video"); }
       } catch(e) {
-          console.warn("Erreur API YouTube (quota ou clé invalide), repli sur la recherche classique.");
           youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`;
       }
   } else {
-      // Fallback si pas de clé
       youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`;
   }
 
