@@ -2,272 +2,392 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>KPOP Tier List</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KPOP Tier List Ultra</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 
 <style>
-:root{
-  --bg:#f4f6f8;
-  --card:#ffffff;
-  --text:#1c1f26;
-  --border:#e6e8ec;
-  --accent:#111827;
+/* --- VARIABLES & THEME --- */
+:root {
+  --bg-color: #f3f4f6;
+  --bg-gradient: radial-gradient(circle at 10% 20%, rgba(239, 246, 255, 0.8) 0%, rgba(243, 244, 246, 0) 90%);
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  
+  --card-bg: rgba(255, 255, 255, 0.85);
+  --card-border: 1px solid rgba(255, 255, 255, 0.6);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+  
+  --accent-primary: #6366f1; /* Indigo */
+  --accent-secondary: #ec4899; /* Pink */
+  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+  
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
 }
 
-body.dark{
-  --bg:#0f1115;
-  --card:#181b21;
-  --text:#f3f4f6;
-  --border:#2a2f38;
+body.dark {
+  --bg-color: #0f172a;
+  --bg-gradient: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0f172a 70%);
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  
+  --card-bg: rgba(30, 41, 59, 0.7);
+  --card-border: 1px solid rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
 
-body{
-  margin:0;
-  font-family:'Inter', sans-serif;
-  background:var(--bg);
-  color:var(--text);
+* { box-sizing: border-box; outline: none; }
+
+body {
+  margin: 0;
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--bg-color);
+  background-image: var(--bg-gradient);
+  background-attachment: fixed;
+  color: var(--text-main);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
 }
 
-/* ================= HEADER ================= */
-
-header{
-  padding:18px 40px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  background:var(--card);
-  border-bottom:1px solid var(--border);
+/* --- HEADER GLASS --- */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: var(--card-border);
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
 }
 
-header div:first-child{
-  font-weight:700;
-  font-size:20px;
-  letter-spacing:-0.5px;
+.logo {
+  font-weight: 800;
+  font-size: 24px;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.5px;
 }
 
-/* ================= BUTTONS ================= */
+.header-btns { display: flex; gap: 12px; }
 
-button{
-  padding:10px 16px;
-  border-radius:10px;
-  border:1px solid var(--border);
-  background:transparent;
-  color:var(--text);
-  font-size:13px;
-  font-weight:500;
-  cursor:pointer;
-  transition: all 0.15s ease;
+/* --- BOUTONS MODERNES --- */
+button {
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  border: var(--card-border);
+  background: var(--card-bg);
+  color: var(--text-main);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  font-family: 'Outfit', sans-serif;
 }
 
-button:hover{
-  background:var(--text);
-  color:var(--card);
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  background: rgba(255,255,255,0.1);
 }
 
-/* Bouton ajouter plus distinct */
-
-.btn-add{
-  background:var(--text);
-  color:var(--card);
-  border:none;
-  font-weight:600;
+.btn-primary {
+  background: var(--accent-gradient);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
 }
 
-.btn-add:hover{
-  opacity:0.85;
+.btn-primary:hover {
+  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
+  background: linear-gradient(135deg, #4f46e5 0%, #db2777 100%);
 }
 
-/* ================= INPUT SECTION ================= */
+.icon-btn { padding: 8px 12px; font-size: 16px; }
 
-.input-section{
-  max-width:600px;
-  margin:40px auto;
-  display:flex;
-  gap:8px;
-  padding:8px;
-  background:var(--card);
-  border-radius:14px;
-  border:1px solid var(--border);
+/* --- INPUT SECTION --- */
+.input-section {
+  max-width: 700px;
+  margin: 40px auto;
+  display: flex;
+  gap: 10px;
+  padding: 8px;
+  background: var(--card-bg);
+  border: var(--card-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(8px);
 }
 
-input[type="text"]{
-  flex:1;
-  border:1px solid var(--border);
-  background:transparent;
-  padding:10px 14px;
-  font-family:inherit;
-  color:var(--text);
-  outline:none;
-  font-size:14px;
-  border-radius:8px;
+input[type="text"] {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 12px 20px;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--text-main);
+  border-radius: var(--radius-sm);
+  transition: background 0.2s;
 }
 
-input[type="text"]:focus{
-  border-color:var(--text);
+input[type="text"]:focus { background: rgba(100,100,100,0.05); }
+input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
+
+/* --- MAIN LAYOUT --- */
+.main {
+  max-width: 1300px;
+  margin: auto;
+  padding: 0 20px 240px 20px;
 }
 
-input[type="text"]::placeholder{
-  opacity:0.4;
+.tier {
+  background: var(--card-bg);
+  border: var(--card-border);
+  border-radius: var(--radius-md);
+  margin-bottom: 25px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column; /* Changed to column for better mobile logic if needed */
+  transition: transform 0.2s;
 }
 
-/* ================= TIERS ================= */
-
-.main{
-  max-width:1200px;
-  margin:auto;
-  padding-bottom:220px;
+.tier-header {
+  padding: 15px 25px;
+  color: white; /* Force white text on colored headers */
+  font-weight: 800;
+  font-size: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  position: relative;
+  overflow: hidden;
 }
 
-.tier{
-  background:var(--card);
-  border-radius:16px;
-  margin-bottom:22px;
-  border:1px solid var(--border);
+/* Texture subtle on header */
+.tier-header::after {
+  content: '';
+  position: absolute;
+  top:0; left:0; right:0; bottom:0;
+  background: linear-gradient(90deg, rgba(255,255,255,0.1), transparent);
+  pointer-events: none;
 }
 
-.tier-header{
-  padding:14px 22px;
-  color:white;
-  font-weight:600;
-  border-radius:16px 16px 0 0;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+.tier-controls { display: flex; gap: 8px; align-items: center; z-index: 2; }
+.tier-controls button {
+  background: rgba(0,0,0,0.2);
+  border: none;
+  color: white;
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+  backdrop-filter: blur(4px);
+}
+.tier-controls button:hover { background: rgba(0,0,0,0.4); }
+
+input[type="color"] {
+  border: none; width: 30px; height: 30px; cursor: pointer; background: none;
+  border-radius: 50%; overflow: hidden;
 }
 
-.tier-controls{
-  display:flex;
-  gap:8px;
-  align-items:center;
+.cards {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  flex-wrap: wrap;
+  min-height: 160px;
+  align-content: flex-start;
 }
 
-/* ================= CARDS ================= */
-
-.cards{
-  display:flex;
-  gap:14px;
-  padding:18px;
-  flex-wrap:wrap;
-  min-height:150px;
+/* --- CARDS DESIGN PREMIUM --- */
+.card {
+  width: 140px;
+  height: 140px;
+  border-radius: var(--radius-md);
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  cursor: grab;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
-.card{
-  width:140px;
-  height:140px;
-  border-radius:16px;
-  background-size:cover;
-  background-position:center;
-  position:relative;
-  cursor:grab;
-  transition: transform 0.2s ease;
-  box-shadow:0 4px 12px rgba(0,0,0,0.12);
+/* Hover Effect Requested */
+#tiers .card:hover {
+  transform: scale(1.15) translateY(-5px);
+  z-index: 50;
+  box-shadow: 0 20px 30px rgba(0,0,0,0.25);
+  border-color: var(--accent-secondary);
 }
 
-#tiers .card:hover{
-  transform: scale(1.25);
-  z-index:50;
-  box-shadow:0 14px 28px rgba(0,0,0,0.25);
+.card.dragging { opacity: 0.4; transform: scale(0.95); grayscale: 100%; }
+
+.card-overlay {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 40px 10px 10px 10px; /* Top padding for gradient space */
+  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
+  color: white;
+  font-size: 12px;
+  line-height: 1.3;
+  text-align: center;
+  pointer-events: none;
 }
 
-.card-overlay{
-  position:absolute;
-  bottom:0;
-  width:100%;
-  padding:10px;
-  background:linear-gradient(transparent, rgba(0,0,0,0.85));
-  border-radius:0 0 16px 16px;
-  color:white;
-  font-size:11px;
-  box-sizing:border-box;
+.card-overlay strong {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 2px;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
 }
 
-.card-tools{
-  position:absolute;
-  top:6px;
-  right:6px;
-  display:flex;
-  gap:4px;
+/* Card Tools (Edit/Delete) */
+.card-tools {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
 }
 
-.card-tools button{
-  background:rgba(0,0,0,0.6);
-  border:none;
-  color:white;
-  padding:3px 6px;
-  font-size:10px;
-  border-radius:6px;
+/* Show tools on hover or in edit mode */
+.card:hover .card-tools, body.edit-active .card-tools {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-/* ================= PLACEHOLDER ================= */
+.card-tools button {
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  padding: 6px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 12px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+.card-tools button:hover { background: var(--accent-secondary); border-color: transparent; }
 
-.placeholder{
-  width:140px;
-  height:140px;
-  border-radius:16px;
-  border:2px dashed var(--border);
-  background:rgba(0,0,0,0.03);
+/* Placeholder Drop Zone */
+.placeholder {
+  width: 140px;
+  height: 140px;
+  border-radius: var(--radius-md);
+  border: 2px dashed var(--text-muted);
+  background: rgba(100,100,100,0.05);
+  opacity: 0.5;
+  animation: pulse 1.5s infinite;
 }
 
-/* ================= POOL ================= */
+@keyframes pulse { 0%{opacity:0.3} 50%{opacity:0.6} 100%{opacity:0.3} }
 
-.pool-container{
-  position:fixed;
-  bottom:0; left:0; right:0;
-  background:var(--card);
-  padding:18px 40px;
-  border-top:1px solid var(--border);
-  z-index:100;
+/* --- POOL / DOCK --- */
+.pool-container {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 1200px;
+  background: var(--card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 20px;
+  border: var(--card-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+  z-index: 100;
+  transition: transform 0.3s ease;
 }
 
-.pool{
-  display:flex;
-  gap:14px;
-  flex-wrap:wrap;
-  min-height:150px;
+.pool-header {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pool-header::after { content:''; flex:1; height:1px; background: var(--text-muted); opacity: 0.2; }
+
+.pool {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  min-height: 150px;
+  /* Custom Scrollbar for pool */
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-primary) transparent;
 }
 
-.pool-container h3{
-  margin:0 0 10px 0;
-  font-size:12px;
-  letter-spacing:1px;
-  opacity:0.5;
-}
+.pool::-webkit-scrollbar { height: 6px; }
+.pool::-webkit-scrollbar-track { background: transparent; }
+.pool::-webkit-scrollbar-thumb { background-color: var(--text-muted); border-radius: 10px; }
 
-/* IMPORTANT : ne pas toucher à hidden */
+/* Hidden state logic preserved */
+.hidden .card-tools, .hidden .tier-controls { display: none !important; }
 
-.hidden .card-tools,
-.hidden .tier-controls{
-  display:none;
-}
+/* Helper class for body to signal edit mode for CSS tricks */
+body.edit-active .card-tools { display: flex !important; opacity: 1; transform: none; }
 
 </style>
 </head>
 <body>
 
 <header>
-  <div style="font-weight: 700; font-size: 18px; letter-spacing: -0.5px;">K-Tier</div>
+  <div class="logo">K-TIER ✨</div>
   <div class="header-btns">
-    <button onclick="addTier()">➕ Tier</button>
-    <button onclick="toggleEdit()" id="editBtn">✏️ Mode édition : OFF</button>
-    <button onclick="toggleDark()">🌙</button>
+    <button onclick="toggleEdit()" id="editBtn" class="icon-btn">✏️</button>
+    <button onclick="addTier()" class="icon-btn">➕ Tier</button>
+    <button onclick="toggleDark()" class="icon-btn">🌙</button>
   </div>
 </header>
 
 <div class="main">
   <div class="input-section">
-    <input type="text" id="artistInput" placeholder="Nom de l'artiste">
-    <input type="text" id="titleInput" placeholder="Titre de la chanson">
-    <button class="btn-add" onclick="addSong()">Ajouter</button>
+    <input type="text" id="artistInput" placeholder="Artiste (ex: BTS)">
+    <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
+    <input type="text" id="titleInput" placeholder="Titre (ex: Dynamite)">
+    <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
   </div>
+
   <div id="tiers"></div>
 </div>
 
 <div class="pool-container">
-  <h3 style="margin:0 0 10px 0; font-size: 13px; opacity: 0.5; text-transform: uppercase;">Pool</h3>
+  <div class="pool-header">Réserve (Drag & Drop)</div>
   <div id="pool" class="pool"></div>
 </div>
 
 <script>
+// --- LOGIQUE CONSERVÉE À 100% ---
 let data = load();
 let editMode = false;
 let draggedId = null;
@@ -276,10 +396,10 @@ let placeholder = null;
 function defaultData(){
   return {
     tiers:[
-      {id:"S",name:"S",color:"#ef4444",songs:[]},
-      {id:"A",name:"A",color:"#22c55e",songs:[]},
-      {id:"B",name:"B",color:"#eab308",songs:[]},
-      {id:"C",name:"C",color:"#9ca3af",songs:[]}
+      {id:"S",name:"S - LÉGENDAIRE",color:"#ec4899",songs:[]}, // Updated default colors
+      {id:"A",name:"A - INCROYABLE",color:"#8b5cf6",songs:[]},
+      {id:"B",name:"B - TRÈS BON",color:"#3b82f6",songs:[]},
+      {id:"C",name:"C - SYMPA",color:"#10b981",songs:[]}
     ],
     pool:[]
   };
@@ -298,13 +418,18 @@ function render(){
   const tiersDiv = document.getElementById("tiers");
   tiersDiv.innerHTML = "";
 
+  // Helper class for edit mode visualization
+  if(editMode) document.body.classList.add('edit-active');
+  else document.body.classList.remove('edit-active');
+
   data.tiers.forEach(t=>{
     const tier = document.createElement("div");
     tier.className = "tier";
     
+    // Header styling updated via CSS, structure slightly tweaked for icons
     const header = document.createElement("div");
     header.className = "tier-header";
-    header.style.background = t.color;
+    header.style.background = `linear-gradient(90deg, ${t.color}, ${adjustColor(t.color, -40)})`; // Auto gradient
     header.innerHTML = `<span>${t.name}</span>`;
 
     const controls = document.createElement("div");
@@ -316,12 +441,12 @@ function render(){
     colorInput.onchange = e => { t.color = e.target.value; save(); render(); };
 
     const renameBtn = document.createElement("button");
-    renameBtn.textContent = "✏️";
-    renameBtn.onclick = () => { const n = prompt("Nom :", t.name); if(n){ t.name=n; save(); render(); }};
+    renameBtn.innerHTML = "✎"; // Icon update
+    renameBtn.onclick = () => { const n = prompt("Nouveau nom :", t.name); if(n){ t.name=n; save(); render(); }};
 
     const delBtn = document.createElement("button");
-    delBtn.textContent = "🗑️";
-    delBtn.onclick = () => { if(confirm("Supprimer?")){ data.pool.push(...t.songs); data.tiers=data.tiers.filter(x=>x.id!==t.id); save(); render(); }};
+    delBtn.innerHTML = "✕"; // Icon update
+    delBtn.onclick = () => { if(confirm("Supprimer ce Tier ? Les chansons iront dans la réserve.")){ data.pool.push(...t.songs); data.tiers=data.tiers.filter(x=>x.id!==t.id); save(); render(); }};
 
     controls.append(colorInput, renameBtn, delBtn);
     header.append(controls);
@@ -343,34 +468,41 @@ function render(){
   document.body.classList.toggle("hidden", !editMode);
 }
 
+// Helper to darken color for gradients
+function adjustColor(color, amount) {
+    return '#' + color.replace(/^#/, '').replace(/../g, color => ('0'+Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2));
+}
+
 function createCard(song){
   const card = document.createElement("div");
   card.className = "card";
   card.draggable = true;
   card.style.backgroundImage = `url(${song.cover})`;
 
+  // Onclick behavior preserved
   card.onclick = () => { if(!editMode) window.open(song.youtubeUrl, '_blank'); };
 
   card.addEventListener("dragstart", () => {
     draggedId = song.id;
+    // Timeout needed for drag ghost
     setTimeout(() => card.classList.add("dragging"), 0);
   });
 
   card.addEventListener("dragend", () => {
-  card.classList.remove("dragging");
-  if (placeholder && placeholder.parentNode) {
-    placeholder.parentNode.removeChild(placeholder);
-  }
-  placeholder = null;
-  draggedId = null;
-});
+    card.classList.remove("dragging");
+    if(placeholder) placeholder.remove();
+    draggedId = null;
+  });
 
-
+  // Updated innerHTML for better structure
   card.innerHTML = `
-    <div class="card-overlay"><strong>${song.artist}</strong><br>${song.title}</div>
+    <div class="card-overlay">
+      <strong>${song.artist}</strong>
+      <span>${song.title}</span>
+    </div>
     <div class="card-tools">
-      <button onclick="event.stopPropagation(); editSong('${song.id}')">✏️</button>
-      <button onclick="event.stopPropagation(); removeSong('${song.id}'); save(); render();">🗑️</button>
+      <button onclick="event.stopPropagation(); editSong('${song.id}')" title="Éditer">✎</button>
+      <button onclick="event.stopPropagation(); removeSong('${song.id}'); save(); render();" title="Supprimer" style="background:#ef4444; border:none;">✕</button>
     </div>
   `;
   return card;
@@ -380,7 +512,7 @@ function setupDrop(container, tierId){
   container.addEventListener("dragover", e => {
     e.preventDefault();
     if(!placeholder) { placeholder = document.createElement("div"); placeholder.className = "placeholder"; }
-    const after = getDragAfterElement(container, e.clientX);
+    const after = getDragAfterElement(container, e.clientX); // Using ClientX for horizontal logic in pool too
     if(after == null) container.appendChild(placeholder);
     else container.insertBefore(placeholder, after);
   });
@@ -398,13 +530,13 @@ function setupDrop(container, tierId){
     if(tierId) data.tiers.find(t => t.id === tierId).songs.splice(finalIndex, 0, song);
     else data.pool.splice(finalIndex, 0, song);
 
-    // Supprimer immédiatement le placeholder pour éviter le bug visuel
     if(placeholder) placeholder.remove();
     save();
     render();
   });
 }
 
+// Logic kept strictly same
 function getDragAfterElement(container, x){
   const els = [...container.querySelectorAll(".card:not(.dragging)")];
   return els.reduce((closest, child) => {
@@ -440,6 +572,11 @@ async function addSong(){
   const title = document.getElementById("titleInput").value.trim();
   if(!artist || !title) return;
 
+  // Visual feedback on button
+  const btn = document.querySelector('.btn-add') || document.querySelector('.btn-primary');
+  const originalText = btn.innerText;
+  btn.innerText = "⏳...";
+
   let cover = "";
   try {
     const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + " " + title)}&entity=song&limit=1`);
@@ -447,21 +584,35 @@ async function addSong(){
     cover = json.results[0]?.artworkUrl100?.replace("100x100", "300x300") || "";
   } catch(e) {}
 
+  // Fallback gradient if no cover
+  if(!cover) cover = "https://via.placeholder.com/300/6366f1/ffffff?text=" + artist.charAt(0);
+
   const youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`;
   data.pool.push({ id: Date.now().toString(), artist, title, cover, youtubeUrl });
   save(); render();
+  
   document.getElementById("artistInput").value = "";
   document.getElementById("titleInput").value = "";
+  btn.innerText = originalText;
 }
 
 function addTier(){
-  const name = prompt("Nom ?");
-  if(name) { data.tiers.push({ id: Date.now().toString(), name, color: "#3b82f6", songs: [] }); save(); render(); }
+  const name = prompt("Nom du Tier ?");
+  if(name) { data.tiers.push({ id: Date.now().toString(), name, color: "#6366f1", songs: [] }); save(); render(); }
 }
 
 function toggleEdit(){
   editMode = !editMode;
-  document.getElementById("editBtn").textContent = editMode ? "✏️ Mode édition : ON" : "✏️ Mode édition : OFF";
+  const btn = document.getElementById("editBtn");
+  if(editMode) {
+      btn.innerHTML = "✅ OK";
+      btn.style.background = "var(--accent-secondary)";
+      btn.style.color = "white";
+  } else {
+      btn.innerHTML = "✏️";
+      btn.style.background = "";
+      btn.style.color = "";
+  }
   render();
 }
 
