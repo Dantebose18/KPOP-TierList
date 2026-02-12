@@ -215,18 +215,16 @@ input[type="color"] {
   background-position: center;
   position: relative;
   cursor: grab;
-  /* Transition par défaut pour les effets visuels hors Drag & Drop */
-  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.2s, border-color 0.2s, height 0.3s ease;
+  /* Correction Jitter: transition smooth */
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, height 0.2s ease;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.1);
   background-color: var(--card-bg);
 }
 
-/* --- CORRECTION ULTIME JITTER --- */
-/* Quand le BODY a la classe 'is-dragging', ON TUE TOUTES LES ANIMATIONS DE DÉPLACEMENT */
-/* Cela empêche les cartes de "glisser" sous la souris pendant qu'on vise */
-body.is-dragging .card {
+/* ANTI-TREMBLEMENT : Si le conteneur est survolé lors d'un drag, on coupe les animations */
+.cards.drag-active .card, .pool.drag-active .card {
   transition: none !important;
 }
 
@@ -234,7 +232,7 @@ body.is-dragging .card {
   opacity: 0.4;
   transform: scale(0.95);
   grayscale: 100%;
-  pointer-events: none; /* La souris passe à travers la carte qu'on tient */
+  pointer-events: none; /* Crucial */
 }
 
 #tiers .card:hover {
@@ -375,7 +373,6 @@ body.compact-active .placeholder { height: 70px; }
 .rank-name { flex: 1; font-weight: 600; }
 .rank-avg { font-size: 12px; padding: 2px 6px; background: var(--accent-secondary); color: white; border-radius: 4px; min-width: 35px; text-align: center;}
 
-/* Styles spécifiques TOP et FLOP */
 .rank-item.top { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); }
 .rank-item.top .rank-pos { color: #10b981; }
 .rank-item.top .rank-avg { background: #10b981; }
@@ -395,12 +392,9 @@ body.edit-active .card-tools { display: flex !important; opacity: 1; transform: 
   <div class="header-btns">
     <button onclick="exportJson()">💾 Sauver</button>
     <button onclick="document.getElementById('fileInput').click()">📂 Charger</button>
-    
     <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;"></div>
-    
     <button onclick="showStats()" class="icon-btn" title="Statistiques">📊</button>
     <button onclick="toggleCompact()" id="compactBtn" class="icon-btn" title="Vue Compacte">☰</button>
-    
     <button onclick="toggleEdit()" id="editBtn" class="icon-btn">✏️</button>
     <button onclick="addTier()" class="icon-btn">➕ Tier</button>
     <button onclick="toggleDark()" class="icon-btn">🌙</button>
@@ -426,7 +420,6 @@ body.edit-active .card-tools { display: flex !important; opacity: 1; transform: 
     <input type="text" id="titleInput" placeholder="Titre (ex: Dash)">
     <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
   </div>
-
   <div id="tiers"></div>
 </div>
 
@@ -498,7 +491,6 @@ function importJson(input) {
   input.value = '';
 }
 
-/* --- STATS --- */
 function showStats() {
   const modal = document.getElementById('statsModal');
   const body = document.getElementById('statsBody');
@@ -548,7 +540,7 @@ function showStats() {
         <div class="rank-item top">
           <span class="rank-pos">#${i+1}</span>
           <span class="rank-name">${r.name}</span>
-          <span class="rank-avg" title="Moyenne">${r.avg}</span>
+          <span class="rank-avg">${r.avg}</span>
         </div>
       `).join('') : '<div style="opacity:0.5; font-size:13px">Pas assez de données.</div>'}
     </div>
@@ -559,9 +551,9 @@ function showStats() {
         <div class="rank-item flop">
           <span class="rank-pos">#${i+1}</span>
           <span class="rank-name">${r.name}</span>
-          <span class="rank-avg" title="Moyenne">${r.avg}</span>
+          <span class="rank-avg">${r.avg}</span>
         </div>
-      `).join('') : '<div style="opacity:0.5; font-size:13px">Tout le monde est bon (pour l\'instant).</div>'}
+      `).join('') : '<div style="opacity:0.5; font-size:13px">Tout le monde est bon.</div>'}
     </div>
   `;
   
@@ -574,8 +566,6 @@ function closeStats(e) {
     document.getElementById('statsModal').style.display = 'none';
   }
 }
-
-/* ------------------------ */
 
 function render(){
   const tiersDiv = document.getElementById("tiers");
@@ -646,14 +636,10 @@ function createCard(song){
 
   card.addEventListener("dragstart", () => {
     draggedId = song.id;
-    // On ajoute une classe au body pour tuer toutes les animations
-    document.body.classList.add("is-dragging");
     setTimeout(() => card.classList.add("dragging"), 0);
   });
 
   card.addEventListener("dragend", () => {
-    // On réactive les animations
-    document.body.classList.remove("is-dragging");
     card.classList.remove("dragging");
     if(placeholder) placeholder.remove();
     draggedId = null;
@@ -672,25 +658,39 @@ function createCard(song){
   return card;
 }
 
+/* --- LOGIQUE DRAG & DROP CORRIGÉE --- */
 function setupDrop(container, tierId){
+  // Quand on survole une zone de drop (Tier ou Pool)
   container.addEventListener("dragover", e => {
     e.preventDefault();
     if(!draggedId) return;
-
+    
+    // Si on survole le placeholder lui-même ou la carte fantôme, on ne fait rien
     if(e.target.classList.contains('placeholder') || e.target.classList.contains('dragging')) return;
+
+    // Ajout classe pour désactiver les animations CSS sur ce container spécifique
+    container.classList.add('drag-active');
 
     if(!placeholder) { 
         placeholder = document.createElement("div"); 
         placeholder.className = "placeholder"; 
     }
     
+    // Calcul de la position
     const after = getDragAfterElement(container, e.clientX, e.clientY);
     if(after == null) container.appendChild(placeholder);
     else container.insertBefore(placeholder, after);
   });
 
+  // Quand on quitte la zone, on enlève la classe d'animation
+  container.addEventListener("dragleave", () => {
+     container.classList.remove('drag-active');
+  });
+
   container.addEventListener("drop", e => {
     e.preventDefault();
+    container.classList.remove('drag-active'); // On réactive les anims
+
     if(!draggedId) return;
     
     const song = findSong(draggedId);
@@ -707,26 +707,33 @@ function setupDrop(container, tierId){
     else data.pool.splice(finalIndex, 0, song);
 
     draggedId = null;
-    document.body.classList.remove("is-dragging"); // Sécurité
     save();
     render();
   });
 }
 
-// Détection classique X pour les grilles
+// Fonction de calcul de distance (Pythagore) pour trouver la carte la plus proche
+// C'est beaucoup plus stable pour les grilles que de regarder juste X ou Y
 function getDragAfterElement(container, x, y){
   const els = [...container.querySelectorAll(".card:not(.dragging)")];
   
   return els.reduce((closest, child) => {
     const box = child.getBoundingClientRect();
-    const offset = x - box.left - box.width / 2;
+    const offsetX = x - (box.left + box.width / 2);
+    const offsetY = y - (box.top + box.height / 2);
     
-    if (offset < 0 && offset > closest.offset) {
-        return { offset: offset, element: child };
+    // On calcule la distance absolue entre la souris et le centre de la carte
+    const dist = Math.hypot(offsetX, offsetY);
+
+    // On cherche l'élément le plus proche
+    if (dist < closest.dist) {
+       // Si on est "avant" l'élément (à gauche ou au-dessus), c'est notre cible
+       // Sinon on garde le plus proche quand même pour l'insertion
+       return { dist: dist, element: child };
     } else {
-        return closest;
+       return closest;
     }
-  }, { offset: -Infinity }).element;
+  }, { dist: Number.POSITIVE_INFINITY }).element;
 }
 
 function removeSong(id){
