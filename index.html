@@ -18,8 +18,8 @@
   --card-border: 1px solid rgba(255, 255, 255, 0.6);
   --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
   
-  --accent-primary: #6366f1; /* Indigo */
-  --accent-secondary: #ec4899; /* Pink */
+  --accent-primary: #6366f1;
+  --accent-secondary: #ec4899;
   --accent-gradient: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
   
   --radius-sm: 8px;
@@ -78,7 +78,7 @@ header {
 
 .header-btns { display: flex; gap: 12px; }
 
-/* --- BOUTONS MODERNES --- */
+/* --- BOUTONS --- */
 button {
   padding: 10px 16px;
   border-radius: var(--radius-sm);
@@ -155,15 +155,14 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   border-radius: var(--radius-md);
   margin-bottom: 25px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-  overflow: hidden;
+  overflow: visible; /* Important pour les popups */
   display: flex;
-  flex-direction: column; /* Changed to column for better mobile logic if needed */
-  transition: transform 0.2s;
+  flex-direction: column;
 }
 
 .tier-header {
   padding: 15px 25px;
-  color: white; /* Force white text on colored headers */
+  color: white;
   font-weight: 800;
   font-size: 20px;
   display: flex;
@@ -171,27 +170,20 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   align-items: center;
   text-shadow: 0 2px 4px rgba(0,0,0,0.2);
   position: relative;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
   overflow: hidden;
 }
 
-/* Texture subtle on header */
 .tier-header::after {
-  content: '';
-  position: absolute;
-  top:0; left:0; right:0; bottom:0;
+  content: ''; position: absolute; top:0; left:0; right:0; bottom:0;
   background: linear-gradient(90deg, rgba(255,255,255,0.1), transparent);
   pointer-events: none;
 }
 
 .tier-controls { display: flex; gap: 8px; align-items: center; z-index: 2; }
 .tier-controls button {
-  background: rgba(0,0,0,0.2);
-  border: none;
-  color: white;
-  padding: 6px 10px;
-  font-size: 12px;
-  border-radius: 6px;
-  backdrop-filter: blur(4px);
+  background: rgba(0,0,0,0.2); border: none; color: white;
+  padding: 6px 10px; font-size: 12px; border-radius: 6px; backdrop-filter: blur(4px);
 }
 .tier-controls button:hover { background: rgba(0,0,0,0.4); }
 
@@ -209,7 +201,7 @@ input[type="color"] {
   align-content: flex-start;
 }
 
-/* --- CARDS DESIGN PREMIUM --- */
+/* --- CARDS --- */
 .card {
   width: 140px;
   height: 140px;
@@ -218,13 +210,21 @@ input[type="color"] {
   background-position: center;
   position: relative;
   cursor: grab;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  /* Correction BUG: suppression transition transform pour éviter le lag au drop */
+  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.2s, border-color 0.2s;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.1);
 }
 
-/* Hover Effect Requested */
+/* On désactive la transition quand on drag pour éviter les conflits */
+.card.dragging {
+  opacity: 0.4;
+  transform: scale(0.95);
+  grayscale: 100%;
+  transition: none; 
+}
+
 #tiers .card:hover {
   transform: scale(1.15) translateY(-5px);
   z-index: 50;
@@ -232,131 +232,70 @@ input[type="color"] {
   border-color: var(--accent-secondary);
 }
 
-.card.dragging { opacity: 0.4; transform: scale(0.95); grayscale: 100%; }
-
 .card-overlay {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  padding: 40px 10px 10px 10px; /* Top padding for gradient space */
+  position: absolute; bottom: 0; width: 100%;
+  padding: 40px 10px 10px 10px;
   background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
-  color: white;
-  font-size: 12px;
-  line-height: 1.3;
-  text-align: center;
-  pointer-events: none;
+  color: white; font-size: 12px; line-height: 1.3; text-align: center; pointer-events: none;
 }
 
 .card-overlay strong {
-  display: block;
-  font-size: 13px;
-  margin-bottom: 2px;
-  color: #fff;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+  display: block; font-size: 13px; margin-bottom: 2px;
+  color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);
 }
 
-/* Card Tools (Edit/Delete) */
 .card-tools {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  opacity: 0;
-  transform: translateY(-10px);
+  position: absolute; top: 8px; right: 8px;
+  display: flex; flex-direction: column; gap: 6px;
+  opacity: 0; transform: translateY(-10px);
   transition: all 0.2s ease;
 }
 
-/* Show tools on hover or in edit mode */
-.card:hover .card-tools, body.edit-active .card-tools {
-  opacity: 1;
-  transform: translateY(0);
-}
+.card:hover .card-tools, body.edit-active .card-tools { opacity: 1; transform: translateY(0); }
 
 .card-tools button {
-  background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: white;
-  padding: 6px;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  font-size: 12px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+  border: 1px solid rgba(255,255,255,0.2); color: white;
+  padding: 6px; width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; font-size: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
 }
 .card-tools button:hover { background: var(--accent-secondary); border-color: transparent; }
 
-/* Placeholder Drop Zone */
 .placeholder {
-  width: 140px;
-  height: 140px;
-  border-radius: var(--radius-md);
-  border: 2px dashed var(--text-muted);
-  background: rgba(100,100,100,0.05);
-  opacity: 0.5;
-  animation: pulse 1.5s infinite;
+  width: 140px; height: 140px; border-radius: var(--radius-md);
+  border: 2px dashed var(--text-muted); background: rgba(100,100,100,0.05);
+  opacity: 0.5; animation: pulse 1.5s infinite;
 }
 
 @keyframes pulse { 0%{opacity:0.3} 50%{opacity:0.6} 100%{opacity:0.3} }
 
-/* --- POOL / DOCK --- */
+/* --- POOL --- */
 .pool-container {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 1200px;
-  background: var(--card-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  padding: 20px;
-  border: var(--card-border);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
-  z-index: 100;
-  transition: transform 0.3s ease;
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  width: 90%; max-width: 1200px;
+  background: var(--card-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  padding: 20px; border: var(--card-border); border-radius: var(--radius-lg);
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.1); z-index: 100;
 }
 
 .pool-header {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin-bottom: 15px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;
 }
 .pool-header::after { content:''; flex:1; height:1px; background: var(--text-muted); opacity: 0.2; }
 
 .pool {
-  display: flex;
-  gap: 14px;
-  overflow-x: auto;
-  padding-bottom: 10px;
-  min-height: 150px;
-  /* Custom Scrollbar for pool */
-  scrollbar-width: thin;
-  scrollbar-color: var(--accent-primary) transparent;
+  display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; min-height: 150px;
+  scrollbar-width: thin; scrollbar-color: var(--accent-primary) transparent;
 }
 
 .pool::-webkit-scrollbar { height: 6px; }
 .pool::-webkit-scrollbar-track { background: transparent; }
 .pool::-webkit-scrollbar-thumb { background-color: var(--text-muted); border-radius: 10px; }
 
-/* Hidden state logic preserved */
 .hidden .card-tools, .hidden .tier-controls { display: none !important; }
-
-/* Helper class for body to signal edit mode for CSS tricks */
 body.edit-active .card-tools { display: flex !important; opacity: 1; transform: none; }
-
 </style>
 </head>
 <body>
@@ -387,7 +326,17 @@ body.edit-active .card-tools { display: flex !important; opacity: 1; transform: 
 </div>
 
 <script>
-// --- LOGIQUE CONSERVÉE À 100% ---
+// ==========================================
+// CONFIGURATION
+// ==========================================
+
+// 1. Allez sur Google Cloud Console
+// 2. Créez un projet et activez "YouTube Data API v3"
+// 3. Créez des identifiants (API KEY) et collez la clé ci-dessous entre les guillemets.
+const YOUTUBE_API_KEY = ""; 
+
+// ==========================================
+
 let data = load();
 let editMode = false;
 let draggedId = null;
@@ -396,7 +345,7 @@ let placeholder = null;
 function defaultData(){
   return {
     tiers:[
-      {id:"S",name:"S - LÉGENDAIRE",color:"#ec4899",songs:[]}, // Updated default colors
+      {id:"S",name:"S - LÉGENDAIRE",color:"#ec4899",songs:[]},
       {id:"A",name:"A - INCROYABLE",color:"#8b5cf6",songs:[]},
       {id:"B",name:"B - TRÈS BON",color:"#3b82f6",songs:[]},
       {id:"C",name:"C - SYMPA",color:"#10b981",songs:[]}
@@ -418,7 +367,6 @@ function render(){
   const tiersDiv = document.getElementById("tiers");
   tiersDiv.innerHTML = "";
 
-  // Helper class for edit mode visualization
   if(editMode) document.body.classList.add('edit-active');
   else document.body.classList.remove('edit-active');
 
@@ -426,10 +374,9 @@ function render(){
     const tier = document.createElement("div");
     tier.className = "tier";
     
-    // Header styling updated via CSS, structure slightly tweaked for icons
     const header = document.createElement("div");
     header.className = "tier-header";
-    header.style.background = `linear-gradient(90deg, ${t.color}, ${adjustColor(t.color, -40)})`; // Auto gradient
+    header.style.background = `linear-gradient(90deg, ${t.color}, ${adjustColor(t.color, -40)})`;
     header.innerHTML = `<span>${t.name}</span>`;
 
     const controls = document.createElement("div");
@@ -441,12 +388,12 @@ function render(){
     colorInput.onchange = e => { t.color = e.target.value; save(); render(); };
 
     const renameBtn = document.createElement("button");
-    renameBtn.innerHTML = "✎"; // Icon update
+    renameBtn.innerHTML = "✎";
     renameBtn.onclick = () => { const n = prompt("Nouveau nom :", t.name); if(n){ t.name=n; save(); render(); }};
 
     const delBtn = document.createElement("button");
-    delBtn.innerHTML = "✕"; // Icon update
-    delBtn.onclick = () => { if(confirm("Supprimer ce Tier ? Les chansons iront dans la réserve.")){ data.pool.push(...t.songs); data.tiers=data.tiers.filter(x=>x.id!==t.id); save(); render(); }};
+    delBtn.innerHTML = "✕";
+    delBtn.onclick = () => { if(confirm("Supprimer ce Tier ?")){ data.pool.push(...t.songs); data.tiers=data.tiers.filter(x=>x.id!==t.id); save(); render(); }};
 
     controls.append(colorInput, renameBtn, delBtn);
     header.append(controls);
@@ -468,7 +415,6 @@ function render(){
   document.body.classList.toggle("hidden", !editMode);
 }
 
-// Helper to darken color for gradients
 function adjustColor(color, amount) {
     return '#' + color.replace(/^#/, '').replace(/../g, color => ('0'+Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2));
 }
@@ -479,22 +425,20 @@ function createCard(song){
   card.draggable = true;
   card.style.backgroundImage = `url(${song.cover})`;
 
-  // Onclick behavior preserved
   card.onclick = () => { if(!editMode) window.open(song.youtubeUrl, '_blank'); };
 
   card.addEventListener("dragstart", () => {
     draggedId = song.id;
-    // Timeout needed for drag ghost
     setTimeout(() => card.classList.add("dragging"), 0);
   });
 
   card.addEventListener("dragend", () => {
+    // Correction Ghosting : nettoyage forcé
     card.classList.remove("dragging");
     if(placeholder) placeholder.remove();
     draggedId = null;
   });
 
-  // Updated innerHTML for better structure
   card.innerHTML = `
     <div class="card-overlay">
       <strong>${song.artist}</strong>
@@ -512,7 +456,7 @@ function setupDrop(container, tierId){
   container.addEventListener("dragover", e => {
     e.preventDefault();
     if(!placeholder) { placeholder = document.createElement("div"); placeholder.className = "placeholder"; }
-    const after = getDragAfterElement(container, e.clientX); // Using ClientX for horizontal logic in pool too
+    const after = getDragAfterElement(container, e.clientX);
     if(after == null) container.appendChild(placeholder);
     else container.insertBefore(placeholder, after);
   });
@@ -520,23 +464,32 @@ function setupDrop(container, tierId){
   container.addEventListener("drop", e => {
     e.preventDefault();
     if(!draggedId) return;
+    
+    // Correction Ghosting : on récupère les données
     const song = findSong(draggedId);
-    removeSong(draggedId);
-
+    
+    // Calcul de l'index basé sur le placeholder AVANT de le supprimer
     const children = [...container.querySelectorAll('.card:not(.dragging)')];
     const index = children.indexOf(placeholder.nextElementSibling);
     const finalIndex = index === -1 ? children.length : index;
 
+    // Suppression immédiate du placeholder pour éviter le glitch visuel
+    if(placeholder) placeholder.remove();
+    placeholder = null;
+
+    // Mise à jour des données
+    removeSong(draggedId);
     if(tierId) data.tiers.find(t => t.id === tierId).songs.splice(finalIndex, 0, song);
     else data.pool.splice(finalIndex, 0, song);
 
-    if(placeholder) placeholder.remove();
+    // Reset immédiat de l'ID drag pour éviter que le render ne le reprenne
+    draggedId = null;
+
     save();
     render();
   });
 }
 
-// Logic kept strictly same
 function getDragAfterElement(container, x){
   const els = [...container.querySelectorAll(".card:not(.dragging)")];
   return els.reduce((closest, child) => {
@@ -562,6 +515,7 @@ function editSong(id){
   const t = prompt("Titre :", s.title);
   if(a && t) { 
     s.artist = a; s.title = t; 
+    // On relance une recherche YT simple si on édite manuellement pour éviter de consommer l'API pour rien, ou vous pouvez adapter
     s.youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(a + ' ' + t + ' official mv')}`;
     save(); render(); 
   }
@@ -572,10 +526,9 @@ async function addSong(){
   const title = document.getElementById("titleInput").value.trim();
   if(!artist || !title) return;
 
-  // Visual feedback on button
-  const btn = document.querySelector('.btn-add') || document.querySelector('.btn-primary');
+  const btn = document.querySelector('.btn-primary');
   const originalText = btn.innerText;
-  btn.innerText = "⏳...";
+  btn.innerText = "Recherche...";
 
   let cover = "";
   try {
@@ -584,10 +537,33 @@ async function addSong(){
     cover = json.results[0]?.artworkUrl100?.replace("100x100", "300x300") || "";
   } catch(e) {}
 
-  // Fallback gradient if no cover
   if(!cover) cover = "https://via.placeholder.com/300/6366f1/ffffff?text=" + artist.charAt(0);
 
-  const youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`;
+  // --- LOGIQUE YOUTUBE ---
+  let youtubeUrl = "";
+  
+  if(YOUTUBE_API_KEY) {
+      try {
+          // Appel API YouTube : Recherche du clip vidéo
+          const query = `${artist} ${title} Official MV`;
+          const ytRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
+          const ytJson = await ytRes.json();
+          
+          if(ytJson.items && ytJson.items.length > 0) {
+              const videoId = ytJson.items[0].id.videoId;
+              youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+          } else {
+              throw new Error("No video found");
+          }
+      } catch(e) {
+          console.warn("Erreur API YouTube (quota ou clé invalide), repli sur la recherche classique.");
+          youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`;
+      }
+  } else {
+      // Fallback si pas de clé
+      youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`;
+  }
+
   data.pool.push({ id: Date.now().toString(), artist, title, cover, youtubeUrl });
   save(); render();
   
@@ -605,7 +581,7 @@ function toggleEdit(){
   editMode = !editMode;
   const btn = document.getElementById("editBtn");
   if(editMode) {
-      btn.innerHTML = "✅ OK";
+      btn.innerHTML = "✅";
       btn.style.background = "var(--accent-secondary)";
       btn.style.color = "white";
   } else {
