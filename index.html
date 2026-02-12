@@ -215,7 +215,6 @@ input[type="color"] {
   background-position: center;
   position: relative;
   cursor: grab;
-  /* Transition fluide */
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, height 0.2s ease;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   overflow: hidden;
@@ -294,13 +293,19 @@ body.compact-active .card:hover .card-overlay {
 }
 .card-tools button:hover { background: var(--accent-secondary); border-color: transparent; }
 
-/* MODIFICATION: Outils en haut à gauche pour le mode compact */
+/* MODIFICATION: Outils en Mode Compact (Éditer Gauche / Supprimer Droite) */
 body.compact-active .card-tools {
-  top: 4px;
-  left: 4px; /* On passe à gauche */
-  right: auto; /* On désactive la droite */
-  flex-direction: row; /* Alignement horizontal si besoin, ou garder column */
+  top: 0; bottom: 0;
+  left: 0; right: 0; /* Prend tout l'espace */
+  padding: 0 8px; /* Marges latérales */
+  flex-direction: row; /* Horizontal */
+  justify-content: space-between; /* Ecartement max */
+  align-items: center; /* Centré verticalement */
+  transform: none; /* Pas de décalage initial */
+  opacity: 0;
 }
+/* On garde l'effet hover */
+body.compact-active .card:hover .card-tools { opacity: 1; }
 
 /* Placeholder */
 .placeholder {
@@ -473,7 +478,6 @@ function importJson(input) {
   input.value = '';
 }
 
-/* --- STATS --- */
 function showStats() {
   const modal = document.getElementById('statsModal');
   const body = document.getElementById('statsBody');
@@ -636,7 +640,7 @@ function createCard(song){
   return card;
 }
 
-/* --- LOGIQUE DRAG & DROP CORRIGÉE (Multi-Lignes & 1ère Position) --- */
+/* --- LOGIQUE DRAG & DROP "Z-ORDER" (ROBUSTE) --- */
 function setupDrop(container, tierId){
   container.addEventListener("dragover", e => {
     e.preventDefault();
@@ -648,7 +652,7 @@ function setupDrop(container, tierId){
         placeholder.className = "placeholder"; 
     }
     
-    // NOUVELLE LOGIQUE
+    // On utilise la logique d'ordre séquentiel
     const after = getDragAfterElement(container, e.clientX, e.clientY);
     if(after == null) container.appendChild(placeholder);
     else container.insertBefore(placeholder, after);
@@ -677,45 +681,28 @@ function setupDrop(container, tierId){
   });
 }
 
+// Fonction de tri séquentiel (Ordre de lecture: Haut->Bas puis Gauche->Droite)
 function getDragAfterElement(container, x, y){
   const draggableElements = [...container.querySelectorAll('.card:not(.dragging)')];
 
-  // Cas spécial pour insérer tout au début si on est à gauche du premier élément
-  // Cela résout le bug de "conflit avec la bordure"
-  if (draggableElements.length > 0) {
-      const first = draggableElements[0];
-      const box = first.getBoundingClientRect();
-      // Si la souris est à gauche du premier élément, on insère avant lui directement
-      if (y > box.top && y < box.bottom && x < box.left) {
-          return first;
-      }
-  }
-
-  // Logique normale pour le reste (Distance du centre)
-  const closest = draggableElements.reduce((closest, child) => {
+  // On cherche le premier élément dont le centre est "après" la souris
+  return draggableElements.find(child => {
     const box = child.getBoundingClientRect();
-    const boxCenterX = box.left + box.width / 2;
     const boxCenterY = box.top + box.height / 2;
-    const dist = Math.hypot(x - boxCenterX, y - boxCenterY);
+    const boxCenterX = box.left + box.width / 2;
 
-    if (dist < closest.dist) {
-      return { dist: dist, element: child, box: box };
-    } else {
-      return closest;
-    }
-  }, { dist: Number.POSITIVE_INFINITY });
+    // Si on est nettement au-dessus de la ligne de cet élément, il est "après" nous
+    if (y < box.top) return true;
+    
+    // Si on est nettement en-dessous, il est "avant" nous, on continue
+    if (y > box.bottom) return false;
 
-  if (closest.element) {
-     const box = closest.box;
-     const boxCenterX = box.left + box.width / 2;
-     
-     // Si la souris est à gauche du centre de la carte, on insère AVANT
-     if (x < boxCenterX) return closest.element; 
-     // Sinon on insère APRÈS
-     else return closest.element.nextElementSibling;
-  }
-  
-  return null;
+    // Si on est sur la même "ligne" (visuellement), on regarde le X
+    // Si la souris est à gauche du centre de cet élément, alors cet élément est "après"
+    if (x < boxCenterX) return true;
+
+    return false;
+  });
 }
 
 function removeSong(id){
