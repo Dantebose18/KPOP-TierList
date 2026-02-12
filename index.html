@@ -529,12 +529,9 @@ function showStats() {
   
   // Séparation TOP 3 et FLOP 3
   const top3 = rankings.slice(0, 3);
-  // Pour le Flop, on prend les 3 derniers et on inverse pour avoir le pire en premier ou dernier selon préférence
-  // Ici : Slice les 3 derniers, reverse pour afficher le "moins pire" en haut du flop, ou l'inverse.
-  // Logique : Flop 1 = Le pire du pire (donc la toute dernière position).
   let flop3 = [];
   if (rankings.length > 3) {
-      flop3 = rankings.slice(-3).reverse(); // Le dernier du tableau (le pire) devient le premier de la liste flop
+      flop3 = rankings.slice(-3).reverse(); 
   }
 
   const uniqueArtists = new Set([...rankings.map(r=>r.name), ...data.pool.map(s=>s.artist.trim())]).size;
@@ -670,83 +667,85 @@ function createCard(song){
 }
 
 function setupDrop(container, tierId){
-
   container.addEventListener("dragover", e => {
     e.preventDefault();
     if(!draggedId) return;
 
-    if(!placeholder){
-      placeholder = document.createElement("div");
-      placeholder.className = "placeholder";
-    }
+    // FIX JITTER : Si on survole le placeholder ou l'élément draggué (via pointer-events, mais double sécu ici)
+    if(e.target.classList.contains('placeholder') || e.target.classList.contains('dragging')) return;
 
-    const card = e.target.closest(".card");
-
-    if(card && !card.classList.contains("dragging")){
-      container.insertBefore(placeholder, card);
-    } else {
-      container.appendChild(placeholder);
+    if(!placeholder) { 
+        placeholder = document.createElement("div"); 
+        placeholder.className = "placeholder"; 
     }
+    
+    // NOUVEAU CALCUL (2D)
+    const after = getDragAfterElement(container, e.clientX, e.clientY);
+    if(after == null) container.appendChild(placeholder);
+    else container.insertBefore(placeholder, after);
   });
 
   container.addEventListener("drop", e => {
     e.preventDefault();
     if(!draggedId) return;
-
+    
     const song = findSong(draggedId);
-
-    const cards = [...container.querySelectorAll(".card:not(.dragging)")];
-    const index = cards.indexOf(placeholder.nextElementSibling);
-    const finalIndex = index === -1 ? cards.length : index;
-
-    removeSong(draggedId);
-
-    if(tierId){
-      data.tiers.find(t => t.id === tierId).songs.splice(finalIndex, 0, song);
-    } else {
-      data.pool.splice(finalIndex, 0, song);
-    }
+    
+    const children = [...container.querySelectorAll('.card:not(.dragging)')];
+    const index = children.indexOf(placeholder.nextElementSibling);
+    const finalIndex = index === -1 ? children.length : index;
 
     if(placeholder) placeholder.remove();
     placeholder = null;
-    draggedId = null;
 
+    removeSong(draggedId);
+    if(tierId) data.tiers.find(t => t.id === tierId).songs.splice(finalIndex, 0, song);
+    else data.pool.splice(finalIndex, 0, song);
+
+    draggedId = null;
     save();
     render();
   });
 }
 
+// Fonction de calcul de distance (Pythagore) pour trouver la carte la plus proche
+// C'est beaucoup plus stable pour les grilles que de regarder juste X ou Y
+function getDragAfterElement(container, x, y){
+  const draggableElements = [...container.querySelectorAll('.card:not(.dragging)')];
 
-// Amélioration de la détection (X et Y pour le wrap)
-function getDragAfterElement(container, x, y) {
-  const elements = [...container.querySelectorAll(".card:not(.dragging)")];
+  // 1. Trouver le voisin le plus proche (Distance)
+  const closest = draggableElements.reduce((closest, child) => {
+    const box = child.getBoundingClientRect();
+    const boxCenterX = box.left + box.width / 2;
+    const boxCenterY = box.top + box.height / 2;
+    
+    // Distance euclidienne
+    const dist = Math.hypot(x - boxCenterX, y - boxCenterY);
 
-  let closest = null;
-  let closestDistance = Number.POSITIVE_INFINITY;
-
-  elements.forEach(el => {
-    const box = el.getBoundingClientRect();
-
-    const centerX = box.left + box.width / 2;
-    const centerY = box.top + box.height / 2;
-
-    const dx = x - centerX;
-    const dy = y - centerY;
-
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    // On ne considère que les cartes qui sont à droite ou en dessous du curseur
-    if ((y < centerY || Math.abs(y - centerY) < box.height / 2) && x < centerX) {
-      if (distance < closestDistance) {
-        closestDistance = distance;
-        closest = el;
-      }
+    if (dist < closest.dist) {
+      return { dist: dist, element: child, box: box };
+    } else {
+      return closest;
     }
-  });
+  }, { dist: Number.POSITIVE_INFINITY });
 
-  return closest;
+  // 2. Décider si on insère AVANT ou APRÈS ce voisin
+  if (closest.element) {
+     const box = closest.box;
+     const boxCenterX = box.left + box.width / 2;
+     
+     // Si la souris est à gauche du centre de la carte, on insère AVANT
+     if (x < boxCenterX) {
+         return closest.element; 
+     } 
+     // Sinon on insère APRÈS (donc avant le suivant)
+     else {
+         return closest.element.nextElementSibling;
+     }
+  }
+  
+  return null;
 }
-
 
 function removeSong(id){
   data.pool = data.pool.filter(s => s.id !== id);
@@ -819,9 +818,15 @@ function addTier(){
 function toggleEdit(){
   editMode = !editMode;
   const btn = document.getElementById("editBtn");
-  btn.innerHTML = editMode ? "✅" : "✏️";
-  btn.style.background = editMode ? "var(--accent-secondary)" : "";
-  btn.style.color = editMode ? "white" : "";
+  if(editMode) {
+      btn.innerHTML = "✅";
+      btn.style.background = "var(--accent-secondary)";
+      btn.style.color = "white";
+  } else {
+      btn.innerHTML = "✏️";
+      btn.style.background = "";
+      btn.style.color = "";
+  }
   render();
 }
 
