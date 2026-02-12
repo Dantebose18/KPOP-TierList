@@ -215,18 +215,20 @@ input[type="color"] {
   background-position: center;
   position: relative;
   cursor: grab;
-  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.2s, border-color 0.2s, height 0.2s;
+  /* Correction Jitter: on anime la hauteur pour le toggle, mais voir .dragging plus bas */
+  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.2s, border-color 0.2s, height 0.3s ease;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.1);
   background-color: var(--card-bg);
 }
 
+/* IMPORTANT : Désactive les transitions quand on drag pour éviter que ça bouge partout */
 .card.dragging {
   opacity: 0.4;
   transform: scale(0.95);
   grayscale: 100%;
-  transition: none; 
+  transition: none !important; 
 }
 
 /* Hover Standard */
@@ -243,6 +245,10 @@ input[type="color"] {
   background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
   color: white; font-size: 12px; line-height: 1.3; text-align: center; pointer-events: none;
   transition: all 0.2s;
+  /* Flex column standard */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
 }
 
 .card-overlay strong {
@@ -252,58 +258,47 @@ input[type="color"] {
 
 /* --- LOGIQUE MODE COMPACT --- */
 body.compact-active .card {
-  height: 44px; /* Hauteur réduite */
-  background-size: 0 0; /* Cache l'image de fond */
-  background-color: var(--card-bg); /* Couleur de fond unie */
-  border-color: var(--text-muted);
+  height: 70px; /* Taille réduite mais suffisante pour 2 lignes */
+  /* Background reste visible (cover) */
 }
 
 body.compact-active .card-overlay {
   top: 0;
-  background: none;
-  padding: 0 10px;
-  display: flex;
-  flex-direction: row; /* Texte en ligne */
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  color: var(--text-main); /* Texte couleur du thème */
-  white-space: nowrap;
+  padding: 5px;
+  /* Fond plus sombre pour lisibilité sur petite image */
+  background: rgba(0,0,0,0.7); 
+  justify-content: center; /* Centré verticalement */
+  gap: 2px;
 }
 
-body.compact-active .card-overlay strong, 
-body.compact-active .card-overlay span {
-  color: var(--text-main);
-  text-shadow: none;
+body.compact-active .card-overlay strong {
+  font-size: 12px;
   margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100px;
+  /* On permet le texte sur plusieurs lignes si besoin, ou on garde propre */
+  white-space: normal;
+  line-height: 1.1;
 }
 
-/* --- HOVER EN MODE COMPACT (RESTAURATION) --- */
+body.compact-active .card-overlay span {
+  font-size: 11px;
+  opacity: 0.9;
+  line-height: 1.1;
+}
+
+/* --- HOVER EN MODE COMPACT (Pop-up) --- */
 body.compact-active .card:hover {
   height: 140px; /* Retour taille normale */
-  background-size: cover; /* Retour image */
-  transform: scale(1.15) translateY(-5px); /* Animation pop */
+  transform: scale(1.15) translateY(-5px);
   z-index: 100;
+  /* On s'assure que l'image est bien visible */
+  background-blend-mode: normal;
 }
 
 body.compact-active .card:hover .card-overlay {
-  top: auto; /* Retour bas */
+  top: auto; bottom: 0;
   background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
-  flex-direction: column;
   padding: 40px 10px 10px 10px;
-  color: white;
   justify-content: flex-end;
-}
-
-body.compact-active .card:hover .card-overlay strong,
-body.compact-active .card:hover .card-overlay span {
-  color: white;
-  text-shadow: 0 1px 3px black;
-  white-space: normal; /* Autorise le retour à la ligne */
-  max-width: none;
 }
 
 /* ------------------------------------- */
@@ -330,10 +325,12 @@ body.compact-active .card:hover .card-overlay span {
   width: 140px; height: 140px; border-radius: var(--radius-md);
   border: 2px dashed var(--text-muted); background: rgba(100,100,100,0.05);
   opacity: 0.5; animation: pulse 1.5s infinite;
+  /* Correction Jitter: pas de transition sur le placeholder */
+  transition: none; 
 }
 
 /* Placeholder s'adapte aussi au mode compact */
-body.compact-active .placeholder { height: 44px; }
+body.compact-active .placeholder { height: 70px; }
 
 @keyframes pulse { 0%{opacity:0.3} 50%{opacity:0.6} 100%{opacity:0.3} }
 
@@ -410,7 +407,7 @@ const YOUTUBE_API_KEY = "AIzaSyBzRO4J6W-M8uSt2k9vd1HJHECCwdKdiGM";
 
 let data = load();
 let editMode = false;
-let compactMode = false; // Variable pour le mode compact
+let compactMode = false; 
 let draggedId = null;
 let placeholder = null;
 
@@ -435,7 +432,6 @@ function load(){
 
 function save(){ localStorage.setItem("tierData", JSON.stringify(data)); }
 
-// --- IMPORT / EXPORT ---
 function exportJson() {
   const dataStr = JSON.stringify(data, null, 2);
   const blob = new Blob([dataStr], {type: "application/json"});
@@ -476,7 +472,6 @@ function render(){
   if(editMode) document.body.classList.add('edit-active');
   else document.body.classList.remove('edit-active');
 
-  // Mise à jour visuelle du mode compact via la classe body
   if(compactMode) document.body.classList.add('compact-active');
   else document.body.classList.remove('compact-active');
 
@@ -533,7 +528,6 @@ function createCard(song){
   const card = document.createElement("div");
   card.className = "card";
   card.draggable = true;
-  // L'image de fond est définie ici (utilisée en mode normal ou hover compact)
   card.style.backgroundImage = `url(${song.cover})`;
 
   card.onclick = () => { if(!editMode) window.open(song.youtubeUrl, '_blank'); };
@@ -684,7 +678,7 @@ function toggleEdit(){
 function toggleCompact(){
   compactMode = !compactMode;
   const btn = document.getElementById("compactBtn");
-  btn.innerHTML = compactMode ? "⊞" : "☰"; // Change l'icone Liste / Grille
+  btn.innerHTML = compactMode ? "⊞" : "☰";
   btn.style.background = compactMode ? "var(--accent-primary)" : "";
   btn.style.color = compactMode ? "white" : "";
   render();
