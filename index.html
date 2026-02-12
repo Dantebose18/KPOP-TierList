@@ -7,18 +7,22 @@
 
 <style>
 :root{
-  --bg:#f8fafc;
-  --card:#ffffff;
-  --text:#1e293b;
+  --bg:#f1f5f9;
+  --card:rgba(255,255,255,0.75);
+  --text:#0f172a;
   --border:#e2e8f0;
-  --accent:#3b82f6;
+  --accent:#6366f1;
+  --accent-soft:#818cf8;
+  --glass-blur: blur(14px);
 }
 
 body.dark{
-  --bg:#0f172a;
-  --card:#1e293b;
-  --text:#f8fafc;
+  --bg:#0b1120;
+  --card:rgba(30,41,59,0.6);
+  --text:#f1f5f9;
   --border:#334155;
+  --accent:#818cf8;
+  --accent-soft:#6366f1;
 }
 
 body{
@@ -26,164 +30,231 @@ body{
   font-family:'Inter', sans-serif;
   background:var(--bg);
   color:var(--text);
+  transition: background .3s ease;
 }
 
-/* --- DESIGN HEADER ÉPURÉ --- */
+/* ================= HEADER ================= */
+
 header{
-  padding: 12px 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  padding: 18px 40px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  backdrop-filter: var(--glass-blur);
   background: var(--card);
-  border-bottom: 1px solid var(--border);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  border-bottom:1px solid var(--border);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.04);
 }
 
-.header-btns {
-  display: flex;
-  gap: 10px;
+header div:first-child{
+  font-weight:700;
+  font-size:20px;
+  letter-spacing:-0.5px;
+  background: linear-gradient(135deg,var(--accent),var(--accent-soft));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
 }
 
-/* --- DESIGN ZONE DE TEXTE PROPRE --- */
-.input-section {
-  max-width: 600px;
-  margin: 30px auto;
-  display: flex;
-  gap: 8px;
-  padding: 6px;
-  background: var(--card);
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+/* ================= BUTTONS ================= */
+
+button{
+  padding:9px 16px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,0.6);
+  backdrop-filter: blur(8px);
+  color:var(--text);
+  font-size:13px;
+  font-weight:500;
+  cursor:pointer;
+  transition: all 0.2s ease;
 }
 
-input[type="text"] {
-  flex: 1;
-  border: none;
-  background: transparent;
-  padding: 10px 15px;
-  font-family: inherit;
-  color: var(--text);
-  outline: none;
-  font-size: 14px;
+body.dark button{
+  background:rgba(255,255,255,0.05);
 }
 
-input[type="text"]::placeholder { opacity: 0.5; }
-
-.btn-add {
-  background: var(--accent);
-  color: white;
-  border: none;
-  padding: 8px 18px;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
+button:hover{
+  background:var(--accent);
+  color:white;
+  border-color:var(--accent);
 }
 
-button {
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--card);
-  color: var(--text);
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s;
+/* Bouton Ajouter spécial */
+
+.btn-add{
+  background:linear-gradient(135deg,var(--accent),var(--accent-soft));
+  color:white;
+  border:none;
+  padding:10px 22px;
+  border-radius:12px;
+  font-weight:600;
+  box-shadow:0 6px 16px rgba(99,102,241,0.35);
 }
 
-button:hover { background: #f1f5f9; border-color: #cbd5e1; }
+.btn-add:hover{
+  transform: translateY(-1px);
+  box-shadow:0 10px 22px rgba(99,102,241,0.45);
+}
+
+/* ================= INPUT SECTION ================= */
+
+.input-section{
+  max-width:650px;
+  margin:40px auto;
+  display:flex;
+  gap:10px;
+  padding:10px;
+  border-radius:18px;
+  background:var(--card);
+  backdrop-filter: var(--glass-blur);
+  border:1px solid var(--border);
+  box-shadow:0 15px 35px rgba(0,0,0,0.06);
+}
+
+input[type="text"]{
+  flex:1;
+  border:none;
+  background:transparent;
+  padding:12px 16px;
+  font-family:inherit;
+  color:var(--text);
+  outline:none;
+  font-size:14px;
+}
+
+input[type="text"]::placeholder{
+  opacity:.4;
+}
+
+/* ================= TIERS ================= */
 
 .main{
-  max-width: 1200px;
-  margin: auto;
-  padding-bottom: 220px;
+  max-width:1200px;
+  margin:auto;
+  padding-bottom:240px;
 }
 
 .tier{
-  background: var(--card);
-  border-radius: 16px;
-  margin-bottom: 20px;
-  overflow: visible;
+  background:var(--card);
+  backdrop-filter: var(--glass-blur);
+  border-radius:20px;
+  margin-bottom:25px;
+  border:1px solid var(--border);
+  box-shadow:0 12px 30px rgba(0,0,0,0.05);
+  transition: transform .2s ease;
 }
 
 .tier-header{
-  padding: 12px 20px;
-  color: white;
-  font-weight: 600;
-  border-radius: 16px 16px 0 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  padding:14px 24px;
+  color:white;
+  font-weight:600;
+  border-radius:20px 20px 0 0;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
 
-.tier-controls{ display: flex; gap: 8px; align-items: center; }
+.tier-controls{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+/* ================= CARDS ================= */
 
 .cards{
-  display: flex;
-  gap: 14px;
-  padding: 16px;
-  flex-wrap: wrap;
-  min-height: 150px;
-  overflow: visible;
+  display:flex;
+  gap:16px;
+  padding:20px;
+  flex-wrap:wrap;
+  min-height:150px;
 }
 
-/* --- CARDS --- */
 .card{
-  width: 140px;
-  height: 140px;
-  border-radius: 14px;
-  background-size: cover;
-  background-position: center;
-  position: relative;
-  cursor: grab;
-  transition: transform 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  width:140px;
+  height:140px;
+  border-radius:18px;
+  background-size:cover;
+  background-position:center;
+  position:relative;
+  cursor:grab;
+  transition:transform 0.2s ease;
+  box-shadow:0 6px 14px rgba(0,0,0,0.15);
+  overflow:hidden;
 }
 
 #tiers .card:hover{
   transform: scale(1.25);
-  z-index: 50;
-  box-shadow: 0 10px 15px rgba(0,0,0,0.2);
+  z-index:50;
+  box-shadow:0 18px 30px rgba(0,0,0,0.25);
 }
-
-.card.dragging{ opacity: 0.3; }
 
 .card-overlay{
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  padding: 10px;
-  background: linear-gradient(transparent, rgba(0,0,0,0.85));
-  border-radius: 0 0 14px 14px;
-  color: white;
-  font-size: 11px;
-  box-sizing: border-box;
+  position:absolute;
+  bottom:0;
+  width:100%;
+  padding:12px;
+  background:linear-gradient(transparent, rgba(0,0,0,0.9));
+  color:white;
+  font-size:11px;
+  box-sizing:border-box;
 }
 
-.card-tools{ position: absolute; top: 6px; right: 6px; display: flex; gap: 4px; }
-.card-tools button{ background: rgba(0,0,0,0.6); border: none; color: white; padding: 3px 6px; font-size: 10px; }
+.card-tools{
+  position:absolute;
+  top:8px;
+  right:8px;
+  display:flex;
+  gap:4px;
+}
 
-/* PLACEHOLDER */
+.card-tools button{
+  background:rgba(0,0,0,0.6);
+  border:none;
+  color:white;
+  padding:4px 6px;
+  font-size:10px;
+  border-radius:6px;
+}
+
+/* ================= PLACEHOLDER ================= */
+
 .placeholder{
-  width: 140px;
-  height: 140px;
-  border-radius: 14px;
-  border: 2px dashed #94a3b8;
-  background: rgba(0,0,0,0.03);
+  width:140px;
+  height:140px;
+  border-radius:18px;
+  border:2px dashed var(--accent);
+  background:rgba(99,102,241,0.05);
 }
 
-.hidden .card-tools, .hidden .tier-controls{ display: none; }
+/* ================= POOL ================= */
 
 .pool-container{
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  background: var(--bg);
-  padding: 15px 30px;
-  border-top: 1px solid var(--border);
-  z-index: 100;
+  position:fixed;
+  bottom:0; left:0; right:0;
+  backdrop-filter: var(--glass-blur);
+  background:var(--card);
+  padding:20px 40px;
+  border-top:1px solid var(--border);
+  box-shadow:0 -10px 30px rgba(0,0,0,0.06);
+  z-index:100;
 }
 
-.pool{ display: flex; gap: 14px; flex-wrap: wrap; min-height: 150px; }
+.pool{
+  display:flex;
+  gap:16px;
+  flex-wrap:wrap;
+  min-height:150px;
+}
+
+.pool-container h3{
+  margin:0 0 12px 0;
+  font-size:12px;
+  letter-spacing:2px;
+  opacity:.5;
+}
+
 </style>
 </head>
 <body>
