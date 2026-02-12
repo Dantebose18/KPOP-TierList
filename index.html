@@ -144,7 +144,9 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 
 /* --- MAIN LAYOUT --- */
 .main {
-  max-width: 1300px;
+  /* MODIFICATION: Largeur calculée pour exactement 8 cartes */
+  /* 8 cartes (1120) + 7 espaces (112) + 2 paddings (40) + marge main (40) = ~1312px */
+  max-width: 1320px; 
   margin: auto;
   padding: 0 20px 240px 20px;
 }
@@ -155,7 +157,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   border-radius: var(--radius-md);
   margin-bottom: 25px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-  overflow: visible; /* Important pour les popups */
+  overflow: visible;
   display: flex;
   flex-direction: column;
 }
@@ -195,7 +197,7 @@ input[type="color"] {
 .cards {
   display: flex;
   gap: 16px;
-  padding: 20px;
+  padding: 20px; /* Padding égal gauche/droite */
   flex-wrap: wrap;
   min-height: 160px;
   align-content: flex-start;
@@ -210,14 +212,12 @@ input[type="color"] {
   background-position: center;
   position: relative;
   cursor: grab;
-  /* Correction BUG: suppression transition transform pour éviter le lag au drop */
   transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.2s, border-color 0.2s;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.1);
 }
 
-/* On désactive la transition quand on drag pour éviter les conflits */
 .card.dragging {
   opacity: 0.4;
   transform: scale(0.95);
