@@ -2,16 +2,17 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>KPOP Tier List</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<title>KPOP Tier List Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 
 <style>
 :root{
-  --bg:#f6f7f9;
+  --bg:#f0f2f5;
   --card:#ffffff;
   --text:#1f2937;
   --border:#e5e7eb;
   --accent: #6366f1;
+  --hover-glow: rgba(99, 102, 241, 0.6);
 }
 
 body.dark{
@@ -19,6 +20,7 @@ body.dark{
   --card:#1e293b;
   --text:#f8fafc;
   --border:#334155;
+  --hover-glow: rgba(139, 92, 246, 0.8);
 }
 
 body{
@@ -26,109 +28,106 @@ body{
   font-family:'Inter',sans-serif;
   background:var(--bg);
   color:var(--text);
+  transition: background 0.3s ease;
 }
 
 header{
-  padding:15px;
+  padding:15px 25px;
   display:flex;
-  gap:10px;
-  flex-wrap:wrap;
+  gap:12px;
   background: var(--card);
   border-bottom: 1px solid var(--border);
+  align-items: center;
 }
 
 button,input{
-  padding:8px 12px;
-  border-radius:8px;
+  padding:10px 16px;
+  border-radius:10px;
   border:1px solid var(--border);
   background: var(--card);
   color: var(--text);
+  font-weight: 500;
+  transition: all 0.2s;
 }
 
-button{cursor:pointer; transition: opacity 0.2s;}
-button:hover{ opacity: 0.8; }
+button{cursor:pointer;}
+button:hover{ transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
 
 .main{
-  max-width:1200px;
+  max-width:1300px;
   margin:auto;
-  padding-bottom:220px;
+  padding: 20px;
+  padding-bottom:250px;
 }
 
 .tier{
   background:var(--card);
-  border-radius:14px;
-  margin-bottom:18px;
+  border-radius:16px;
+  margin-bottom:25px;
   overflow: hidden;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
 }
 
 .tier-header{
-  padding:12px 18px;
+  padding:15px 20px;
   color:white;
-  font-weight:600;
+  font-weight:800;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-}
-
-.tier-controls{
-  display:flex;
-  gap:6px;
-  align-items:center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .cards{
   display:flex;
-  gap:14px;
-  padding:18px;
+  gap:18px;
+  padding:20px;
   flex-wrap:wrap;
   min-height:160px;
 }
 
-/* CARDS */
+/* CARDS REDESIGN */
 
 .card{
   width:145px;
   height:145px;
-  border-radius:12px;
+  border-radius:14px;
   background-size:cover;
   background-position:center;
   position:relative;
   cursor: pointer;
-  transition: transform .2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform .25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s ease;
   overflow: hidden;
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
 }
 
+/* EFFET HOVER AGGRANDI + GLOW */
 .card:hover{
-  transform:scale(1.05);
-  z-index:10;
+  transform: scale(1.3);
+  z-index: 100;
+  box-shadow: 0 0 20px 5px var(--hover-glow), 0 10px 20px rgba(0,0,0,0.3);
+  outline: 2px solid white;
 }
 
 .card.dragging{
-  opacity:.4;
-  cursor: grabbing;
+  opacity:0.2;
 }
 
-/* NOUVEAU DESIGN DE L'OVERLAY */
 .card-overlay {
   position: absolute;
   bottom: 0;
   width: 100%;
-  padding: 25px 10px 10px 10px;
-  background: linear-gradient(transparent, rgba(0,0,0,0.9));
+  padding: 30px 10px 10px 10px;
+  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
   color: white;
   box-sizing: border-box;
-  pointer-events: none; /* Laisse passer le clic vers la carte */
 }
 
 .card-overlay strong {
   display: block;
-  font-size: 11px;
+  font-size: 10px;
+  opacity: 0.8;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  opacity: 0.9;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -136,8 +135,8 @@ button:hover{ opacity: 0.8; }
 
 .card-overlay span {
   display: block;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -145,299 +144,229 @@ button:hover{ opacity: 0.8; }
 
 .card-tools{
   position:absolute;
-  top:6px;
-  right:6px;
+  top:8px;
+  right:8px;
   display:flex;
-  gap:6px;
-  z-index: 20;
+  gap:5px;
+  opacity: 0;
+  transition: opacity 0.2s;
 }
+
+.card:hover .card-tools{ opacity: 1; }
 
 .card-tools button{
-  background:rgba(0,0,0,.6);
-  backdrop-filter: blur(4px);
+  background:rgba(255,255,255,0.9);
   border:none;
-  color:white;
-  border-radius:6px;
-  padding:4px 6px;
-  font-size:12px;
+  color:#000;
+  border-radius:8px;
+  padding:5px;
+  font-size:10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
-/* DROP PREVIEW */
+/* PLACEHOLDER */
 
 .placeholder{
   width:145px;
   height:145px;
-  border-radius:12px;
-  border:2px dashed var(--accent);
-  background:rgba(99, 102, 241, 0.1);
+  border-radius:14px;
+  border: 3px dashed var(--accent);
+  background: rgba(99, 102, 241, 0.1);
+  box-sizing: border-box;
 }
 
-.hidden .card-tools,
-.hidden .tier-controls{
-  display:none;
-}
+.hidden .card-tools, .hidden .tier-controls{ display:none; }
 
 .pool-container{
   position:fixed;
   bottom:0;
   left:0;
   right:0;
-  background:var(--bg);
-  padding:14px;
-  border-top:2px solid var(--border);
-  box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
-  z-index: 100;
+  background:var(--card);
+  padding:15px 30px;
+  border-top:1px solid var(--border);
+  box-shadow: 0 -10px 25px rgba(0,0,0,0.05);
+  z-index: 1000;
 }
 
 .pool{
   display:flex;
-  gap:14px;
-  flex-wrap:wrap;
-  min-height:150px;
+  gap:15px;
+  flex-wrap:nowrap;
   overflow-x: auto;
+  min-height:165px;
+  padding: 5px 0;
 }
 </style>
 </head>
 <body>
 
 <header>
+  <div style="font-size: 20px; margin-right: 20px;">🌟 <b>K-Tier</b></div>
   <button onclick="addTier()">➕ Nouveau Tier</button>
   <button onclick="toggleEdit()" id="editBtn">✏️ Mode édition : OFF</button>
-  <button onclick="toggleDark()">🌙 Dark Mode</button>
+  <button onclick="toggleDark()">🌙</button>
 </header>
 
 <div class="main">
-
-<div style="display:flex;gap:10px;margin:30px 0; justify-content: center;">
-  <input id="artistInput" placeholder="Artiste (ex: NewJeans)">
-  <input id="titleInput" placeholder="Titre (ex: OMG)">
-  <button onclick="addSong()" style="background: var(--accent); color: white; border: none;">Ajouter au Pool</button>
-</div>
-
-<div id="tiers"></div>
+  <div style="display:flex;gap:10px;margin:20px 0; justify-content: center; background: var(--card); padding: 20px; border-radius: 15px;">
+    <input id="artistInput" placeholder="Artiste">
+    <input id="titleInput" placeholder="Musique">
+    <button onclick="addSong()" style="background: var(--accent); color: white; border: none; padding: 10px 25px;">Ajouter</button>
+  </div>
+  <div id="tiers"></div>
 </div>
 
 <div class="pool-container">
-<h3 style="margin-top:0">🎵 Pool de chansons</h3>
-<div id="pool" class="pool"></div>
+  <h3 style="margin: 0 0 10px 0; font-size: 14px; opacity: 0.6;">POOL ATTENTE</h3>
+  <div id="pool" class="pool"></div>
 </div>
 
 <script>
 /* ================= DATA ================= */
+let data = load();
+let editMode = false;
+let draggedId = null;
+let placeholder = document.createElement("div");
+placeholder.className = "placeholder";
 
 function defaultData(){
   return {
     tiers:[
-      {id:"S",name:"S (God Tier)",color:"#ef4444",songs:[]},
-      {id:"A",name:"A (Amazing)",color:"#f97316",songs:[]},
-      {id:"B",name:"B (Good)",color:"#eab308",songs:[]},
-      {id:"C",name:"C (Fine)",color:"#22c55e",songs:[]}
+      {id:"S",name:"S - Legends",color:"#ff4b2b",songs:[]},
+      {id:"A",name:"A - Top",color:"#ff8c00",songs:[]},
+      {id:"B",name:"B - Good",color:"#ffd700",songs:[]}
     ],
     pool:[]
   };
 }
 
 function load(){
-  try{
-    const raw=localStorage.getItem("tierData");
-    if(!raw) return defaultData();
-    const parsed=JSON.parse(raw);
-    if(parsed?.tiers && parsed?.pool) return parsed;
-  }catch(e){}
-  return defaultData();
+  const raw = localStorage.getItem("tierDataV2");
+  return raw ? JSON.parse(raw) : defaultData();
 }
 
 function save(){
-  localStorage.setItem("tierData",JSON.stringify(data));
+  localStorage.setItem("tierDataV2", JSON.stringify(data));
 }
-
-let data=load();
-let editMode=false;
-let draggedId=null;
-let placeholder=null;
-let isDraggingAction = false; // Pour éviter d'ouvrir YouTube en glissant
 
 /* ================= RENDER ================= */
 
 function render(){
-  const tiersDiv=document.getElementById("tiers");
-  tiersDiv.innerHTML="";
+  const tiersDiv = document.getElementById("tiers");
+  tiersDiv.innerHTML = "";
 
-  data.tiers.forEach(t=>{
-    const tier=document.createElement("div");
-    tier.className="tier";
+  data.tiers.forEach(t => {
+    const tier = document.createElement("div");
+    tier.className = "tier";
 
-    const header=document.createElement("div");
-    header.className="tier-header";
-    header.style.background=t.color;
+    const header = document.createElement("div");
+    header.className = "tier-header";
+    header.style.background = t.color;
+    header.innerHTML = `<span>${t.name}</span>`;
 
-    const title=document.createElement("span");
-    title.textContent=t.name;
+    const controls = document.createElement("div");
+    controls.className = "tier-controls";
+    
+    // Boutons de gestion
+    controls.innerHTML = `
+      <input type="color" value="${t.color}" oninput="updateTierColor('${t.id}', this.value)" style="width:30px; height:30px; border:none; background:none; padding:0; cursor:pointer">
+      <button onclick="renameTier('${t.id}')">✏️</button>
+      <button onclick="deleteTier('${t.id}')">🗑️</button>
+    `;
+    header.appendChild(controls);
 
-    const controls=document.createElement("div");
-    controls.className="tier-controls";
+    const container = document.createElement("div");
+    container.className = "cards";
+    setupDrop(container, t.id);
 
-    const colorInput=document.createElement("input");
-    colorInput.type="color";
-    colorInput.value=t.color;
-    colorInput.style.width="30px";
-    colorInput.style.padding="0";
-    colorInput.oninput=e=>{
-      t.color=e.target.value;
-      save();
-      render();
-    };
-
-    const renameBtn=document.createElement("button");
-    renameBtn.textContent="✏️";
-    renameBtn.onclick=()=>{
-      const n=prompt("Nouveau nom :",t.name);
-      if(n){ t.name=n; save(); render(); }
-    };
-
-    const delBtn=document.createElement("button");
-    delBtn.textContent="🗑️";
-    delBtn.onclick=()=>{
-      if(confirm("Supprimer cette catégorie ?")){
-        data.pool.push(...t.songs);
-        data.tiers=data.tiers.filter(x=>x.id!==t.id);
-        save();
-        render();
-      }
-    };
-
-    controls.append(colorInput,renameBtn,delBtn);
-    header.append(title,controls);
-
-    const container=document.createElement("div");
-    container.className="cards";
-
-    setupDrop(container,t.id);
-
-    t.songs.forEach(song=>{
-      container.appendChild(createCard(song));
-    });
-
-    tier.append(header,container);
+    t.songs.forEach(song => container.appendChild(createCard(song)));
+    
+    tier.append(header, container);
     tiersDiv.appendChild(tier);
   });
 
-  const pool=document.getElementById("pool");
-  pool.innerHTML="";
-  setupDrop(pool,null);
+  const pool = document.getElementById("pool");
+  pool.innerHTML = "";
+  setupDrop(pool, null);
+  data.pool.forEach(song => pool.appendChild(createCard(song)));
 
-  data.pool.forEach(song=>{
-    pool.appendChild(createCard(song));
-  });
-
-  document.body.classList.toggle("hidden",!editMode);
+  document.body.classList.toggle("hidden", !editMode);
 }
 
 /* ================= CARD ================= */
 
 function createCard(song){
-  const card=document.createElement("div");
-  card.className="card";
-  card.draggable=true;
-  card.dataset.id=song.id;
-  card.style.backgroundImage=`url(${song.cover||""})`;
+  const card = document.createElement("div");
+  card.className = "card";
+  card.draggable = true;
+  card.style.backgroundImage = `url(${song.cover})`;
 
-  // Lien YouTube au clic
-  card.onclick = (e) => {
-    // Si on clique sur les boutons d'édition ou si on finit un drag, on n'ouvre pas
-    if(e.target.tagName === 'BUTTON' || isDraggingAction) return;
-    if(song.youtubeUrl) window.open(song.youtubeUrl, '_blank');
+  card.onclick = () => { if(!editMode) window.open(song.youtubeUrl, '_blank'); };
+
+  card.ondragstart = () => {
+    draggedId = song.id;
+    setTimeout(() => card.classList.add("dragging"), 0);
   };
 
-  card.addEventListener("dragstart",()=>{
-    draggedId=song.id;
-    isDraggingAction = true;
-    card.classList.add("dragging");
-  });
-
-  card.addEventListener("dragend",()=>{
+  card.ondragend = () => {
     card.classList.remove("dragging");
-    if(placeholder) placeholder.remove();
-    // Petit délai pour ne pas déclencher le onclick immédiatement après le drop
-    setTimeout(() => { isDraggingAction = false; }, 100);
-  });
-
-  const overlay=document.createElement("div");
-  overlay.className="card-overlay";
-  overlay.innerHTML=`<strong>${song.artist}</strong><span>${song.title}</span>`;
-
-  const tools=document.createElement("div");
-  tools.className="card-tools";
-
-  const editBtn=document.createElement("button");
-  editBtn.textContent="✏️";
-  editBtn.onclick=(e)=>{
-    e.stopPropagation();
-    const a=prompt("Artiste :",song.artist);
-    const t=prompt("Titre :",song.title);
-    if(a!==null && t!==null){
-      song.artist=a.trim();
-      song.title=t.trim();
-      song.youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(song.artist + " " + song.title)}`;
-      save();
-      render();
-    }
+    placeholder.remove();
   };
 
-  const delBtn=document.createElement("button");
-  delBtn.textContent="🗑️";
-  delBtn.onclick=(e)=>{
-    e.stopPropagation();
-    removeSong(song.id);
-  };
-
-  tools.append(editBtn,delBtn);
-  card.append(overlay,tools);
+  card.innerHTML = `
+    <div class="card-overlay">
+      <strong>${song.artist}</strong>
+      <span>${song.title}</span>
+    </div>
+    <div class="card-tools">
+      <button onclick="event.stopPropagation(); deleteSong('${song.id}')">🗑️</button>
+    </div>
+  `;
 
   return card;
 }
 
-/* ================= DRAG SYSTEM ================= */
+/* ================= DRAG LOGIC (FIXED) ================= */
 
-function setupDrop(container,tierId){
-  container.addEventListener("dragover",e=>{
+function setupDrop(container, tierId){
+  container.ondragover = e => {
     e.preventDefault();
-    const after=getDragAfterElement(container,e.clientX);
-    if(!placeholder){
-      placeholder=document.createElement("div");
-      placeholder.className="placeholder";
+    const afterElement = getDragAfterElement(container, e.clientX);
+    if (afterElement == null) {
+      container.appendChild(placeholder);
+    } else {
+      container.insertBefore(placeholder, afterElement);
     }
-    if(after==null) container.appendChild(placeholder);
-    else container.insertBefore(placeholder,after);
-  });
+  };
 
-  container.addEventListener("drop",()=>{
-    if(!draggedId) return;
-    const song=findSong(draggedId);
-    removeSong(draggedId);
+  container.ondrop = e => {
+    e.preventDefault();
+    const song = findAndRemoveSong(draggedId);
+    if(!song) return;
 
-    const index=[...container.children].indexOf(placeholder);
+    // Calcul de l'index réel sans le placeholder
+    const children = [...container.querySelectorAll('.card:not(.dragging)')];
+    const index = children.indexOf(placeholder.nextElementSibling);
+    const finalIndex = index === -1 ? children.length : index;
 
     if(tierId){
-      const tier=data.tiers.find(t=>t.id===tierId);
-      tier.songs.splice(index,0,song);
-    }else{
-      data.pool.splice(index,0,song);
+      data.tiers.find(t => t.id === tierId).songs.splice(finalIndex, 0, song);
+    } else {
+      data.pool.splice(finalIndex, 0, song);
     }
 
-    placeholder.remove();
     save();
     render();
-  });
+  };
 }
 
-function getDragAfterElement(container,x){
-  const els=[...container.querySelectorAll(".card:not(.dragging)")];
-  
-  return els.reduce((closest, child) => {
+function getDragAfterElement(container, x) {
+  const draggableElements = [...container.querySelectorAll('.card:not(.dragging)')];
+
+  return draggableElements.reduce((closest, child) => {
     const box = child.getBoundingClientRect();
-    const offset = x - box.left - box.width / 2; // Calcul basé sur le centre de la carte
-    
+    const offset = x - box.left - box.width / 2;
     if (offset < 0 && offset > closest.offset) {
       return { offset: offset, element: child };
     } else {
@@ -446,72 +375,77 @@ function getDragAfterElement(container,x){
   }, { offset: -Infinity }).element;
 }
 
-/* ================= LOGIC ================= */
-
-function removeSong(id){
-  data.pool=data.pool.filter(s=>s.id!==id);
-  data.tiers.forEach(t=>{
-    t.songs=t.songs.filter(s=>s.id!==id);
-  });
-  save();
-  render();
-}
-
-function findSong(id){
-  return [...data.pool,...data.tiers.flatMap(t=>t.songs)]
-    .find(s=>s.id===id);
-}
-
 /* ================= ACTIONS ================= */
 
 async function addSong(){
-  const artist=document.getElementById("artistInput").value.trim();
-  const title=document.getElementById("titleInput").value.trim();
-  if(!artist||!title) return;
+  const artist = document.getElementById("artistInput").value.trim();
+  const title = document.getElementById("titleInput").value.trim();
+  if(!artist || !title) return;
 
-  const id=Date.now().toString()+Math.random().toString(16).slice(2);
+  let cover = "https://via.placeholder.com/300";
+  try {
+    const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + " " + title)}&entity=song&limit=1`);
+    const json = await res.json();
+    if(json.results[0]) cover = json.results[0].artworkUrl100.replace("100x100", "400x400");
+  } catch(e) {}
 
-  let cover="";
-  try{
-    const res=await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(title+" "+artist)}&entity=song&limit=1`);
-    const json=await res.json();
-    cover=json.results[0]?.artworkUrl100?.replace("100x100","300x300")||"";
-  }catch(e){}
+  // Lien YouTube Direct (Recherche du clip officiel)
+  const ytQuery = encodeURIComponent(artist + " " + title + " official mv");
+  const youtubeUrl = `https://www.youtube.com/results?search_query=${ytQuery}`;
 
-  // Lien YouTube automatique
-  const youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title)}`;
-
-  data.pool.push({id,artist,title,cover,youtubeUrl});
+  data.pool.push({ id: Date.now().toString(), artist, title, cover, youtubeUrl });
   save();
   render();
+  document.getElementById("artistInput").value = "";
+  document.getElementById("titleInput").value = "";
+}
 
-  document.getElementById("artistInput").value="";
-  document.getElementById("titleInput").value="";
+function findAndRemoveSong(id){
+  let found = null;
+  data.pool = data.pool.filter(s => { if(s.id === id) found = s; return s.id !== id; });
+  data.tiers.forEach(t => {
+    t.songs = t.songs.filter(s => { if(s.id === id) found = s; return s.id !== id; });
+  });
+  return found;
+}
+
+function updateTierColor(id, color){
+  data.tiers.find(t => t.id === id).color = color;
+  save();
+  render();
+}
+
+function renameTier(id){
+  const n = prompt("Nom :");
+  if(n) { data.tiers.find(t => t.id === id).name = n; save(); render(); }
+}
+
+function deleteTier(id){
+  if(confirm("Supprimer?")) {
+    const t = data.tiers.find(x => x.id === id);
+    data.pool.push(...t.songs);
+    data.tiers = data.tiers.filter(x => x.id !== id);
+    save(); render();
+  }
+}
+
+function deleteSong(id){
+  findAndRemoveSong(id);
+  save(); render();
 }
 
 function addTier(){
-  const name=prompt("Nom du tier ?");
-  if(!name) return;
-  data.tiers.push({
-    id:Date.now().toString(),
-    name,
-    color:"#6366f1",
-    songs:[]
-  });
-  save();
-  render();
+  const name = prompt("Nom ?");
+  if(name) { data.tiers.push({id: Date.now().toString(), name, color: "#6366f1", songs: []}); save(); render(); }
 }
 
 function toggleEdit(){
-  editMode=!editMode;
-  document.getElementById("editBtn").textContent=
-    editMode?"✏️ Mode édition : ON":"✏️ Mode édition : OFF";
+  editMode = !editMode;
+  document.getElementById("editBtn").textContent = editMode ? "✏️ Mode édition : ON" : "✏️ Mode édition : OFF";
   render();
 }
 
-function toggleDark(){
-  document.body.classList.toggle("dark");
-}
+function toggleDark(){ document.body.classList.toggle("dark"); }
 
 render();
 </script>
