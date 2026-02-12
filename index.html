@@ -51,28 +51,21 @@ body {
   min-height: 100vh;
 }
 
-/* --- HEADER GLASS --- */
+/* --- HEADER --- */
 header {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
+  position: sticky; top: 0; z-index: 1000;
   padding: 15px 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: flex; justify-content: space-between; align-items: center;
   background: var(--card-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   border-bottom: var(--card-border);
   box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
 }
 
 .logo {
-  font-weight: 800;
-  font-size: 24px;
+  font-weight: 800; font-size: 24px;
   background: var(--accent-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   letter-spacing: -0.5px;
 }
 
@@ -81,108 +74,64 @@ header {
 /* --- BOUTONS --- */
 button {
   padding: 8px 14px;
-  border-radius: var(--radius-sm);
-  border: var(--card-border);
-  background: var(--card-bg);
-  color: var(--text-main);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
+  border-radius: var(--radius-sm); border: var(--card-border);
+  background: var(--card-bg); color: var(--text-main);
+  font-size: 13px; font-weight: 600; cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
   font-family: 'Outfit', sans-serif;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  display: inline-flex; align-items: center; gap: 6px;
 }
-
 button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  background: rgba(255,255,255,0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1); background: rgba(255,255,255,0.1);
 }
-
 .btn-primary {
-  background: var(--accent-gradient);
-  color: white;
-  border: none;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-  padding: 10px 18px;
-  font-size: 14px;
+  background: var(--accent-gradient); color: white; border: none;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); padding: 10px 18px; font-size: 14px;
 }
-
 .btn-primary:hover {
   box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
   background: linear-gradient(135deg, #4f46e5 0%, #db2777 100%);
 }
-
 .icon-btn { padding: 8px 12px; font-size: 16px; }
 
 /* --- INPUT SECTION --- */
 .input-section {
-  max-width: 700px;
-  margin: 40px auto;
-  display: flex;
-  gap: 10px;
-  padding: 8px;
-  background: var(--card-bg);
-  border: var(--card-border);
+  max-width: 700px; margin: 40px auto;
+  display: flex; gap: 10px; padding: 8px;
+  background: var(--card-bg); border: var(--card-border);
   border-radius: var(--radius-md);
-  box-shadow: var(--glass-shadow);
-  backdrop-filter: blur(8px);
+  box-shadow: var(--glass-shadow); backdrop-filter: blur(8px);
 }
-
 input[type="text"] {
-  flex: 1;
-  border: none;
-  background: transparent;
-  padding: 12px 20px;
-  font-family: inherit;
-  font-size: 15px;
-  color: var(--text-main);
-  border-radius: var(--radius-sm);
-  transition: background 0.2s;
+  flex: 1; border: none; background: transparent; padding: 12px 20px;
+  font-family: inherit; font-size: 15px; color: var(--text-main);
+  border-radius: var(--radius-sm); transition: background 0.2s;
 }
-
 input[type="text"]:focus { background: rgba(100,100,100,0.05); }
 input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 
 /* --- MAIN LAYOUT --- */
-.main {
-  max-width: 1320px; 
-  margin: auto;
-  padding: 0 20px 240px 20px;
-}
+.main { max-width: 1320px; margin: auto; padding: 0 20px 240px 20px; }
 
 .tier {
-  background: var(--card-bg);
-  border: var(--card-border);
-  border-radius: var(--radius-md);
-  margin-bottom: 25px;
+  background: var(--card-bg); border: var(--card-border);
+  border-radius: var(--radius-md); margin-bottom: 25px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-  overflow: visible;
-  display: flex;
-  flex-direction: column;
+  overflow: visible; display: flex; flex-direction: column;
 }
 
 .tier-header {
-  padding: 15px 25px;
-  color: white;
-  font-weight: 800;
-  font-size: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  padding: 15px 25px; color: white; font-weight: 800; font-size: 20px;
+  display: flex; justify-content: space-between; align-items: center;
   text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  position: relative;
-  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  position: relative; border-radius: var(--radius-md) var(--radius-md) 0 0;
   overflow: hidden;
 }
-
 .tier-header::after {
   content: ''; position: absolute; top:0; left:0; right:0; bottom:0;
-  background: linear-gradient(90deg, rgba(255,255,255,0.1), transparent);
-  pointer-events: none;
+  background: linear-gradient(90deg, rgba(255,255,255,0.1), transparent); pointer-events: none;
 }
 
 .tier-controls { display: flex; gap: 8px; align-items: center; z-index: 2; }
@@ -192,34 +141,42 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 }
 .tier-controls button:hover { background: rgba(0,0,0,0.4); }
 
+/* --- DESIGN COLOR PICKER --- */
 input[type="color"] {
-  border: none; width: 30px; height: 30px; cursor: pointer; background: none;
-  border-radius: 50%; overflow: hidden;
+  -webkit-appearance: none; border: none;
+  width: 32px; height: 32px;
+  border-radius: 50%; /* Cercle parfait */
+  cursor: pointer; overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  background: none;
+  transition: transform 0.2s;
 }
+input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+input[type="color"]::-webkit-color-swatch { border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; }
+input[type="color"]:hover { transform: scale(1.1); }
 
 .cards {
-  display: flex;
-  gap: 16px;
-  padding: 20px;
-  flex-wrap: wrap;
-  min-height: 160px;
-  align-content: flex-start;
+  display: flex; gap: 16px; padding: 20px; flex-wrap: wrap;
+  min-height: 160px; align-content: flex-start;
 }
 
 /* --- CARDS --- */
 .card {
-  width: 140px;
-  height: 140px;
+  width: 140px; height: 140px;
   border-radius: var(--radius-md);
-  background-size: cover;
-  background-position: center;
-  position: relative;
-  cursor: grab;
+  background-size: cover; background-position: center;
+  position: relative; cursor: grab;
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, height 0.2s ease;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.1);
   background-color: var(--card-bg);
+}
+
+/* --- EFFET HALO FAVORI --- */
+.card.is-favorite {
+  box-shadow: 0 0 0 2px var(--accent-secondary), 0 0 15px var(--accent-secondary) !important;
+  border-color: var(--accent-secondary) !important;
 }
 
 /* ANTI-TREMBLEMENT */
@@ -229,10 +186,8 @@ body.is-dragging .card { transition: none !important; }
 }
 
 #tiers .card:hover {
-  transform: scale(1.15) translateY(-5px);
-  z-index: 50;
-  box-shadow: 0 20px 30px rgba(0,0,0,0.25);
-  border-color: var(--accent-secondary);
+  transform: scale(1.15) translateY(-5px); z-index: 50;
+  box-shadow: 0 20px 30px rgba(0,0,0,0.25); border-color: var(--accent-secondary);
 }
 
 .card-overlay {
@@ -241,14 +196,45 @@ body.is-dragging .card { transition: none !important; }
   background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
   color: white; font-size: 12px; line-height: 1.3; text-align: center; pointer-events: none;
   transition: all 0.2s;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+  display: flex; flex-direction: column; justify-content: flex-end;
 }
-
 .card-overlay strong {
   display: block; font-size: 13px; margin-bottom: 2px;
   color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+
+/* --- CARD TOOLS (NOUVEAU POSITIONNEMENT) --- */
+.card-tools-left, .card-tools-right {
+  position: absolute; top: 6px;
+  display: flex; flex-direction: column; gap: 4px;
+  opacity: 0; transform: translateY(-10px);
+  transition: all 0.2s ease;
+  z-index: 60;
+}
+
+.card-tools-left { left: 6px; } /* Edit + Fav à gauche */
+.card-tools-right { right: 6px; } /* Delete à droite */
+
+/* Afficher les outils au survol, edit mode, ou si favori actif */
+.card:hover .card-tools-left, .card:hover .card-tools-right,
+body.edit-active .card-tools-left, body.edit-active .card-tools-right,
+.card.is-favorite .card-tools-left { 
+  opacity: 1; transform: translateY(0); 
+}
+
+.card button {
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+  border: 1px solid rgba(255,255,255,0.2); color: white;
+  padding: 0; width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; font-size: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+.card button:hover { background: var(--accent-secondary); border-color: transparent; }
+
+/* Bouton Favori Actif */
+.fav-btn.active {
+  background: var(--accent-secondary) !important;
+  color: white !important;
 }
 
 /* --- MODE COMPACT --- */
@@ -266,56 +252,12 @@ body.compact-active .card:hover {
 body.compact-active .card:hover .card-overlay {
   top: auto; bottom: 0;
   background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
-  padding: 40px 10px 10px 10px;
-  justify-content: flex-end;
+  padding: 40px 10px 10px 10px; justify-content: flex-end;
 }
 
-/* --- CARD TOOLS --- */
-.card-tools {
-  position: absolute; top: 8px; right: 8px;
-  display: flex;
-  flex-direction: column-reverse; /* Supprimer en haut */
-  gap: 6px;
-  opacity: 0; transform: translateY(-10px);
-  transition: all 0.2s ease;
-}
-/* Afficher les outils si mode edit, hover ou si favori actif */
-.card:hover .card-tools, body.edit-active .card-tools, .card-tools.has-fav { 
-  opacity: 1; transform: translateY(0); 
-}
-
-.card-tools button {
-  background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
-  border: 1px solid rgba(255,255,255,0.2); color: white;
-  padding: 6px; width: 28px; height: 28px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 50%; font-size: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-}
-.card-tools button:hover { background: var(--accent-secondary); border-color: transparent; }
-
-/* Style spécial bouton Favori */
-.fav-btn.active {
-  background: var(--accent-secondary) !important;
-  color: white !important;
-  border-color: transparent;
-  box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
-}
-
-/* Outils en Mode Compact */
-body.compact-active .card-tools {
-  top: 0; 
-  bottom: auto; 
-  left: 0; right: 0;
-  padding: 4px 6px; 
-  flex-direction: row; 
-  justify-content: space-between; 
-  align-items: flex-start; 
-  transform: none;
-  opacity: 0;
-}
-body.compact-active .card:hover .card-tools { opacity: 1; }
-/* Si favori actif en mode compact, on le montre discrètement ou seulement au hover pour pas surcharger ? 
-   Ici, on garde le comportement par défaut (caché sauf hover) pour mode compact car trop petit */
+/* Ajustement outils en mode compact */
+body.compact-active .card-tools-left { top: 4px; left: 4px; }
+body.compact-active .card-tools-right { top: 4px; right: 4px; }
 
 /* Placeholder */
 .placeholder {
@@ -349,7 +291,7 @@ body.compact-active .placeholder { height: 70px; }
 .pool::-webkit-scrollbar-track { background: transparent; }
 .pool::-webkit-scrollbar-thumb { background-color: var(--text-muted); border-radius: 10px; }
 
-/* --- MODALS (STATS & FAVS) --- */
+/* --- MODALS --- */
 .modal-overlay {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
@@ -367,8 +309,7 @@ body.compact-active .placeholder { height: 70px; }
 .stat-section { margin-top: 20px; }
 .stat-title { font-size: 12px; text-transform: uppercase; color: var(--text-muted); font-weight: 800; margin-bottom: 10px; letter-spacing: 1px; }
 
-/* Ranking Styles */
-.rank-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; background: rgba(128,128,128,0.05); padding: 8px; border-radius: 8px; }
+.rank-item, .fav-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; background: rgba(128,128,128,0.05); padding: 8px; border-radius: 8px; }
 .rank-pos { font-weight: 800; color: var(--accent-primary); width: 25px; }
 .rank-name { flex: 1; font-weight: 600; }
 .rank-avg { font-size: 12px; padding: 2px 6px; background: var(--accent-secondary); color: white; border-radius: 4px; min-width: 35px; text-align: center;}
@@ -379,12 +320,7 @@ body.compact-active .placeholder { height: 70px; }
 .rank-item.flop .rank-pos { color: #ef4444; }
 .rank-item.flop .rank-avg { background: #ef4444; }
 
-/* Fav Item Styles */
-.fav-item { 
-  display: flex; align-items: center; gap: 12px; padding: 10px; 
-  background: rgba(128,128,128,0.05); border-radius: 8px; margin-bottom: 8px; 
-  cursor: pointer; transition: background 0.2s;
-}
+.fav-item { cursor: pointer; transition: background 0.2s; }
 .fav-item:hover { background: rgba(128,128,128,0.1); }
 .fav-thumb { width: 40px; height: 40px; border-radius: 6px; background-size: cover; background-position: center; }
 .fav-info { flex: 1; }
@@ -487,31 +423,25 @@ function load(){
 
 function save(){ localStorage.setItem("tierData", JSON.stringify(data)); }
 
-// --- RESET DATA ---
 function resetData() {
   if(confirm("⚠️ ATTENTION : Cela va effacer toute votre Tier List !\n\nÊtes-vous sûr de vouloir tout remettre à zéro ?")) {
     localStorage.removeItem("tierData");
     data = defaultData();
-    save();
-    render();
+    save(); render();
   }
 }
 
-// --- FAVORIS ---
 function toggleFav(id) {
   const song = findSong(id);
   if (song) {
     song.fav = !song.fav;
-    save();
-    render(); // Re-render pour mettre à jour l'icone
+    save(); render();
   }
 }
 
 function showFavs() {
   const modal = document.getElementById('favModal');
   const body = document.getElementById('favBody');
-  
-  // Récupérer toutes les chansons favorites
   const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
   const favs = allSongs.filter(s => s.fav);
 
@@ -691,7 +621,8 @@ function adjustColor(color, amount) {
 
 function createCard(song){
   const card = document.createElement("div");
-  card.className = "card";
+  const favClass = song.fav ? 'is-favorite' : '';
+  card.className = `card ${favClass}`;
   card.draggable = true;
   card.style.backgroundImage = `url(${song.cover})`;
 
@@ -710,19 +641,21 @@ function createCard(song){
     draggedId = null;
   });
 
-  // Gestion de la classe active pour le bouton favori
-  const favClass = song.fav ? 'active' : '';
-  const toolsClass = song.fav ? 'card-tools has-fav' : 'card-tools';
+  const btnFavActive = song.fav ? 'active' : '';
 
   card.innerHTML = `
     <div class="card-overlay">
       <strong>${song.artist}</strong>
       <span>${song.title}</span>
     </div>
-    <div class="${toolsClass}">
-      <button onclick="event.stopPropagation(); removeSong('${song.id}'); save(); render();" title="Supprimer" style="background:#ef4444; border:none;">✕</button>
-      <button onclick="event.stopPropagation(); toggleFav('${song.id}')" title="Favori" class="fav-btn ${favClass}">❤️</button>
+    
+    <div class="card-tools-left">
       <button onclick="event.stopPropagation(); editSong('${song.id}')" title="Éditer">✎</button>
+      <button onclick="event.stopPropagation(); toggleFav('${song.id}')" title="Favori" class="fav-btn ${btnFavActive}">❤️</button>
+    </div>
+    
+    <div class="card-tools-right">
+      <button onclick="event.stopPropagation(); removeSong('${song.id}'); save(); render();" title="Supprimer" style="background:#ef4444; border:none;">✕</button>
     </div>
   `;
   return card;
@@ -749,7 +682,6 @@ function setupDrop(container, tierId){
     if(!draggedId) return;
     
     const song = findSong(draggedId);
-    
     const children = [...container.querySelectorAll('.card:not(.dragging)')];
     const index = children.indexOf(placeholder.nextElementSibling);
     const finalIndex = index === -1 ? children.length : index;
@@ -794,7 +726,6 @@ function getDragAfterElement(container, x, y){
   if (closest.element) {
      const box = closest.box;
      const boxCenterX = box.left + box.width / 2;
-     
      if (x < boxCenterX) return closest.element; 
      else return closest.element.nextElementSibling;
   }
