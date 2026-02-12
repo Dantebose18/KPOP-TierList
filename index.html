@@ -2,357 +2,524 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>K-Tier List</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+<title>KPOP Tier List</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
-:root {
-  --bg: #f8fafc;
-  --card: #ffffff;
-  --text: #0f172a;
-  --border: rgba(0,0,0,0.08);
-  --accent: #10b981;
+:root{
+  --bg:#f6f7f9;
+  --card:#ffffff;
+  --text:#1f2937;
+  --border:#e5e7eb;
 }
 
-body.dark {
-  --bg: #020617;
-  --card: #1e293b;
-  --text: #f1f5f9;
-  --border: rgba(255,255,255,0.1);
+body.dark{
+  --bg:#0f172a;
+  --card:#1e293b;
+  --text:#f8fafc;
+  --border:#334155;
 }
 
-body {
-  margin: 0;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  transition: background 0.3s ease;
+body{
+  margin:0;
+  font-family:'Inter',sans-serif;
+  background:var(--bg);
+  color:var(--text);
 }
 
-/* HEADER MODERNE */
-header {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  backdrop-filter: blur(12px);
-  background: rgba(255, 255, 255, 0.7);
-  border-bottom: 1px solid var(--border);
-  padding: 12px 40px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-body.dark header { background: rgba(2, 6, 23, 0.7); }
-
-.brand { font-weight: 800; font-size: 1.4rem; letter-spacing: -1px; }
-
-/* INPUTS DESIGN */
-.input-group {
-  display: flex;
-  gap: 12px;
+/* --- DESIGN HEADER --- */
+header{
+  padding:20px;
+  display:flex;
+  gap:15px;
+  flex-wrap:wrap;
   background: var(--card);
-  padding: 8px;
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  border-bottom: 1px solid var(--border);
+}
+
+/* --- DESIGN INPUTS --- */
+.input-container {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+  padding: 0 15px;
 }
 
 input {
-  border: none;
-  background: transparent;
-  padding: 8px 12px;
-  color: var(--text);
-  font-weight: 600;
-  outline: none;
-  font-family: inherit;
-}
-
-/* TIER LIST */
-.main { max-width: 1200px; margin: 40px auto; padding-bottom: 250px; }
-
-.tier {
+  padding: 10px 15px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
   background: var(--card);
-  border-radius: 20px;
-  margin-bottom: 30px;
-  overflow: visible; /* Empêche la coupure du zoom */
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
 }
 
-.tier-header {
-  padding: 16px 24px;
-  border-radius: 20px 20px 0 0;
-  color: white;
-  font-weight: 800;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+input:focus {
+  border-color: #3b82f6;
 }
 
-.cards {
-  display: flex;
-  gap: 15px;
-  padding: 20px;
-  flex-wrap: wrap;
-  min-height: 160px;
-  overflow: visible;
+button{
+  padding:8px 12px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  cursor:pointer;
+  transition: opacity 0.2s;
 }
 
-/* CARDS DESIGN */
-.card {
-  width: 140px;
-  height: 140px;
-  border-radius: 16px;
-  background-size: cover;
-  background-position: center;
-  position: relative;
-  cursor: grab;
+button:hover{ opacity: 0.8; }
+
+.main{
+  max-width:1200px;
+  margin:auto;
+  padding-bottom:220px;
+}
+
+.tier{
+  background:var(--card);
+  border-radius:14px;
+  margin-bottom:18px;
+  overflow: visible; /* Autorise le zoom à sortir du cadre */
+}
+
+.tier-header{
+  padding:10px;
+  color:white;
+  font-weight:600;
+  border-radius:14px 14px 0 0;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.tier-controls{
+  display:flex;
+  gap:6px;
+  align-items:center;
+}
+
+.cards{
+  display:flex;
+  gap:14px;
+  padding:14px;
+  flex-wrap:wrap;
+  min-height:150px;
+  overflow: visible; /* Important pour le zoom */
+}
+
+/* --- CARDS REDESIGN --- */
+
+.card{
+  width:140px;
+  height:140px;
+  border-radius:16px;
+  background-size:cover;
+  background-position:center;
+  position:relative;
+  cursor:grab;
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
-/* ZOOM & EFFET SELECTION PROPRE */
-.card:hover {
-  transform: scale(1.35);
-  z-index: 500;
-  box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+.card:hover{
+  transform:scale(1.4); /* Zoom augmenté */
+  z-index:100;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
 }
 
-.card::after {
+.card.dragging{
+  opacity:.1;
+}
+
+/* Effet de sélection discret */
+.card::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: 16px;
-  border: 2px solid transparent;
-  transition: 0.2s;
+  background: rgba(0,0,0,0);
+  transition: background 0.2s;
+  z-index: 1;
 }
 
-.card:hover::after {
-  border: 2px solid rgba(255,255,255,0.8);
-  background: rgba(0,0,0,0.15);
+.card:hover::before {
+  background: rgba(0,0,0,0.1);
+  border: 2px solid rgba(255,255,255,0.5);
 }
 
-.card-overlay {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  padding: 10px;
-  background: linear-gradient(to top, rgba(0,0,0,0.8) 20%, transparent);
+.card-overlay{
+  position:absolute;
+  bottom:0;
+  width:100%;
+  padding:10px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.8));
   border-radius: 0 0 16px 16px;
-  color: white;
+  color:white;
+  font-size:12px;
   box-sizing: border-box;
+  z-index: 2;
 }
 
-.card-overlay strong { display: block; font-size: 9px; opacity: 0.7; text-transform: uppercase; }
-.card-overlay span { display: block; font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-/* DRAG & DROP */
-.card.dragging { opacity: 0.1; }
-
-.placeholder {
-  width: 140px;
-  height: 140px;
-  border-radius: 16px;
-  background: rgba(0,0,0,0.05);
-  border: 2px dashed var(--border);
-  box-sizing: border-box;
+.card-tools{
+  position:absolute;
+  top:6px;
+  right:6px;
+  display:flex;
+  gap:6px;
+  z-index: 3;
 }
 
-/* POOL */
-.pool-container {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  background: var(--card);
-  padding: 20px 40px;
-  border-top: 1px solid var(--border);
-  z-index: 900;
+.card-tools button{
+  background:rgba(0,0,0,.6);
+  border:none;
+  color:white;
+  border-radius:6px;
+  padding:3px 6px;
+  font-size:12px;
 }
 
-.pool { display: flex; gap: 15px; overflow-x: auto; min-height: 150px; padding: 10px 0; }
+/* DROP PREVIEW */
 
-button {
-  background: var(--text);
-  color: var(--bg);
-  border: none;
-  padding: 8px 16px;
-  border-radius: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.2s;
+.placeholder{
+  width:140px;
+  height:140px;
+  border-radius:16px;
+  border:2px dashed #888;
+  background:rgba(0,0,0,0.05);
 }
 
-button:hover { opacity: 0.8; transform: translateY(-1px); }
+.hidden .card-tools,
+.hidden .tier-controls{
+  display:none;
+}
 
-.hidden .edit-only { display: none; }
+.pool-container{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:var(--bg);
+  padding:14px;
+  border-top:2px solid var(--border);
+  z-index: 1000;
+}
+
+.pool{
+  display:flex;
+  gap:14px;
+  flex-wrap:wrap;
+  min-height:150px;
+}
 </style>
 </head>
-<body class="hidden">
+<body>
 
 <header>
-  <div class="brand">K-TIER.</div>
-  <div style="display:flex; gap:10px;">
-    <button onclick="addTier()">+ Tier</button>
-    <button onclick="toggleEdit()" id="editBtn">Mode Edition</button>
-    <button onclick="toggleDark()" style="padding: 8px 12px;">🌓</button>
-  </div>
+  <button onclick="addTier()">➕ Tier</button>
+  <button onclick="toggleEdit()" id="editBtn">✏️ Mode édition : OFF</button>
+  <button onclick="toggleDark()">🌙 Dark</button>
 </header>
 
 <div class="main">
-  <div style="display:flex; justify-content:center; margin-bottom:40px;">
-    <div class="input-group">
-      <input id="artistInput" placeholder="Artiste...">
-      <input id="titleInput" placeholder="Musique...">
-      <button onclick="addSong()" style="background: var(--accent); color: white;">Ajouter</button>
-    </div>
-  </div>
-  <div id="tiers"></div>
+
+<div class="input-container">
+  <input id="artistInput" placeholder="Artiste">
+  <input id="titleInput" placeholder="Titre">
+  <button onclick="addSong()" style="background: #3b82f6; color: white; border: none;">Ajouter</button>
+</div>
+
+<div id="tiers"></div>
 </div>
 
 <div class="pool-container">
-  <div id="pool" class="pool"></div>
+<h3>🎵 Pool</h3>
+<div id="pool" class="pool"></div>
 </div>
 
 <script>
-let data = load();
-let editMode = false;
-let draggedId = null;
-let placeholder = document.createElement("div");
-placeholder.className = "placeholder";
+/* ================= DATA ================= */
 
 function defaultData(){
   return {
     tiers:[
-      {id:"S",name:"S-TIER",color:"#ff5e57",songs:[]},
-      {id:"A",name:"A-TIER",color:"#ffc048",songs:[]},
-      {id:"B",name:"B-TIER",color:"#1dd1a1",songs:[]}
+      {id:"S",name:"S",color:"#ef4444",songs:[]},
+      {id:"A",name:"A",color:"#22c55e",songs:[]},
+      {id:"B",name:"B",color:"#eab308",songs:[]},
+      {id:"C",name:"C",color:"#9ca3af",songs:[]}
     ],
     pool:[]
   };
 }
 
 function load(){
-  const raw = localStorage.getItem("ktier_data");
-  return raw ? JSON.parse(raw) : defaultData();
+  try{
+    const raw=localStorage.getItem("tierData");
+    if(!raw) return defaultData();
+    const parsed=JSON.parse(raw);
+    if(parsed?.tiers && parsed?.pool) return parsed;
+  }catch(e){}
+  return defaultData();
 }
 
-function save(){ localStorage.setItem("ktier_data", JSON.stringify(data)); }
+function save(){
+  localStorage.setItem("tierData",JSON.stringify(data));
+}
+
+let data=load();
+let editMode=false;
+let draggedId=null;
+let placeholder=null;
+
+/* ================= RENDER ================= */
 
 function render(){
-  const tiersDiv = document.getElementById("tiers");
-  tiersDiv.innerHTML = "";
+  const tiersDiv=document.getElementById("tiers");
+  tiersDiv.innerHTML="";
 
-  data.tiers.forEach(t => {
-    const tier = document.createElement("div");
-    tier.className = "tier";
-    tier.innerHTML = `
-      <div class="tier-header" style="background:${t.color}">
-        <span>${t.name}</span>
-        <div class="edit-only">
-          <input type="color" value="${t.color}" oninput="updateColor('${t.id}', this.value)" style="width:24px;height:24px;padding:0;cursor:pointer">
-          <button onclick="deleteTier('${t.id}')" style="background:rgba(0,0,0,0.2)">🗑️</button>
-        </div>
-      </div>
-    `;
-    const container = document.createElement("div");
-    container.className = "cards";
-    setupDrop(container, t.id);
-    t.songs.forEach(s => container.appendChild(createCard(s)));
-    tier.appendChild(container);
+  data.tiers.forEach(t=>{
+    const tier=document.createElement("div");
+    tier.className="tier";
+
+    const header=document.createElement("div");
+    header.className="tier-header";
+    header.style.background=t.color;
+
+    const title=document.createElement("span");
+    title.textContent=t.name;
+
+    const controls=document.createElement("div");
+    controls.className="tier-controls";
+
+    const colorInput=document.createElement("input");
+    colorInput.type="color";
+    colorInput.value=t.color;
+    colorInput.oninput=e=>{
+      t.color=e.target.value;
+      save();
+      render();
+    };
+
+    const renameBtn=document.createElement("button");
+    renameBtn.textContent="✏️";
+    renameBtn.onclick=()=>{
+      const n=prompt("Nouveau nom :",t.name);
+      if(n){ t.name=n; save(); render(); }
+    };
+
+    const delBtn=document.createElement("button");
+    delBtn.textContent="🗑️";
+    delBtn.onclick=()=>{
+      if(confirm("Supprimer cette catégorie ?")){
+        data.pool.push(...t.songs);
+        data.tiers=data.tiers.filter(x=>x.id!==t.id);
+        save();
+        render();
+      }
+    };
+
+    controls.append(colorInput,renameBtn,delBtn);
+    header.append(title,controls);
+
+    const container=document.createElement("div");
+    container.className="cards";
+
+    setupDrop(container,t.id);
+
+    t.songs.forEach(song=>{
+      container.appendChild(createCard(song));
+    });
+
+    tier.append(header,container);
     tiersDiv.appendChild(tier);
   });
 
-  const pool = document.getElementById("pool");
-  pool.innerHTML = "";
-  setupDrop(pool, null);
-  data.pool.forEach(s => pool.appendChild(createCard(s)));
+  const pool=document.getElementById("pool");
+  pool.innerHTML="";
+  setupDrop(pool,null);
 
-  document.body.className = editMode ? "" : "hidden";
+  data.pool.forEach(song=>{
+    pool.appendChild(createCard(song));
+  });
+
+  document.body.classList.toggle("hidden",!editMode);
 }
 
+/* ================= CARD ================= */
+
 function createCard(song){
-  const card = document.createElement("div");
-  card.className = "card";
-  card.draggable = true;
-  card.style.backgroundImage = `url(${song.cover})`;
-  
+  const card=document.createElement("div");
+  card.className="card";
+  card.draggable=true;
+  card.dataset.id=song.id;
+  card.style.backgroundImage=`url(${song.cover||""})`;
+
+  // Redirection YouTube au clic (hors mode édition)
   card.onclick = () => {
-    if(!editMode) {
-      const yt = `https://www.youtube.com/results?search_query=${encodeURIComponent(song.artist + ' ' + song.title + ' official mv')}`;
-      window.open(yt, '_blank');
+    if(!editMode && song.youtubeUrl) window.open(song.youtubeUrl, '_blank');
+  };
+
+  card.addEventListener("dragstart",()=>{
+    draggedId=song.id;
+    card.classList.add("dragging");
+  });
+
+  card.addEventListener("dragend",()=>{
+    card.classList.remove("dragging");
+    if(placeholder) placeholder.remove();
+  });
+
+  const overlay=document.createElement("div");
+  overlay.className="card-overlay";
+  overlay.innerHTML=`<strong>${song.artist}</strong><br>${song.title}`;
+
+  const tools=document.createElement("div");
+  tools.className="card-tools";
+
+  const editBtn=document.createElement("button");
+  editBtn.textContent="✏️";
+  editBtn.onclick=(e)=>{
+    e.stopPropagation(); // Empêche YouTube de s'ouvrir
+    const a=prompt("Artiste :",song.artist);
+    const t=prompt("Titre :",song.title);
+    if(a!==null && t!==null){
+      song.artist=a.trim();
+      song.title=t.trim();
+      // Met à jour le lien YouTube aussi
+      song.youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(song.artist + ' ' + song.title + ' official mv')}`;
+      save();
+      render();
     }
   };
 
-  card.ondragstart = () => { draggedId = song.id; setTimeout(() => card.classList.add("dragging"), 0); };
-  card.ondragend = () => { card.classList.remove("dragging"); placeholder.remove(); };
+  const delBtn=document.createElement("button");
+  delBtn.textContent="🗑️";
+  delBtn.onclick=(e)=>{
+    e.stopPropagation(); // Empêche YouTube de s'ouvrir
+    removeSong(song.id);
+    save();
+    render();
+  }
 
-  card.innerHTML = `
-    <div class="card-overlay">
-      <strong>${song.artist}</strong>
-      <span>${song.title}</span>
-    </div>
-  `;
+  tools.append(editBtn,delBtn);
+  card.append(overlay,tools);
+
   return card;
 }
 
-function setupDrop(container, tierId){
-  container.ondragover = e => {
+/* ================= DRAG SYSTEM (CORRIGÉ) ================= */
+
+function setupDrop(container,tierId){
+  container.addEventListener("dragover",e=>{
     e.preventDefault();
-    const afterElement = getDragAfterElement(container, e.clientX);
-    if (!afterElement) container.appendChild(placeholder);
-    else container.insertBefore(placeholder, afterElement);
-  };
+    const after=getDragAfterElement(container,e.clientX);
+    if(!placeholder){
+      placeholder=document.createElement("div");
+      placeholder.className="placeholder";
+    }
+    if(after==null) container.appendChild(placeholder);
+    else container.insertBefore(placeholder,after);
+  });
 
-  container.ondrop = e => {
-    const song = findAndRemove(draggedId);
+  container.addEventListener("drop",()=>{
+    if(!draggedId) return;
+    const song=findSong(draggedId);
+    removeSong(draggedId);
+
+    // Calcul de l'index réel basé sur la position du placeholder
     const children = [...container.querySelectorAll('.card:not(.dragging)')];
-    const idx = children.indexOf(placeholder.nextElementSibling);
-    const finalIdx = idx === -1 ? children.length : idx;
+    const index = children.indexOf(placeholder.nextElementSibling);
+    const finalIndex = index === -1 ? children.length : index;
 
-    if(tierId) data.tiers.find(t => t.id === tierId).songs.splice(finalIdx, 0, song);
-    else data.pool.splice(finalIdx, 0, song);
+    if(tierId){
+      const tier=data.tiers.find(t=>t.id===tierId);
+      tier.songs.splice(finalIndex, 0, song);
+    }else{
+      data.pool.splice(finalIndex, 0, song);
+    }
 
-    save(); render();
-  };
+    placeholder.remove();
+    save();
+    render();
+  });
 }
 
-function getDragAfterElement(container, x) {
-  const els = [...container.querySelectorAll('.card:not(.dragging)')];
+function getDragAfterElement(container,x){
+  const els=[...container.querySelectorAll(".card:not(.dragging)")];
   return els.reduce((closest, child) => {
     const box = child.getBoundingClientRect();
     const offset = x - box.left - box.width / 2;
-    if (offset < 0 && offset > closest.offset) return { offset, element: child };
-    else return closest;
+    if (offset < 0 && offset > closest.offset) {
+      return { offset: offset, element: child };
+    } else {
+      return closest;
+    }
   }, { offset: -Infinity }).element;
 }
 
+/* ================= LOGIC ================= */
+
+function removeSong(id){
+  data.pool=data.pool.filter(s=>s.id!==id);
+  data.tiers.forEach(t=>{
+    t.songs=t.songs.filter(s=>s.id!==id);
+  });
+}
+
+function findSong(id){
+  return [...data.pool,...data.tiers.flatMap(t=>t.songs)]
+    .find(s=>s.id===id);
+}
+
+/* ================= ACTIONS ================= */
+
 async function addSong(){
-  const artist = document.getElementById("artistInput").value;
-  const title = document.getElementById("titleInput").value;
-  if(!artist || !title) return;
+  const artist=document.getElementById("artistInput").value.trim();
+  const title=document.getElementById("titleInput").value.trim();
+  if(!artist||!title) return;
 
-  let cover = "https://via.placeholder.com/300";
-  try {
-    const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + " " + title)}&entity=song&limit=1`);
-    const j = await r.json();
-    if(j.results[0]) cover = j.results[0].artworkUrl100.replace("100x100", "400x400");
-  } catch(e) {}
+  const id=Date.now().toString()+Math.random().toString(16).slice(2);
 
-  data.pool.push({ id: Date.now().toString(), artist, title, cover });
-  save(); render();
+  let cover="";
+  try{
+    const res=await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(title+" "+artist)}&entity=song&limit=1`);
+    const json=await res.json();
+    cover=json.results[0]?.artworkUrl100?.replace("100x100","300x300")||"";
+  }catch(e){}
+
+  // Ajout du lien vers le clip YouTube
+  const youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`;
+
+  data.pool.push({id,artist,title,cover,youtubeUrl});
+  save();
+  render();
+
+  document.getElementById("artistInput").value="";
+  document.getElementById("titleInput").value="";
 }
 
-function findAndRemove(id){
-  let s = null;
-  data.pool = data.pool.filter(x => { if(x.id===id) s=x; return x.id!==id; });
-  data.tiers.forEach(t => t.songs = t.songs.filter(x => { if(x.id===id) s=x; return x.id!==id; }));
-  return s;
+function addTier(){
+  const name=prompt("Nom du tier ?");
+  if(!name) return;
+  data.tiers.push({
+    id:Date.now().toString(),
+    name,
+    color:"#3b82f6",
+    songs:[]
+  });
+  save();
+  render();
 }
 
-function updateColor(id, c){ data.tiers.find(t=>t.id===id).color=c; save(); render(); }
-function toggleEdit(){ editMode = !editMode; render(); }
-function toggleDark(){ document.body.classList.toggle("dark"); }
-function addTier(){ const n=prompt("Nom?"); if(n){ data.tiers.push({id:Date.now().toString(), name:n, color:"#6366f1", songs:[]}); save(); render(); }}
-function deleteTier(id){ data.tiers = data.tiers.filter(t=>t.id!==id); save(); render(); }
+function toggleEdit(){
+  editMode=!editMode;
+  document.getElementById("editBtn").textContent=
+    editMode?"✏️ Mode édition : ON":"✏️ Mode édition : OFF";
+  render();
+}
+
+function toggleDark(){
+  document.body.classList.toggle("dark");
+}
 
 render();
 </script>
