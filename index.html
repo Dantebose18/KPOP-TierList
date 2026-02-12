@@ -11,6 +11,7 @@
   --card:#ffffff;
   --text:#1f2937;
   --border:#e5e7eb;
+  --accent: #6366f1;
 }
 
 body.dark{
@@ -32,15 +33,20 @@ header{
   display:flex;
   gap:10px;
   flex-wrap:wrap;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
 }
 
 button,input{
   padding:8px 12px;
   border-radius:8px;
   border:1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
 }
 
-button{cursor:pointer}
+button{cursor:pointer; transition: opacity 0.2s;}
+button:hover{ opacity: 0.8; }
 
 .main{
   max-width:1200px;
@@ -52,16 +58,18 @@ button{cursor:pointer}
   background:var(--card);
   border-radius:14px;
   margin-bottom:18px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 }
 
 .tier-header{
-  padding:10px;
+  padding:12px 18px;
   color:white;
   font-weight:600;
-  border-radius:14px 14px 0 0;
   display:flex;
   justify-content:space-between;
   align-items:center;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 
 .tier-controls{
@@ -73,42 +81,66 @@ button{cursor:pointer}
 .cards{
   display:flex;
   gap:14px;
-  padding:14px;
+  padding:18px;
   flex-wrap:wrap;
-  min-height:150px;
+  min-height:160px;
 }
 
 /* CARDS */
 
 .card{
-  width:140px;
-  height:140px;
-  border-radius:16px;
+  width:145px;
+  height:145px;
+  border-radius:12px;
   background-size:cover;
   background-position:center;
   position:relative;
-  cursor:grab;
-  transition:transform .2s ease;
+  cursor: pointer;
+  transition: transform .2s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
 }
 
 .card:hover{
-  transform:scale(1.5);
+  transform:scale(1.05);
   z-index:10;
 }
 
 .card.dragging{
   opacity:.4;
+  cursor: grabbing;
 }
 
-.card-overlay{
-  position:absolute;
-  bottom:0;
-  width:100%;
-  padding:8px;
-  background:rgba(0,0,0,0.55);
-  backdrop-filter:blur(4px);
-  color:white;
-  font-size:12px;
+/* NOUVEAU DESIGN DE L'OVERLAY */
+.card-overlay {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 25px 10px 10px 10px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.9));
+  color: white;
+  box-sizing: border-box;
+  pointer-events: none; /* Laisse passer le clic vers la carte */
+}
+
+.card-overlay strong {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-overlay span {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .card-tools{
@@ -117,25 +149,27 @@ button{cursor:pointer}
   right:6px;
   display:flex;
   gap:6px;
+  z-index: 20;
 }
 
 .card-tools button{
   background:rgba(0,0,0,.6);
+  backdrop-filter: blur(4px);
   border:none;
   color:white;
   border-radius:6px;
-  padding:3px 6px;
+  padding:4px 6px;
   font-size:12px;
 }
 
 /* DROP PREVIEW */
 
 .placeholder{
-  width:140px;
-  height:140px;
-  border-radius:16px;
-  border:2px dashed #888;
-  background:rgba(0,0,0,0.05);
+  width:145px;
+  height:145px;
+  border-radius:12px;
+  border:2px dashed var(--accent);
+  background:rgba(99, 102, 241, 0.1);
 }
 
 .hidden .card-tools,
@@ -151,6 +185,8 @@ button{cursor:pointer}
   background:var(--bg);
   padding:14px;
   border-top:2px solid var(--border);
+  box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+  z-index: 100;
 }
 
 .pool{
@@ -158,30 +194,31 @@ button{cursor:pointer}
   gap:14px;
   flex-wrap:wrap;
   min-height:150px;
+  overflow-x: auto;
 }
 </style>
 </head>
 <body>
 
 <header>
-  <button onclick="addTier()">➕ Tier</button>
+  <button onclick="addTier()">➕ Nouveau Tier</button>
   <button onclick="toggleEdit()" id="editBtn">✏️ Mode édition : OFF</button>
-  <button onclick="toggleDark()">🌙 Dark</button>
+  <button onclick="toggleDark()">🌙 Dark Mode</button>
 </header>
 
 <div class="main">
 
-<div style="display:flex;gap:10px;margin:20px 0;">
-  <input id="artistInput" placeholder="Artiste">
-  <input id="titleInput" placeholder="Titre">
-  <button onclick="addSong()">Ajouter</button>
+<div style="display:flex;gap:10px;margin:30px 0; justify-content: center;">
+  <input id="artistInput" placeholder="Artiste (ex: NewJeans)">
+  <input id="titleInput" placeholder="Titre (ex: OMG)">
+  <button onclick="addSong()" style="background: var(--accent); color: white; border: none;">Ajouter au Pool</button>
 </div>
 
 <div id="tiers"></div>
 </div>
 
 <div class="pool-container">
-<h3>🎵 Pool</h3>
+<h3 style="margin-top:0">🎵 Pool de chansons</h3>
 <div id="pool" class="pool"></div>
 </div>
 
@@ -191,10 +228,10 @@ button{cursor:pointer}
 function defaultData(){
   return {
     tiers:[
-      {id:"S",name:"S",color:"#ef4444",songs:[]},
-      {id:"A",name:"A",color:"#22c55e",songs:[]},
-      {id:"B",name:"B",color:"#eab308",songs:[]},
-      {id:"C",name:"C",color:"#9ca3af",songs:[]}
+      {id:"S",name:"S (God Tier)",color:"#ef4444",songs:[]},
+      {id:"A",name:"A (Amazing)",color:"#f97316",songs:[]},
+      {id:"B",name:"B (Good)",color:"#eab308",songs:[]},
+      {id:"C",name:"C (Fine)",color:"#22c55e",songs:[]}
     ],
     pool:[]
   };
@@ -218,6 +255,7 @@ let data=load();
 let editMode=false;
 let draggedId=null;
 let placeholder=null;
+let isDraggingAction = false; // Pour éviter d'ouvrir YouTube en glissant
 
 /* ================= RENDER ================= */
 
@@ -242,6 +280,8 @@ function render(){
     const colorInput=document.createElement("input");
     colorInput.type="color";
     colorInput.value=t.color;
+    colorInput.style.width="30px";
+    colorInput.style.padding="0";
     colorInput.oninput=e=>{
       t.color=e.target.value;
       save();
@@ -302,31 +342,43 @@ function createCard(song){
   card.dataset.id=song.id;
   card.style.backgroundImage=`url(${song.cover||""})`;
 
+  // Lien YouTube au clic
+  card.onclick = (e) => {
+    // Si on clique sur les boutons d'édition ou si on finit un drag, on n'ouvre pas
+    if(e.target.tagName === 'BUTTON' || isDraggingAction) return;
+    if(song.youtubeUrl) window.open(song.youtubeUrl, '_blank');
+  };
+
   card.addEventListener("dragstart",()=>{
     draggedId=song.id;
+    isDraggingAction = true;
     card.classList.add("dragging");
   });
 
   card.addEventListener("dragend",()=>{
     card.classList.remove("dragging");
     if(placeholder) placeholder.remove();
+    // Petit délai pour ne pas déclencher le onclick immédiatement après le drop
+    setTimeout(() => { isDraggingAction = false; }, 100);
   });
 
   const overlay=document.createElement("div");
   overlay.className="card-overlay";
-  overlay.innerHTML=`<strong>${song.artist}</strong><br>${song.title}`;
+  overlay.innerHTML=`<strong>${song.artist}</strong><span>${song.title}</span>`;
 
   const tools=document.createElement("div");
   tools.className="card-tools";
 
   const editBtn=document.createElement("button");
   editBtn.textContent="✏️";
-  editBtn.onclick=()=>{
+  editBtn.onclick=(e)=>{
+    e.stopPropagation();
     const a=prompt("Artiste :",song.artist);
     const t=prompt("Titre :",song.title);
     if(a!==null && t!==null){
       song.artist=a.trim();
       song.title=t.trim();
+      song.youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(song.artist + " " + song.title)}`;
       save();
       render();
     }
@@ -334,7 +386,10 @@ function createCard(song){
 
   const delBtn=document.createElement("button");
   delBtn.textContent="🗑️";
-  delBtn.onclick=()=>removeSong(song.id);
+  delBtn.onclick=(e)=>{
+    e.stopPropagation();
+    removeSong(song.id);
+  };
 
   tools.append(editBtn,delBtn);
   card.append(overlay,tools);
@@ -378,19 +433,17 @@ function setupDrop(container,tierId){
 
 function getDragAfterElement(container,x){
   const els=[...container.querySelectorAll(".card:not(.dragging)")];
-  let closest=null;
-  let offsetClosest=-Infinity;
-
-  els.forEach(child=>{
-    const box=child.getBoundingClientRect();
-    const offset=x-box.left-box.width/2;
-    if(offset<0 && offset>offsetClosest){
-      offsetClosest=offset;
-      closest=child;
+  
+  return els.reduce((closest, child) => {
+    const box = child.getBoundingClientRect();
+    const offset = x - box.left - box.width / 2; // Calcul basé sur le centre de la carte
+    
+    if (offset < 0 && offset > closest.offset) {
+      return { offset: offset, element: child };
+    } else {
+      return closest;
     }
-  });
-
-  return closest;
+  }, { offset: -Infinity }).element;
 }
 
 /* ================= LOGIC ================= */
@@ -400,6 +453,8 @@ function removeSong(id){
   data.tiers.forEach(t=>{
     t.songs=t.songs.filter(s=>s.id!==id);
   });
+  save();
+  render();
 }
 
 function findSong(id){
@@ -423,7 +478,10 @@ async function addSong(){
     cover=json.results[0]?.artworkUrl100?.replace("100x100","300x300")||"";
   }catch(e){}
 
-  data.pool.push({id,artist,title,cover});
+  // Lien YouTube automatique
+  const youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title)}`;
+
+  data.pool.push({id,artist,title,cover,youtubeUrl});
   save();
   render();
 
@@ -437,7 +495,7 @@ function addTier(){
   data.tiers.push({
     id:Date.now().toString(),
     name,
-    color:"#3b82f6",
+    color:"#6366f1",
     songs:[]
   });
   save();
