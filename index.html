@@ -215,7 +215,6 @@ input[type="color"] {
   background-position: center;
   position: relative;
   cursor: grab;
-  /* Correction Jitter: on anime la hauteur pour le toggle, mais voir .dragging plus bas */
   transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.2s, border-color 0.2s, height 0.3s ease;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   overflow: hidden;
@@ -223,7 +222,6 @@ input[type="color"] {
   background-color: var(--card-bg);
 }
 
-/* IMPORTANT : Désactive les transitions quand on drag pour éviter que ça bouge partout */
 .card.dragging {
   opacity: 0.4;
   transform: scale(0.95);
@@ -231,7 +229,6 @@ input[type="color"] {
   transition: none !important; 
 }
 
-/* Hover Standard */
 #tiers .card:hover {
   transform: scale(1.15) translateY(-5px);
   z-index: 50;
@@ -245,7 +242,6 @@ input[type="color"] {
   background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
   color: white; font-size: 12px; line-height: 1.3; text-align: center; pointer-events: none;
   transition: all 0.2s;
-  /* Flex column standard */
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -256,41 +252,27 @@ input[type="color"] {
   color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);
 }
 
-/* --- LOGIQUE MODE COMPACT --- */
+/* --- MODE COMPACT --- */
 body.compact-active .card {
-  height: 70px; /* Taille réduite mais suffisante pour 2 lignes */
-  /* Background reste visible (cover) */
+  height: 70px;
 }
 
 body.compact-active .card-overlay {
-  top: 0;
-  padding: 5px;
-  /* Fond plus sombre pour lisibilité sur petite image */
+  top: 0; padding: 5px;
   background: rgba(0,0,0,0.7); 
-  justify-content: center; /* Centré verticalement */
-  gap: 2px;
+  justify-content: center; gap: 2px;
 }
 
 body.compact-active .card-overlay strong {
-  font-size: 12px;
-  margin: 0;
-  /* On permet le texte sur plusieurs lignes si besoin, ou on garde propre */
-  white-space: normal;
-  line-height: 1.1;
+  font-size: 12px; margin: 0; white-space: normal; line-height: 1.1;
 }
 
 body.compact-active .card-overlay span {
-  font-size: 11px;
-  opacity: 0.9;
-  line-height: 1.1;
+  font-size: 11px; opacity: 0.9; line-height: 1.1;
 }
 
-/* --- HOVER EN MODE COMPACT (Pop-up) --- */
 body.compact-active .card:hover {
-  height: 140px; /* Retour taille normale */
-  transform: scale(1.15) translateY(-5px);
-  z-index: 100;
-  /* On s'assure que l'image est bien visible */
+  height: 140px; transform: scale(1.15) translateY(-5px); z-index: 100;
   background-blend-mode: normal;
 }
 
@@ -301,8 +283,7 @@ body.compact-active .card:hover .card-overlay {
   justify-content: flex-end;
 }
 
-/* ------------------------------------- */
-
+/* --- CARD TOOLS --- */
 .card-tools {
   position: absolute; top: 8px; right: 8px;
   display: flex; flex-direction: column; gap: 6px;
@@ -324,12 +305,8 @@ body.compact-active .card:hover .card-overlay {
 .placeholder {
   width: 140px; height: 140px; border-radius: var(--radius-md);
   border: 2px dashed var(--text-muted); background: rgba(100,100,100,0.05);
-  opacity: 0.5; animation: pulse 1.5s infinite;
-  /* Correction Jitter: pas de transition sur le placeholder */
-  transition: none; 
+  opacity: 0.5; animation: pulse 1.5s infinite; transition: none; 
 }
-
-/* Placeholder s'adapte aussi au mode compact */
 body.compact-active .placeholder { height: 70px; }
 
 @keyframes pulse { 0%{opacity:0.3} 50%{opacity:0.6} 100%{opacity:0.3} }
@@ -358,6 +335,35 @@ body.compact-active .placeholder { height: 70px; }
 .pool::-webkit-scrollbar-track { background: transparent; }
 .pool::-webkit-scrollbar-thumb { background-color: var(--text-muted); border-radius: 10px; }
 
+/* --- MODAL STATS --- */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+  z-index: 2000; display: none; justify-content: center; align-items: center;
+}
+
+.modal-content {
+  background: var(--card-bg);
+  border: var(--card-border);
+  width: 90%; max-width: 500px;
+  border-radius: var(--radius-lg);
+  padding: 30px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+  color: var(--text-main);
+  max-height: 80vh; overflow-y: auto;
+}
+
+.modal-content h2 { margin-top: 0; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; border-bottom: 1px solid rgba(128,128,128,0.1); padding-bottom: 5px; }
+.stat-row strong { font-weight: 600; }
+.stat-section { margin-top: 20px; }
+.stat-title { font-size: 12px; text-transform: uppercase; color: var(--text-muted); font-weight: 800; margin-bottom: 10px; letter-spacing: 1px; }
+
+.rank-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; background: rgba(128,128,128,0.05); padding: 8px; border-radius: 8px; }
+.rank-pos { font-weight: 800; color: var(--accent-primary); width: 20px; }
+.rank-name { flex: 1; font-weight: 600; }
+.rank-avg { font-size: 12px; padding: 2px 6px; background: var(--accent-secondary); color: white; border-radius: 4px; }
+
 .hidden .card-tools, .hidden .tier-controls { display: none !important; }
 body.edit-active .card-tools { display: flex !important; opacity: 1; transform: none; }
 </style>
@@ -372,6 +378,7 @@ body.edit-active .card-tools { display: flex !important; opacity: 1; transform: 
     
     <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;"></div>
     
+    <button onclick="showStats()" class="icon-btn" title="Statistiques">📊</button>
     <button onclick="toggleCompact()" id="compactBtn" class="icon-btn" title="Vue Compacte">☰</button>
     
     <button onclick="toggleEdit()" id="editBtn" class="icon-btn">✏️</button>
@@ -381,6 +388,16 @@ body.edit-active .card-tools { display: flex !important; opacity: 1; transform: 
 </header>
 
 <input type="file" id="fileInput" style="display:none" accept=".json" onchange="importJson(this)">
+
+<div id="statsModal" class="modal-overlay" onclick="closeStats(event)">
+  <div class="modal-content">
+    <h2>Statistiques & Classement</h2>
+    <div id="statsBody"></div>
+    <div style="margin-top: 20px; text-align: right;">
+      <button onclick="document.getElementById('statsModal').style.display='none'">Fermer</button>
+    </div>
+  </div>
+</div>
 
 <div class="main">
   <div class="input-section">
@@ -454,16 +471,101 @@ function importJson(input) {
       const json = JSON.parse(e.target.result);
       if(!json.tiers || !json.pool) throw new Error("Format invalide");
       data = json;
-      save(); 
-      render();
-      alert("Sauvegarde chargée avec succès !");
-    } catch(err) {
-      alert("Erreur : Le fichier sélectionné n'est pas valide.");
-    }
+      save(); render(); alert("Sauvegarde chargée !");
+    } catch(err) { alert("Erreur fichier."); }
   };
   reader.readAsText(file);
   input.value = '';
 }
+
+/* --- LOGIQUE STATISTIQUES --- */
+function showStats() {
+  const modal = document.getElementById('statsModal');
+  const body = document.getElementById('statsBody');
+  
+  // Calculs
+  let totalSongs = 0;
+  let artistStats = {};
+  
+  // On parcourt les Tiers (Les tiers du haut valent plus de points)
+  // Index 0 (S) = Max points. Si 4 tiers : S=3, A=2, B=1, C=0 (ou +1 pour être positif)
+  const maxScore = data.tiers.length;
+  
+  data.tiers.forEach((tier, index) => {
+    const score = maxScore - index; // S = maxScore, C = 1...
+    
+    tier.songs.forEach(song => {
+      totalSongs++;
+      const name = song.artist.trim(); // On regroupe par nom exact
+      
+      if(!artistStats[name]) artistStats[name] = { total: 0, count: 0 };
+      artistStats[name].total += score;
+      artistStats[name].count++;
+    });
+  });
+
+  // Ajout des chansons de la Pool (ne comptent pas dans la note moyenne ou valent 0 ?)
+  // Disons qu'elles comptent pour le total de chansons mais pas le classement.
+  data.pool.forEach(song => { totalSongs++; });
+
+  // Transformation en tableau pour trier
+  let rankings = Object.keys(artistStats).map(key => {
+    return {
+      name: key,
+      avg: (artistStats[key].total / artistStats[key].count).toFixed(2),
+      count: artistStats[key].count
+    };
+  });
+
+  // Tri par moyenne décroissante
+  rankings.sort((a, b) => b.avg - a.avg);
+  
+  const uniqueArtists = rankings.length + new Set(data.pool.map(s => s.artist.trim())).size - (new Set([...rankings.map(r=>r.name), ...data.pool.map(s=>s.artist.trim())]).size === rankings.length ? 0 : 0); // Approx simple: Set global
+  const allArtistsSet = new Set([...rankings.map(r=>r.name), ...data.pool.map(s=>s.artist.trim())]);
+
+
+  // Génération HTML
+  let html = `
+    <div class="stat-row"><strong>Total Chansons :</strong> <span>${totalSongs}</span></div>
+    <div class="stat-row"><strong>Artistes Uniques :</strong> <span>${allArtistsSet.size}</span></div>
+    
+    <div class="stat-section">
+      <div class="stat-title">🏆 Top Artistes (Moyenne)</div>
+      ${rankings.slice(0, 5).map((r, i) => `
+        <div class="rank-item">
+          <span class="rank-pos">#${i+1}</span>
+          <span class="rank-name">${r.name} <small style="opacity:0.6">(${r.count} sons)</small></span>
+          <span class="rank-avg">${r.avg}</span>
+        </div>
+      `).join('')}
+      ${rankings.length === 0 ? '<div style="opacity:0.5; font-size:13px">Aucune donnée classée.</div>' : ''}
+    </div>
+
+    ${rankings.length > 5 ? `
+    <div class="stat-section">
+      <div class="stat-title">📉 Besoin d'efforts...</div>
+      ${rankings.slice(-3).reverse().map((r, i) => `
+        <div class="rank-item" style="background:rgba(239, 68, 68, 0.1)">
+          <span class="rank-pos" style="color:#ef4444">▼</span>
+          <span class="rank-name">${r.name}</span>
+          <span class="rank-avg" style="background:#ef4444">${r.avg}</span>
+        </div>
+      `).join('')}
+    </div>
+    ` : ''}
+  `;
+  
+  body.innerHTML = html;
+  modal.style.display = 'flex';
+}
+
+function closeStats(e) {
+  if(e.target.id === 'statsModal') {
+    document.getElementById('statsModal').style.display = 'none';
+  }
+}
+
+/* ------------------------ */
 
 function render(){
   const tiersDiv = document.getElementById("tiers");
