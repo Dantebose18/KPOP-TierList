@@ -670,45 +670,52 @@ function createCard(song){
 }
 
 function setupDrop(container, tierId){
+
   container.addEventListener("dragover", e => {
     e.preventDefault();
     if(!draggedId) return;
 
-    // FIX JITTER : Si on survole le placeholder ou l'élément draggué (via pointer-events, mais double sécu ici)
-    if(e.target.classList.contains('placeholder') || e.target.classList.contains('dragging')) return;
-
-    if(!placeholder) { 
-        placeholder = document.createElement("div"); 
-        placeholder.className = "placeholder"; 
+    if(!placeholder){
+      placeholder = document.createElement("div");
+      placeholder.className = "placeholder";
     }
-    
-    const after = getDragAfterElement(container, e.clientX, e.clientY);
-    if(after == null) container.appendChild(placeholder);
-    else container.insertBefore(placeholder, after);
+
+    const card = e.target.closest(".card");
+
+    if(card && !card.classList.contains("dragging")){
+      container.insertBefore(placeholder, card);
+    } else {
+      container.appendChild(placeholder);
+    }
   });
 
   container.addEventListener("drop", e => {
     e.preventDefault();
     if(!draggedId) return;
-    
+
     const song = findSong(draggedId);
-    
-    const children = [...container.querySelectorAll('.card:not(.dragging)')];
-    const index = children.indexOf(placeholder.nextElementSibling);
-    const finalIndex = index === -1 ? children.length : index;
+
+    const cards = [...container.querySelectorAll(".card:not(.dragging)")];
+    const index = cards.indexOf(placeholder.nextElementSibling);
+    const finalIndex = index === -1 ? cards.length : index;
+
+    removeSong(draggedId);
+
+    if(tierId){
+      data.tiers.find(t => t.id === tierId).songs.splice(finalIndex, 0, song);
+    } else {
+      data.pool.splice(finalIndex, 0, song);
+    }
 
     if(placeholder) placeholder.remove();
     placeholder = null;
-
-    removeSong(draggedId);
-    if(tierId) data.tiers.find(t => t.id === tierId).songs.splice(finalIndex, 0, song);
-    else data.pool.splice(finalIndex, 0, song);
-
     draggedId = null;
+
     save();
     render();
   });
 }
+
 
 // Amélioration de la détection (X et Y pour le wrap)
 function getDragAfterElement(container, x, y) {
