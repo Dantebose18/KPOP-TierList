@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KPOP Tier List Ultra</title>
+<title>KPOP Tier List</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 
 <style>
@@ -145,7 +145,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 input[type="color"] {
   -webkit-appearance: none; border: none;
   width: 32px; height: 32px;
-  border-radius: 50%; /* Cercle parfait */
+  border-radius: 50%; 
   cursor: pointer; overflow: hidden;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
   background: none;
@@ -166,20 +166,15 @@ input[type="color"]:hover { transform: scale(1.1); }
   border-radius: var(--radius-md);
   background-size: cover; background-position: center;
   position: relative; cursor: grab;
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, height 0.2s ease;
+  /* Correction Jitter: transition rapide */
+  transition: transform 0.1s ease-out, box-shadow 0.2s, border-color 0.2s, height 0.2s ease;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.1);
   background-color: var(--card-bg);
 }
 
-/* --- EFFET HALO FAVORI --- */
-.card.is-favorite {
-  box-shadow: 0 0 0 2px var(--accent-secondary), 0 0 15px var(--accent-secondary) !important;
-  border-color: var(--accent-secondary) !important;
-}
-
-/* ANTI-TREMBLEMENT */
+/* ANTI-TREMBLEMENT: DÉSACTIVE ANIMATION PENDANT DRAG */
 body.is-dragging .card { transition: none !important; }
 .card.dragging {
   opacity: 0.4; transform: scale(0.95); grayscale: 100%; pointer-events: none; 
@@ -189,6 +184,23 @@ body.is-dragging .card { transition: none !important; }
   transform: scale(1.15) translateY(-5px); z-index: 50;
   box-shadow: 0 20px 30px rgba(0,0,0,0.25); border-color: var(--accent-secondary);
 }
+
+/* --- ANIMATION FAVORIS (BORDURE TOURNANTE) --- */
+@property --angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+@keyframes rotateBorder { to { --angle: 360deg; } }
+
+.card.is-favorite::before {
+  content: ''; position: absolute; inset: 0;
+  padding: 3px; /* Épaisseur de la bordure */
+  border-radius: var(--radius-md);
+  background: conic-gradient(from var(--angle), transparent 20%, #ec4899, #8b5cf6, #ec4899);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  animation: rotateBorder 3s linear infinite;
+  pointer-events: none; z-index: 2;
+}
+/* Fallback si @property non supporté */
+.card.is-favorite { border-color: #ec4899 !important; }
 
 .card-overlay {
   position: absolute; bottom: 0; width: 100%;
@@ -203,22 +215,26 @@ body.is-dragging .card { transition: none !important; }
   color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);
 }
 
-/* --- CARD TOOLS (NOUVEAU POSITIONNEMENT) --- */
-.card-tools-left, .card-tools-right {
-  position: absolute; top: 6px;
+/* --- CARD TOOLS --- */
+/* Groupe Gauche: Edit (Haut), Fav (Bas) */
+.card-tools-left {
+  position: absolute; top: 6px; left: 6px;
   display: flex; flex-direction: column; gap: 4px;
   opacity: 0; transform: translateY(-10px);
-  transition: all 0.2s ease;
-  z-index: 60;
+  transition: all 0.2s ease; z-index: 60;
 }
 
-.card-tools-left { left: 6px; } /* Edit + Fav à gauche */
-.card-tools-right { right: 6px; } /* Delete à droite */
+/* Groupe Droite: Delete */
+.card-tools-right {
+  position: absolute; top: 6px; right: 6px;
+  display: flex; flex-direction: column; gap: 4px;
+  opacity: 0; transform: translateY(-10px);
+  transition: all 0.2s ease; z-index: 60;
+}
 
-/* Afficher les outils au survol, edit mode, ou si favori actif */
+/* VISIBILITÉ: Seulement hover ou edit mode. Pas sur favoris auto. */
 .card:hover .card-tools-left, .card:hover .card-tools-right,
-body.edit-active .card-tools-left, body.edit-active .card-tools-right,
-.card.is-favorite .card-tools-left { 
+body.edit-active .card-tools-left, body.edit-active .card-tools-right { 
   opacity: 1; transform: translateY(0); 
 }
 
@@ -231,10 +247,8 @@ body.edit-active .card-tools-left, body.edit-active .card-tools-right,
 }
 .card button:hover { background: var(--accent-secondary); border-color: transparent; }
 
-/* Bouton Favori Actif */
 .fav-btn.active {
-  background: var(--accent-secondary) !important;
-  color: white !important;
+  background: var(--accent-secondary) !important; color: white !important;
 }
 
 /* --- MODE COMPACT --- */
@@ -255,7 +269,8 @@ body.compact-active .card:hover .card-overlay {
   padding: 40px 10px 10px 10px; justify-content: flex-end;
 }
 
-/* Ajustement outils en mode compact */
+/* Outils en Mode Compact */
+/* On force le positionnement en haut */
 body.compact-active .card-tools-left { top: 4px; left: 4px; }
 body.compact-active .card-tools-right { top: 4px; right: 4px; }
 
@@ -661,6 +676,7 @@ function createCard(song){
   return card;
 }
 
+/* --- LOGIQUE DRAG & DROP "SMART GRID 2D" --- */
 function setupDrop(container, tierId){
   container.addEventListener("dragover", e => {
     e.preventDefault();
@@ -682,6 +698,7 @@ function setupDrop(container, tierId){
     if(!draggedId) return;
     
     const song = findSong(draggedId);
+    
     const children = [...container.querySelectorAll('.card:not(.dragging)')];
     const index = children.indexOf(placeholder.nextElementSibling);
     const finalIndex = index === -1 ? children.length : index;
@@ -702,6 +719,7 @@ function setupDrop(container, tierId){
 function getDragAfterElement(container, x, y){
   const draggableElements = [...container.querySelectorAll('.card:not(.dragging)')];
 
+  // 1. Check bord gauche pour insertion au début
   if (draggableElements.length > 0) {
       const first = draggableElements[0];
       const box = first.getBoundingClientRect();
@@ -710,6 +728,7 @@ function getDragAfterElement(container, x, y){
       }
   }
 
+  // 2. Recherche du plus proche
   const closest = draggableElements.reduce((closest, child) => {
     const box = child.getBoundingClientRect();
     const boxCenterX = box.left + box.width / 2;
@@ -723,9 +742,11 @@ function getDragAfterElement(container, x, y){
     }
   }, { dist: Number.POSITIVE_INFINITY });
 
+  // 3. Bascule Avant/Après
   if (closest.element) {
      const box = closest.box;
      const boxCenterX = box.left + box.width / 2;
+     
      if (x < boxCenterX) return closest.element; 
      else return closest.element.nextElementSibling;
   }
