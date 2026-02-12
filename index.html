@@ -3,14 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <title>KPOP Tier List</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
 :root{
-  --bg:#f6f7f9;
+  --bg:#f8fafc;
   --card:#ffffff;
-  --text:#1f2937;
-  --border:#e5e7eb;
+  --text:#1e293b;
+  --border:#e2e8f0;
+  --accent:#3b82f6;
 }
 
 body.dark{
@@ -22,223 +23,199 @@ body.dark{
 
 body{
   margin:0;
-  font-family:'Inter',sans-serif;
+  font-family:'Inter', sans-serif;
   background:var(--bg);
   color:var(--text);
 }
 
-/* --- DESIGN HEADER --- */
+/* --- DESIGN HEADER ÉPURÉ --- */
 header{
-  padding:15px 25px;
-  display:flex;
-  gap:15px;
+  padding: 12px 30px;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
   background: var(--card);
   border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
 }
 
-/* --- DESIGN INPUTS --- */
-.input-container {
+.header-btns {
   display: flex;
-  gap: 12px;
-  margin: 25px 0;
-  padding: 0 20px;
-  justify-content: center;
+  gap: 10px;
+}
+
+/* --- DESIGN ZONE DE TEXTE PROPRE --- */
+.input-section {
+  max-width: 600px;
+  margin: 30px auto;
+  display: flex;
+  gap: 8px;
+  padding: 6px;
+  background: var(--card);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
 }
 
 input[type="text"] {
-  padding: 10px 16px;
-  border-radius: 10px;
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 10px 15px;
+  font-family: inherit;
+  color: var(--text);
+  outline: none;
+  font-size: 14px;
+}
+
+input[type="text"]::placeholder { opacity: 0.5; }
+
+.btn-add {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+button {
+  padding: 8px 14px;
+  border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--card);
   color: var(--text);
-  outline: none;
-  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
   transition: all 0.2s;
 }
 
-input[type="text"]:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-button{
-  padding:8px 16px;
-  border-radius:8px;
-  border:1px solid var(--border);
-  background: var(--card);
-  color: var(--text);
-  font-weight: 600;
-  cursor:pointer;
-  transition: all 0.2s;
-}
-
-button:hover{ background: #f9fafb; }
-body.dark button:hover { background: #1e293b; }
+button:hover { background: #f1f5f9; border-color: #cbd5e1; }
 
 .main{
-  max-width:1200px;
-  margin:auto;
-  padding-bottom:220px;
+  max-width: 1200px;
+  margin: auto;
+  padding-bottom: 220px;
 }
 
 .tier{
-  background:var(--card);
-  border-radius:14px;
-  margin-bottom:18px;
+  background: var(--card);
+  border-radius: 16px;
+  margin-bottom: 20px;
   overflow: visible;
 }
 
 .tier-header{
-  padding:10px 20px;
-  color:white;
-  font-weight:600;
-  border-radius:14px 14px 0 0;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+  padding: 12px 20px;
+  color: white;
+  font-weight: 600;
+  border-radius: 16px 16px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.tier-controls{
-  display:flex;
-  gap:8px;
-  align-items:center;
-}
+.tier-controls{ display: flex; gap: 8px; align-items: center; }
 
 .cards{
-  display:flex;
-  gap:14px;
-  padding:14px;
-  flex-wrap:wrap;
-  min-height:150px;
+  display: flex;
+  gap: 14px;
+  padding: 16px;
+  flex-wrap: wrap;
+  min-height: 150px;
   overflow: visible;
 }
 
-/* --- CARDS DESIGN --- */
-
+/* --- CARDS --- */
 .card{
-  width:140px;
-  height:140px;
-  border-radius:16px;
-  background-size:cover;
-  background-position:center;
-  position:relative;
-  cursor:grab;
-  transition: transform 0.25s cubic-bezier(0.2, 1, 0.3, 1);
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  width: 140px;
+  height: 140px;
+  border-radius: 14px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  cursor: grab;
+  transition: transform 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-/* Zoom 1.25 uniquement si la carte n'est PAS dans le pool */
 #tiers .card:hover{
-  transform:scale(1.25);
-  z-index:100;
-  box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+  transform: scale(1.25);
+  z-index: 50;
+  box-shadow: 0 10px 15px rgba(0,0,0,0.2);
 }
 
-/* Sélection discrète */
-.card:hover::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 16px;
-  background: rgba(0,0,0,0.1);
-  border: 1px solid rgba(255,255,255,0.3);
-  pointer-events: none;
-}
-
-.card.dragging{
-  opacity:.2;
-}
+.card.dragging{ opacity: 0.3; }
 
 .card-overlay{
-  position:absolute;
-  bottom:0;
-  width:100%;
-  padding:10px;
-  background: linear-gradient(transparent, rgba(0,0,0,0.8));
-  border-radius: 0 0 16px 16px;
-  color:white;
-  font-size:11px;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 10px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  border-radius: 0 0 14px 14px;
+  color: white;
+  font-size: 11px;
   box-sizing: border-box;
 }
 
-.card-tools{
-  position:absolute;
-  top:6px;
-  right:6px;
-  display:flex;
-  gap:4px;
-}
+.card-tools{ position: absolute; top: 6px; right: 6px; display: flex; gap: 4px; }
+.card-tools button{ background: rgba(0,0,0,0.6); border: none; color: white; padding: 3px 6px; font-size: 10px; }
 
-.card-tools button{
-  background:rgba(0,0,0,.6);
-  border:none;
-  color:white;
-  border-radius:6px;
-  padding:3px 6px;
-  font-size:10px;
-}
-
-/* DROP PREVIEW */
-
+/* PLACEHOLDER */
 .placeholder{
-  width:140px;
-  height:140px;
-  border-radius:16px;
-  border:2px dashed #888;
-  background:rgba(0,0,0,0.05);
+  width: 140px;
+  height: 140px;
+  border-radius: 14px;
+  border: 2px dashed #94a3b8;
+  background: rgba(0,0,0,0.03);
 }
 
-.hidden .card-tools,
-.hidden .tier-controls{
-  display:none;
-}
+.hidden .card-tools, .hidden .tier-controls{ display: none; }
 
 .pool-container{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  background:var(--bg);
-  padding:14px 25px;
-  border-top:2px solid var(--border);
-  z-index: 1000;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--bg);
+  padding: 15px 30px;
+  border-top: 1px solid var(--border);
+  z-index: 100;
 }
 
-.pool{
-  display:flex;
-  gap:14px;
-  flex-wrap:wrap;
-  min-height:150px;
-}
+.pool{ display: flex; gap: 14px; flex-wrap: wrap; min-height: 150px; }
 </style>
 </head>
 <body>
 
 <header>
-  <button onclick="addTier()">➕ Tier</button>
-  <button onclick="toggleEdit()" id="editBtn">✏️ Mode édition : OFF</button>
-  <button onclick="toggleDark()">🌙 Dark</button>
+  <div style="font-weight: 700; font-size: 18px; letter-spacing: -0.5px;">K-Tier</div>
+  <div class="header-btns">
+    <button onclick="addTier()">➕ Tier</button>
+    <button onclick="toggleEdit()" id="editBtn">✏️ Mode édition : OFF</button>
+    <button onclick="toggleDark()">🌙</button>
+  </div>
 </header>
 
 <div class="main">
-
-<div class="input-container">
-  <input type="text" id="artistInput" placeholder="Artiste">
-  <input type="text" id="titleInput" placeholder="Titre">
-  <button onclick="addSong()" style="background: #3b82f6; color: white; border: none;">Ajouter</button>
-</div>
-
-<div id="tiers"></div>
+  <div class="input-section">
+    <input type="text" id="artistInput" placeholder="Nom de l'artiste">
+    <input type="text" id="titleInput" placeholder="Titre de la chanson">
+    <button class="btn-add" onclick="addSong()">Ajouter</button>
+  </div>
+  <div id="tiers"></div>
 </div>
 
 <div class="pool-container">
-<h3 style="margin-top:0; font-size: 14px; opacity: 0.7;">🎵 Pool</h3>
-<div id="pool" class="pool"></div>
+  <h3 style="margin:0 0 10px 0; font-size: 13px; opacity: 0.5; text-transform: uppercase;">Pool</h3>
+  <div id="pool" class="pool"></div>
 </div>
 
 <script>
-/* ================= DATA ================= */
+let data = load();
+let editMode = false;
+let draggedId = null;
+let placeholder = null;
 
 function defaultData(){
   return {
@@ -255,269 +232,180 @@ function defaultData(){
 function load(){
   try{
     const raw=localStorage.getItem("tierData");
-    if(!raw) return defaultData();
-    const parsed=JSON.parse(raw);
-    if(parsed?.tiers && parsed?.pool) return parsed;
-  }catch(e){}
-  return defaultData();
+    return raw ? JSON.parse(raw) : defaultData();
+  }catch(e){ return defaultData(); }
 }
 
-function save(){
-  localStorage.setItem("tierData",JSON.stringify(data));
-}
-
-let data=load();
-let editMode=false;
-let draggedId=null;
-let placeholder=null;
-
-/* ================= RENDER ================= */
+function save(){ localStorage.setItem("tierData", JSON.stringify(data)); }
 
 function render(){
-  const tiersDiv=document.getElementById("tiers");
-  tiersDiv.innerHTML="";
+  const tiersDiv = document.getElementById("tiers");
+  tiersDiv.innerHTML = "";
 
   data.tiers.forEach(t=>{
-    const tier=document.createElement("div");
-    tier.className="tier";
+    const tier = document.createElement("div");
+    tier.className = "tier";
+    
+    const header = document.createElement("div");
+    header.className = "tier-header";
+    header.style.background = t.color;
+    header.innerHTML = `<span>${t.name}</span>`;
 
-    const header=document.createElement("div");
-    header.className="tier-header";
-    header.style.background=t.color;
+    const controls = document.createElement("div");
+    controls.className = "tier-controls";
 
-    const title=document.createElement("span");
-    title.textContent=t.name;
+    const colorInput = document.createElement("input");
+    colorInput.type = "color";
+    colorInput.value = t.color;
+    colorInput.onchange = e => { t.color = e.target.value; save(); render(); };
 
-    const controls=document.createElement("div");
-    controls.className="tier-controls";
+    const renameBtn = document.createElement("button");
+    renameBtn.textContent = "✏️";
+    renameBtn.onclick = () => { const n = prompt("Nom :", t.name); if(n){ t.name=n; save(); render(); }};
 
-    const colorInput=document.createElement("input");
-    colorInput.type="color";
-    colorInput.value=t.color;
-    // Correction du bug couleur : "change" au lieu de "input" pour ne pas casser le focus
-    colorInput.onchange=e=>{
-      t.color=e.target.value;
-      save();
-      render();
-    };
+    const delBtn = document.createElement("button");
+    delBtn.textContent = "🗑️";
+    delBtn.onclick = () => { if(confirm("Supprimer?")){ data.pool.push(...t.songs); data.tiers=data.tiers.filter(x=>x.id!==t.id); save(); render(); }};
 
-    const renameBtn=document.createElement("button");
-    renameBtn.textContent="✏️";
-    renameBtn.onclick=()=>{
-      const n=prompt("Nouveau nom :",t.name);
-      if(n){ t.name=n; save(); render(); }
-    };
+    controls.append(colorInput, renameBtn, delBtn);
+    header.append(controls);
+    tier.append(header);
 
-    const delBtn=document.createElement("button");
-    delBtn.textContent="🗑️";
-    delBtn.onclick=()=>{
-      if(confirm("Supprimer cette catégorie ?")){
-        data.pool.push(...t.songs);
-        data.tiers=data.tiers.filter(x=>x.id!==t.id);
-        save();
-        render();
-      }
-    };
-
-    controls.append(colorInput,renameBtn,delBtn);
-    header.append(title,controls);
-
-    const container=document.createElement("div");
-    container.className="cards";
-
-    setupDrop(container,t.id);
-
-    t.songs.forEach(song=>{
-      container.appendChild(createCard(song));
-    });
-
-    tier.append(header,container);
+    const container = document.createElement("div");
+    container.className = "cards";
+    setupDrop(container, t.id);
+    t.songs.forEach(s => container.appendChild(createCard(s)));
+    tier.append(container);
     tiersDiv.appendChild(tier);
   });
 
-  const pool=document.getElementById("pool");
-  pool.innerHTML="";
-  setupDrop(pool,null);
+  const pool = document.getElementById("pool");
+  pool.innerHTML = "";
+  setupDrop(pool, null);
+  data.pool.forEach(s => pool.appendChild(createCard(s)));
 
-  data.pool.forEach(song=>{
-    pool.appendChild(createCard(song));
-  });
-
-  document.body.classList.toggle("hidden",!editMode);
+  document.body.classList.toggle("hidden", !editMode);
 }
 
-/* ================= CARD ================= */
-
 function createCard(song){
-  const card=document.createElement("div");
-  card.className="card";
-  card.draggable=true;
-  card.dataset.id=song.id;
-  card.style.backgroundImage=`url(${song.cover||""})`;
+  const card = document.createElement("div");
+  card.className = "card";
+  card.draggable = true;
+  card.style.backgroundImage = `url(${song.cover})`;
 
-  card.onclick = () => {
-    if(!editMode && song.youtubeUrl) window.open(song.youtubeUrl, '_blank');
-  };
+  card.onclick = () => { if(!editMode) window.open(song.youtubeUrl, '_blank'); };
 
-  card.addEventListener("dragstart",()=>{
-    draggedId=song.id;
-    card.classList.add("dragging");
+  card.addEventListener("dragstart", () => {
+    draggedId = song.id;
+    setTimeout(() => card.classList.add("dragging"), 0);
   });
 
-  card.addEventListener("dragend",()=>{
+  card.addEventListener("dragend", () => {
     card.classList.remove("dragging");
     if(placeholder) placeholder.remove();
+    draggedId = null;
   });
 
-  const overlay=document.createElement("div");
-  overlay.className="card-overlay";
-  overlay.innerHTML=`<strong>${song.artist}</strong><br>${song.title}`;
-
-  const tools=document.createElement("div");
-  tools.className="card-tools";
-
-  const editBtn=document.createElement("button");
-  editBtn.textContent="✏️";
-  editBtn.onclick=(e)=>{
-    e.stopPropagation();
-    const a=prompt("Artiste :",song.artist);
-    const t=prompt("Titre :",song.title);
-    if(a!==null && t!==null){
-      song.artist=a.trim();
-      song.title=t.trim();
-      song.youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(song.artist + ' ' + song.title + ' official mv')}`;
-      save();
-      render();
-    }
-  };
-
-  const delBtn=document.createElement("button");
-  delBtn.textContent="🗑️";
-  delBtn.onclick=(e)=>{
-    e.stopPropagation();
-    removeSong(song.id);
-    save();
-    render();
-  }
-
-  tools.append(editBtn,delBtn);
-  card.append(overlay,tools);
-
+  card.innerHTML = `
+    <div class="card-overlay"><strong>${song.artist}</strong><br>${song.title}</div>
+    <div class="card-tools">
+      <button onclick="event.stopPropagation(); editSong('${song.id}')">✏️</button>
+      <button onclick="event.stopPropagation(); removeSong('${song.id}'); save(); render();">🗑️</button>
+    </div>
+  `;
   return card;
 }
 
-/* ================= DRAG SYSTEM ================= */
-
-function setupDrop(container,tierId){
-  container.addEventListener("dragover",e=>{
+function setupDrop(container, tierId){
+  container.addEventListener("dragover", e => {
     e.preventDefault();
-    const after=getDragAfterElement(container,e.clientX);
-    if(!placeholder){
-      placeholder=document.createElement("div");
-      placeholder.className="placeholder";
-    }
-    if(after==null) container.appendChild(placeholder);
-    else container.insertBefore(placeholder,after);
+    if(!placeholder) { placeholder = document.createElement("div"); placeholder.className = "placeholder"; }
+    const after = getDragAfterElement(container, e.clientX);
+    if(after == null) container.appendChild(placeholder);
+    else container.insertBefore(placeholder, after);
   });
 
-  container.addEventListener("drop",()=>{
+  container.addEventListener("drop", e => {
+    e.preventDefault();
     if(!draggedId) return;
-    const song=findSong(draggedId);
+    const song = findSong(draggedId);
     removeSong(draggedId);
 
     const children = [...container.querySelectorAll('.card:not(.dragging)')];
     const index = children.indexOf(placeholder.nextElementSibling);
     const finalIndex = index === -1 ? children.length : index;
 
-    if(tierId){
-      const tier=data.tiers.find(t=>t.id===tierId);
-      tier.songs.splice(finalIndex, 0, song);
-    }else{
-      data.pool.splice(finalIndex, 0, song);
-    }
+    if(tierId) data.tiers.find(t => t.id === tierId).songs.splice(finalIndex, 0, song);
+    else data.pool.splice(finalIndex, 0, song);
 
-    placeholder.remove();
+    // Supprimer immédiatement le placeholder pour éviter le bug visuel
+    if(placeholder) placeholder.remove();
     save();
     render();
   });
 }
 
-function getDragAfterElement(container,x){
-  const els=[...container.querySelectorAll(".card:not(.dragging)")];
+function getDragAfterElement(container, x){
+  const els = [...container.querySelectorAll(".card:not(.dragging)")];
   return els.reduce((closest, child) => {
     const box = child.getBoundingClientRect();
     const offset = x - box.left - box.width / 2;
-    if (offset < 0 && offset > closest.offset) {
-      return { offset: offset, element: child };
-    } else {
-      return closest;
-    }
+    if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
+    else return closest;
   }, { offset: -Infinity }).element;
 }
 
-/* ================= LOGIC ================= */
-
 function removeSong(id){
-  data.pool=data.pool.filter(s=>s.id!==id);
-  data.tiers.forEach(t=>{
-    t.songs=t.songs.filter(s=>s.id!==id);
-  });
+  data.pool = data.pool.filter(s => s.id !== id);
+  data.tiers.forEach(t => t.songs = t.songs.filter(s => s.id !== id));
 }
 
 function findSong(id){
-  return [...data.pool,...data.tiers.flatMap(t=>t.songs)]
-    .find(s=>s.id===id);
+  return [...data.pool, ...data.tiers.flatMap(t => t.songs)].find(s => s.id === id);
 }
 
-/* ================= ACTIONS ================= */
+function editSong(id){
+  const s = findSong(id);
+  const a = prompt("Artiste :", s.artist);
+  const t = prompt("Titre :", s.title);
+  if(a && t) { 
+    s.artist = a; s.title = t; 
+    s.youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(a + ' ' + t + ' official mv')}`;
+    save(); render(); 
+  }
+}
 
 async function addSong(){
-  const artist=document.getElementById("artistInput").value.trim();
-  const title=document.getElementById("titleInput").value.trim();
-  if(!artist||!title) return;
+  const artist = document.getElementById("artistInput").value.trim();
+  const title = document.getElementById("titleInput").value.trim();
+  if(!artist || !title) return;
 
-  const id=Date.now().toString()+Math.random().toString(16).slice(2);
-
-  let cover="";
-  try{
-    const res=await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(title+" "+artist)}&entity=song&limit=1`);
-    const json=await res.json();
-    cover=json.results[0]?.artworkUrl100?.replace("100x100","300x300")||"";
-  }catch(e){}
+  let cover = "";
+  try {
+    const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + " " + title)}&entity=song&limit=1`);
+    const json = await res.json();
+    cover = json.results[0]?.artworkUrl100?.replace("100x100", "300x300") || "";
+  } catch(e) {}
 
   const youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`;
-
-  data.pool.push({id,artist,title,cover,youtubeUrl});
-  save();
-  render();
-
-  document.getElementById("artistInput").value="";
-  document.getElementById("titleInput").value="";
+  data.pool.push({ id: Date.now().toString(), artist, title, cover, youtubeUrl });
+  save(); render();
+  document.getElementById("artistInput").value = "";
+  document.getElementById("titleInput").value = "";
 }
 
 function addTier(){
-  const name=prompt("Nom du tier ?");
-  if(!name) return;
-  data.tiers.push({
-    id:Date.now().toString(),
-    name,
-    color:"#3b82f6",
-    songs:[]
-  });
-  save();
-  render();
+  const name = prompt("Nom ?");
+  if(name) { data.tiers.push({ id: Date.now().toString(), name, color: "#3b82f6", songs: [] }); save(); render(); }
 }
 
 function toggleEdit(){
-  editMode=!editMode;
-  document.getElementById("editBtn").textContent=
-    editMode?"✏️ Mode édition : ON":"✏️ Mode édition : OFF";
+  editMode = !editMode;
+  document.getElementById("editBtn").textContent = editMode ? "✏️ Mode édition : ON" : "✏️ Mode édition : OFF";
   render();
 }
 
-function toggleDark(){
-  document.body.classList.toggle("dark");
-}
+function toggleDark(){ document.body.classList.toggle("dark"); }
 
 render();
 </script>
