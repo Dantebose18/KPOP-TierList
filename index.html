@@ -215,21 +215,26 @@ input[type="color"] {
   background-position: center;
   position: relative;
   cursor: grab;
-  /* Correction Jitter: la transition sur transform est souvent la cause. On la garde douce mais rapide. */
-  transition: transform 0.1s ease-out, box-shadow 0.2s, border-color 0.2s, height 0.3s ease;
+  /* Transition par défaut pour les effets visuels hors Drag & Drop */
+  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.2s, border-color 0.2s, height 0.3s ease;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.1);
   background-color: var(--card-bg);
 }
 
-/* IMPORTANT POUR CORRIGER LE TREMBLEMENT : On désactive les interactions sur la carte en cours de drag */
+/* --- CORRECTION ULTIME JITTER --- */
+/* Quand le BODY a la classe 'is-dragging', ON TUE TOUTES LES ANIMATIONS DE DÉPLACEMENT */
+/* Cela empêche les cartes de "glisser" sous la souris pendant qu'on vise */
+body.is-dragging .card {
+  transition: none !important;
+}
+
 .card.dragging {
   opacity: 0.4;
   transform: scale(0.95);
   grayscale: 100%;
-  pointer-events: none; /* Crucial pour le jitter */
-  transition: none !important; 
+  pointer-events: none; /* La souris passe à travers la carte qu'on tient */
 }
 
 #tiers .card:hover {
@@ -305,13 +310,13 @@ body.compact-active .card:hover .card-overlay {
 }
 .card-tools button:hover { background: var(--accent-secondary); border-color: transparent; }
 
-/* Placeholder FIX JITTER */
+/* Placeholder */
 .placeholder {
   width: 140px; height: 140px; border-radius: var(--radius-md);
   border: 2px dashed var(--text-muted); background: rgba(100,100,100,0.05);
   opacity: 0.5; animation: pulse 1.5s infinite; 
   transition: none;
-  pointer-events: none; /* CRUCIAL: Empêche la souris de détecter le placeholder comme cible */
+  pointer-events: none;
 }
 body.compact-active .placeholder { height: 70px; }
 
@@ -493,7 +498,7 @@ function importJson(input) {
   input.value = '';
 }
 
-/* --- LOGIQUE STATISTIQUES (TOP 3 & FLOP 3) --- */
+/* --- STATS --- */
 function showStats() {
   const modal = document.getElementById('statsModal');
   const body = document.getElementById('statsBody');
@@ -502,7 +507,6 @@ function showStats() {
   let artistStats = {};
   const maxScore = data.tiers.length;
   
-  // Calculs
   data.tiers.forEach((tier, index) => {
     const score = maxScore - index;
     tier.songs.forEach(song => {
@@ -524,17 +528,12 @@ function showStats() {
     };
   });
 
-  // Tri global
   rankings.sort((a, b) => b.avg - a.avg);
   
-  // Séparation TOP 3 et FLOP 3
   const top3 = rankings.slice(0, 3);
-  // Pour le Flop, on prend les 3 derniers et on inverse pour avoir le pire en premier ou dernier selon préférence
-  // Ici : Slice les 3 derniers, reverse pour afficher le "moins pire" en haut du flop, ou l'inverse.
-  // Logique : Flop 1 = Le pire du pire (donc la toute dernière position).
   let flop3 = [];
   if (rankings.length > 3) {
-      flop3 = rankings.slice(-3).reverse(); // Le dernier du tableau (le pire) devient le premier de la liste flop
+      flop3 = rankings.slice(-3).reverse(); 
   }
 
   const uniqueArtists = new Set([...rankings.map(r=>r.name), ...data.pool.map(s=>s.artist.trim())]).size;
@@ -647,10 +646,14 @@ function createCard(song){
 
   card.addEventListener("dragstart", () => {
     draggedId = song.id;
+    // On ajoute une classe au body pour tuer toutes les animations
+    document.body.classList.add("is-dragging");
     setTimeout(() => card.classList.add("dragging"), 0);
   });
 
   card.addEventListener("dragend", () => {
+    // On réactive les animations
+    document.body.classList.remove("is-dragging");
     card.classList.remove("dragging");
     if(placeholder) placeholder.remove();
     draggedId = null;
@@ -674,7 +677,6 @@ function setupDrop(container, tierId){
     e.preventDefault();
     if(!draggedId) return;
 
-    // FIX JITTER : Si on survole le placeholder ou l'élément draggué (via pointer-events, mais double sécu ici)
     if(e.target.classList.contains('placeholder') || e.target.classList.contains('dragging')) return;
 
     if(!placeholder) { 
@@ -705,28 +707,20 @@ function setupDrop(container, tierId){
     else data.pool.splice(finalIndex, 0, song);
 
     draggedId = null;
+    document.body.classList.remove("is-dragging"); // Sécurité
     save();
     render();
   });
 }
 
-// Amélioration de la détection (X et Y pour le wrap)
+// Détection classique X pour les grilles
 function getDragAfterElement(container, x, y){
   const els = [...container.querySelectorAll(".card:not(.dragging)")];
   
   return els.reduce((closest, child) => {
     const box = child.getBoundingClientRect();
-    // On calcule la distance entre la souris et le centre de chaque carte
-    const offsetX = x - (box.left + box.width / 2);
-    const offsetY = y - (box.top + box.height / 2);
-    
-    // Simplification pour grille : on regarde surtout celui qui suit immédiatement
-    // Mais pour la première place, la logique de base suffit si le placeholder ne gêne pas
-    // Ici on garde la logique X principale pour le tri horizontal dans les rangées
     const offset = x - box.left - box.width / 2;
     
-    // Si on est dans la même rangée visuelle (approximatif via Y)
-    // C'est une logique simplifiée qui fonctionne bien pour le wrap flex
     if (offset < 0 && offset > closest.offset) {
         return { offset: offset, element: child };
     } else {
