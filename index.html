@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KPOP Tier List Ultra</title>
+<title>KPOP Tier List</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 
 <style>
@@ -222,16 +222,10 @@ input[type="color"] {
   background-color: var(--card-bg);
 }
 
-/* ANTI-TREMBLEMENT : On coupe les animations pendant le drag */
-body.is-dragging .card {
-  transition: none !important;
-}
-
+/* ANTI-TREMBLEMENT */
+body.is-dragging .card { transition: none !important; }
 .card.dragging {
-  opacity: 0.4;
-  transform: scale(0.95);
-  grayscale: 100%;
-  pointer-events: none; 
+  opacity: 0.4; transform: scale(0.95); grayscale: 100%; pointer-events: none; 
 }
 
 #tiers .card:hover {
@@ -279,11 +273,15 @@ body.compact-active .card:hover .card-overlay {
 /* --- CARD TOOLS --- */
 .card-tools {
   position: absolute; top: 8px; right: 8px;
-  display: flex; flex-direction: column; gap: 6px;
+  display: flex; 
+  /* Modification: Inversion de l'ordre en mode normal (Supprimer en haut) */
+  flex-direction: column-reverse; 
+  gap: 6px;
   opacity: 0; transform: translateY(-10px);
   transition: all 0.2s ease;
 }
 .card:hover .card-tools, body.edit-active .card-tools { opacity: 1; transform: translateY(0); }
+
 .card-tools button {
   background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
   border: 1px solid rgba(255,255,255,0.2); color: white;
@@ -293,18 +291,18 @@ body.compact-active .card:hover .card-overlay {
 }
 .card-tools button:hover { background: var(--accent-secondary); border-color: transparent; }
 
-/* MODIFICATION: Outils en Mode Compact (Éditer Gauche / Supprimer Droite) */
+/* MODIFICATION: Outils en Mode Compact */
+/* Edit à gauche, Supprimer à droite, alignés en HAUT */
 body.compact-active .card-tools {
-  top: 0; bottom: 0;
-  left: 0; right: 0; /* Prend tout l'espace */
-  padding: 0 8px; /* Marges latérales */
+  top: 0; bottom: auto; /* Collé en haut */
+  left: 0; right: 0; 
+  padding: 4px 6px; /* Petite marge interne */
   flex-direction: row; /* Horizontal */
   justify-content: space-between; /* Ecartement max */
-  align-items: center; /* Centré verticalement */
-  transform: none; /* Pas de décalage initial */
+  align-items: flex-start; /* Alignement en haut */
+  transform: none; 
   opacity: 0;
 }
-/* On garde l'effet hover */
 body.compact-active .card:hover .card-tools { opacity: 1; }
 
 /* Placeholder */
@@ -627,6 +625,9 @@ function createCard(song){
     draggedId = null;
   });
 
+  // Note: Ordre HTML = Edit puis Delete. 
+  // CSS Normal: column-reverse => Delete en haut, Edit en bas.
+  // CSS Compact: row => Edit gauche, Delete droite.
   card.innerHTML = `
     <div class="card-overlay">
       <strong>${song.artist}</strong>
@@ -640,7 +641,6 @@ function createCard(song){
   return card;
 }
 
-/* --- LOGIQUE DRAG & DROP "Z-ORDER" (ROBUSTE) --- */
 function setupDrop(container, tierId){
   container.addEventListener("dragover", e => {
     e.preventDefault();
@@ -652,7 +652,6 @@ function setupDrop(container, tierId){
         placeholder.className = "placeholder"; 
     }
     
-    // On utilise la logique d'ordre séquentiel
     const after = getDragAfterElement(container, e.clientX, e.clientY);
     if(after == null) container.appendChild(placeholder);
     else container.insertBefore(placeholder, after);
@@ -681,28 +680,42 @@ function setupDrop(container, tierId){
   });
 }
 
-// Fonction de tri séquentiel (Ordre de lecture: Haut->Bas puis Gauche->Droite)
 function getDragAfterElement(container, x, y){
   const draggableElements = [...container.querySelectorAll('.card:not(.dragging)')];
 
-  // On cherche le premier élément dont le centre est "après" la souris
-  return draggableElements.find(child => {
+  // Cas spécial : Insertion tout au début si on est à gauche du premier
+  if (draggableElements.length > 0) {
+      const first = draggableElements[0];
+      const box = first.getBoundingClientRect();
+      if (y > box.top && y < box.bottom && x < box.left) {
+          return first;
+      }
+  }
+
+  // Logique Smart Grid 2D : Trouver le plus proche par distance Euclidienne
+  const closest = draggableElements.reduce((closest, child) => {
     const box = child.getBoundingClientRect();
-    const boxCenterY = box.top + box.height / 2;
     const boxCenterX = box.left + box.width / 2;
+    const boxCenterY = box.top + box.height / 2;
+    const dist = Math.hypot(x - boxCenterX, y - boxCenterY);
 
-    // Si on est nettement au-dessus de la ligne de cet élément, il est "après" nous
-    if (y < box.top) return true;
-    
-    // Si on est nettement en-dessous, il est "avant" nous, on continue
-    if (y > box.bottom) return false;
+    if (dist < closest.dist) {
+      return { dist: dist, element: child, box: box };
+    } else {
+      return closest;
+    }
+  }, { dist: Number.POSITIVE_INFINITY });
 
-    // Si on est sur la même "ligne" (visuellement), on regarde le X
-    // Si la souris est à gauche du centre de cet élément, alors cet élément est "après"
-    if (x < boxCenterX) return true;
-
-    return false;
-  });
+  if (closest.element) {
+     const box = closest.box;
+     const boxCenterX = box.left + box.width / 2;
+     
+     // Point de bascule : si souris à gauche du centre -> insertion avant
+     if (x < boxCenterX) return closest.element; 
+     else return closest.element.nextElementSibling;
+  }
+  
+  return null;
 }
 
 function removeSong(id){
@@ -775,15 +788,9 @@ function addTier(){
 function toggleEdit(){
   editMode = !editMode;
   const btn = document.getElementById("editBtn");
-  if(editMode) {
-      btn.innerHTML = "✅";
-      btn.style.background = "var(--accent-secondary)";
-      btn.style.color = "white";
-  } else {
-      btn.innerHTML = "✏️";
-      btn.style.background = "";
-      btn.style.color = "";
-  }
+  btn.innerHTML = editMode ? "✅" : "✏️";
+  btn.style.background = editMode ? "var(--accent-secondary)" : "";
+  btn.style.color = editMode ? "white" : "";
   render();
 }
 
