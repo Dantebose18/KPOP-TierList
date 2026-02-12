@@ -6,184 +6,261 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-:root{
-  --bg:#f8fafc;
-  --card:#ffffff;
-  --text:#1e293b;
-  --border:#e2e8f0;
-  --accent:#3b82f6;
+:root {
+  --bg: #fdfdfd;
+  --card: #ffffff;
+  --text: #0f172a;
+  --text-light: #64748b;
+  --border: #f1f5f9;
+  --accent: #6366f1;
+  --tier-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
 }
 
-body.dark{
-  --bg:#0f172a;
-  --card:#1e293b;
-  --text:#f8fafc;
-  --border:#334155;
+body.dark {
+  --bg: #020617;
+  --card: #0f172a;
+  --text: #f1f5f9;
+  --text-light: #94a3b8;
+  --border: #1e293b;
+  --tier-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
 }
 
-body{
-  margin:0;
-  font-family:'Inter', sans-serif;
-  background:var(--bg);
-  color:var(--text);
+body {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.3s ease;
+  line-height: 1.5;
 }
 
-/* --- DESIGN HEADER ÉPURÉ --- */
-header{
-  padding: 12px 30px;
+/* --- HEADER --- */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  padding: 16px 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--card);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
 }
 
-.header-btns {
-  display: flex;
-  gap: 10px;
+body.dark header { background: rgba(2, 6, 23, 0.8); }
+
+.logo {
+  font-weight: 800;
+  font-size: 1.5rem;
+  letter-spacing: -1px;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-/* --- DESIGN ZONE DE TEXTE PROPRE --- */
+.header-btns { display: flex; gap: 12px; }
+
+/* --- INPUTS --- */
 .input-section {
-  max-width: 600px;
-  margin: 30px auto;
+  max-width: 700px;
+  margin: 50px auto;
   display: flex;
-  gap: 8px;
-  padding: 6px;
+  gap: 12px;
+  padding: 10px;
   background: var(--card);
-  border-radius: 12px;
+  border-radius: 20px;
   border: 1px solid var(--border);
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  box-shadow: var(--tier-shadow);
 }
 
 input[type="text"] {
   flex: 1;
   border: none;
   background: transparent;
-  padding: 10px 15px;
+  padding: 12px 20px;
   font-family: inherit;
   color: var(--text);
+  font-weight: 500;
   outline: none;
-  font-size: 14px;
+  font-size: 15px;
 }
-
-input[type="text"]::placeholder { opacity: 0.5; }
 
 .btn-add {
   background: var(--accent);
   color: white;
   border: none;
-  padding: 8px 18px;
-  border-radius: 8px;
-  font-weight: 500;
+  padding: 0 25px;
+  border-radius: 14px;
+  font-weight: 600;
   cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
+.btn-add:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+}
+
+/* --- BUTTONS --- */
 button {
-  padding: 8px 14px;
-  border-radius: 8px;
+  padding: 10px 20px;
+  border-radius: 12px;
   border: 1px solid var(--border);
   background: var(--card);
   color: var(--text);
-  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-button:hover { background: #f1f5f9; border-color: #cbd5e1; }
+button:hover {
+  background: var(--border);
+  transform: translateY(-1px);
+}
 
-.main{
+/* --- TIER ROWS --- */
+.main {
   max-width: 1200px;
   margin: auto;
-  padding-bottom: 220px;
+  padding: 0 20px 250px 20px;
 }
 
-.tier{
+.tier {
   background: var(--card);
-  border-radius: 16px;
-  margin-bottom: 20px;
+  border-radius: 24px;
+  margin-bottom: 30px;
   overflow: visible;
+  box-shadow: var(--tier-shadow);
+  border: 1px solid var(--border);
 }
 
-.tier-header{
-  padding: 12px 20px;
+.tier-header {
+  padding: 20px 30px;
   color: white;
-  font-weight: 600;
-  border-radius: 16px 16px 0 0;
+  font-weight: 800;
+  font-size: 1.1rem;
+  border-radius: 24px 24px 0 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.tier-controls{ display: flex; gap: 8px; align-items: center; }
+.tier-controls { display: flex; gap: 10px; align-items: center; }
 
-.cards{
+.tier-controls input[type="color"] {
+  width: 28px;
+  height: 28px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.cards {
   display: flex;
-  gap: 14px;
-  padding: 16px;
+  gap: 20px;
+  padding: 25px;
   flex-wrap: wrap;
-  min-height: 150px;
+  min-height: 180px;
   overflow: visible;
 }
 
-/* --- CARDS --- */
-.card{
+/* --- CARDS DESIGN --- */
+.card {
   width: 140px;
   height: 140px;
-  border-radius: 14px;
+  border-radius: 20px;
   background-size: cover;
   background-position: center;
   position: relative;
   cursor: grab;
-  transition: transform 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
-#tiers .card:hover{
+#tiers .card:hover {
   transform: scale(1.25);
   z-index: 50;
-  box-shadow: 0 10px 15px rgba(0,0,0,0.2);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
 
-.card.dragging{ opacity: 0.3; }
+.card.dragging { opacity: 0.2; transform: scale(0.9); }
 
-.card-overlay{
+.card-overlay {
   position: absolute;
-  bottom: 0;
-  width: 100%;
-  padding: 10px;
-  background: linear-gradient(transparent, rgba(0,0,0,0.85));
-  border-radius: 0 0 14px 14px;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 15px;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent 70%);
+  border-radius: 20px;
   color: white;
-  font-size: 11px;
-  box-sizing: border-box;
+  pointer-events: none;
 }
 
-.card-tools{ position: absolute; top: 6px; right: 6px; display: flex; gap: 4px; }
-.card-tools button{ background: rgba(0,0,0,0.6); border: none; color: white; padding: 3px 6px; font-size: 10px; }
+.card-overlay strong { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; }
+.card-overlay span { font-size: 13px; font-weight: 700; line-height: 1.2; }
 
-/* PLACEHOLDER */
-.placeholder{
+.card-tools {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 5px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.card:hover .card-tools { opacity: 1; }
+
+.card-tools button {
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.9);
+  color: black;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  backdrop-filter: blur(4px);
+}
+
+/* --- PLACEHOLDER --- */
+.placeholder {
   width: 140px;
   height: 140px;
-  border-radius: 14px;
-  border: 2px dashed #94a3b8;
-  background: rgba(0,0,0,0.03);
+  border-radius: 20px;
+  border: 2.5px dashed var(--text-light);
+  background: rgba(0,0,0,0.02);
+  opacity: 0.5;
 }
 
-.hidden .card-tools, .hidden .tier-controls{ display: none; }
-
-.pool-container{
+/* --- POOL SECTION --- */
+.pool-container {
   position: fixed;
   bottom: 0; left: 0; right: 0;
-  background: var(--bg);
-  padding: 15px 30px;
+  background: var(--card);
+  padding: 25px 40px;
   border-top: 1px solid var(--border);
+  box-shadow: 0 -10px 30px rgba(0,0,0,0.04);
   z-index: 100;
 }
 
-.pool{ display: flex; gap: 14px; flex-wrap: wrap; min-height: 150px; }
+.pool-container h3 {
+  margin: 0 0 15px 0;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-light);
+}
+
+.pool { display: flex; gap: 15px; flex-wrap: wrap; min-height: 150px; }
+
+.hidden .card-tools, .hidden .tier-controls { display: none; }
 </style>
 </head>
 <body>
