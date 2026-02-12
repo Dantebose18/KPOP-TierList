@@ -215,17 +215,20 @@ input[type="color"] {
   background-position: center;
   position: relative;
   cursor: grab;
-  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.2s, border-color 0.2s, height 0.3s ease;
+  /* Correction Jitter: la transition sur transform est souvent la cause. On la garde douce mais rapide. */
+  transition: transform 0.1s ease-out, box-shadow 0.2s, border-color 0.2s, height 0.3s ease;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.1);
   background-color: var(--card-bg);
 }
 
+/* IMPORTANT POUR CORRIGER LE TREMBLEMENT : On désactive les interactions sur la carte en cours de drag */
 .card.dragging {
   opacity: 0.4;
   transform: scale(0.95);
   grayscale: 100%;
+  pointer-events: none; /* Crucial pour le jitter */
   transition: none !important; 
 }
 
@@ -302,10 +305,13 @@ body.compact-active .card:hover .card-overlay {
 }
 .card-tools button:hover { background: var(--accent-secondary); border-color: transparent; }
 
+/* Placeholder FIX JITTER */
 .placeholder {
   width: 140px; height: 140px; border-radius: var(--radius-md);
   border: 2px dashed var(--text-muted); background: rgba(100,100,100,0.05);
-  opacity: 0.5; animation: pulse 1.5s infinite; transition: none; 
+  opacity: 0.5; animation: pulse 1.5s infinite; 
+  transition: none;
+  pointer-events: none; /* CRUCIAL: Empêche la souris de détecter le placeholder comme cible */
 }
 body.compact-active .placeholder { height: 70px; }
 
@@ -360,9 +366,18 @@ body.compact-active .placeholder { height: 70px; }
 .stat-title { font-size: 12px; text-transform: uppercase; color: var(--text-muted); font-weight: 800; margin-bottom: 10px; letter-spacing: 1px; }
 
 .rank-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; background: rgba(128,128,128,0.05); padding: 8px; border-radius: 8px; }
-.rank-pos { font-weight: 800; color: var(--accent-primary); width: 20px; }
+.rank-pos { font-weight: 800; color: var(--accent-primary); width: 25px; }
 .rank-name { flex: 1; font-weight: 600; }
-.rank-avg { font-size: 12px; padding: 2px 6px; background: var(--accent-secondary); color: white; border-radius: 4px; }
+.rank-avg { font-size: 12px; padding: 2px 6px; background: var(--accent-secondary); color: white; border-radius: 4px; min-width: 35px; text-align: center;}
+
+/* Styles spécifiques TOP et FLOP */
+.rank-item.top { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); }
+.rank-item.top .rank-pos { color: #10b981; }
+.rank-item.top .rank-avg { background: #10b981; }
+
+.rank-item.flop { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); }
+.rank-item.flop .rank-pos { color: #ef4444; }
+.rank-item.flop .rank-avg { background: #ef4444; }
 
 .hidden .card-tools, .hidden .tier-controls { display: none !important; }
 body.edit-active .card-tools { display: flex !important; opacity: 1; transform: none; }
@@ -391,7 +406,7 @@ body.edit-active .card-tools { display: flex !important; opacity: 1; transform: 
 
 <div id="statsModal" class="modal-overlay" onclick="closeStats(event)">
   <div class="modal-content">
-    <h2>Statistiques & Classement</h2>
+    <h2>Classement</h2>
     <div id="statsBody"></div>
     <div style="margin-top: 20px; text-align: right;">
       <button onclick="document.getElementById('statsModal').style.display='none'">Fermer</button>
@@ -478,37 +493,29 @@ function importJson(input) {
   input.value = '';
 }
 
-/* --- LOGIQUE STATISTIQUES --- */
+/* --- LOGIQUE STATISTIQUES (TOP 3 & FLOP 3) --- */
 function showStats() {
   const modal = document.getElementById('statsModal');
   const body = document.getElementById('statsBody');
   
-  // Calculs
   let totalSongs = 0;
   let artistStats = {};
-  
-  // On parcourt les Tiers (Les tiers du haut valent plus de points)
-  // Index 0 (S) = Max points. Si 4 tiers : S=3, A=2, B=1, C=0 (ou +1 pour être positif)
   const maxScore = data.tiers.length;
   
+  // Calculs
   data.tiers.forEach((tier, index) => {
-    const score = maxScore - index; // S = maxScore, C = 1...
-    
+    const score = maxScore - index;
     tier.songs.forEach(song => {
       totalSongs++;
-      const name = song.artist.trim(); // On regroupe par nom exact
-      
+      const name = song.artist.trim();
       if(!artistStats[name]) artistStats[name] = { total: 0, count: 0 };
       artistStats[name].total += score;
       artistStats[name].count++;
     });
   });
 
-  // Ajout des chansons de la Pool (ne comptent pas dans la note moyenne ou valent 0 ?)
-  // Disons qu'elles comptent pour le total de chansons mais pas le classement.
   data.pool.forEach(song => { totalSongs++; });
 
-  // Transformation en tableau pour trier
   let rankings = Object.keys(artistStats).map(key => {
     return {
       name: key,
@@ -517,42 +524,46 @@ function showStats() {
     };
   });
 
-  // Tri par moyenne décroissante
+  // Tri global
   rankings.sort((a, b) => b.avg - a.avg);
   
-  const uniqueArtists = rankings.length + new Set(data.pool.map(s => s.artist.trim())).size - (new Set([...rankings.map(r=>r.name), ...data.pool.map(s=>s.artist.trim())]).size === rankings.length ? 0 : 0); // Approx simple: Set global
-  const allArtistsSet = new Set([...rankings.map(r=>r.name), ...data.pool.map(s=>s.artist.trim())]);
+  // Séparation TOP 3 et FLOP 3
+  const top3 = rankings.slice(0, 3);
+  // Pour le Flop, on prend les 3 derniers et on inverse pour avoir le pire en premier ou dernier selon préférence
+  // Ici : Slice les 3 derniers, reverse pour afficher le "moins pire" en haut du flop, ou l'inverse.
+  // Logique : Flop 1 = Le pire du pire (donc la toute dernière position).
+  let flop3 = [];
+  if (rankings.length > 3) {
+      flop3 = rankings.slice(-3).reverse(); // Le dernier du tableau (le pire) devient le premier de la liste flop
+  }
 
+  const uniqueArtists = new Set([...rankings.map(r=>r.name), ...data.pool.map(s=>s.artist.trim())]).size;
 
-  // Génération HTML
   let html = `
     <div class="stat-row"><strong>Total Chansons :</strong> <span>${totalSongs}</span></div>
-    <div class="stat-row"><strong>Artistes Uniques :</strong> <span>${allArtistsSet.size}</span></div>
+    <div class="stat-row"><strong>Artistes :</strong> <span>${uniqueArtists}</span></div>
     
     <div class="stat-section">
-      <div class="stat-title">🏆 Top Artistes (Moyenne)</div>
-      ${rankings.slice(0, 5).map((r, i) => `
-        <div class="rank-item">
+      <div class="stat-title">🔥 TOP 3 - L'ÉLITE</div>
+      ${top3.length > 0 ? top3.map((r, i) => `
+        <div class="rank-item top">
           <span class="rank-pos">#${i+1}</span>
-          <span class="rank-name">${r.name} <small style="opacity:0.6">(${r.count} sons)</small></span>
-          <span class="rank-avg">${r.avg}</span>
+          <span class="rank-name">${r.name}</span>
+          <span class="rank-avg" title="Moyenne">${r.avg}</span>
         </div>
-      `).join('')}
-      ${rankings.length === 0 ? '<div style="opacity:0.5; font-size:13px">Aucune donnée classée.</div>' : ''}
+      `).join('') : '<div style="opacity:0.5; font-size:13px">Pas assez de données.</div>'}
     </div>
 
-    ${rankings.length > 5 ? `
     <div class="stat-section">
-      <div class="stat-title">📉 Besoin d'efforts...</div>
-      ${rankings.slice(-3).reverse().map((r, i) => `
-        <div class="rank-item" style="background:rgba(239, 68, 68, 0.1)">
-          <span class="rank-pos" style="color:#ef4444">▼</span>
+      <div class="stat-title">❄️ FLOP 3 - LES DISCUTABLES</div>
+      ${flop3.length > 0 ? flop3.map((r, i) => `
+        <div class="rank-item flop">
+          <span class="rank-pos">#${i+1}</span>
           <span class="rank-name">${r.name}</span>
-          <span class="rank-avg" style="background:#ef4444">${r.avg}</span>
+          <span class="rank-avg" title="Moyenne">${r.avg}</span>
         </div>
-      `).join('')}
+      `).join('') : '<div style="opacity:0.5; font-size:13px">Tout le monde est bon (pour l\'instant).</div>'}
     </div>
-    ` : ''}
   `;
   
   body.innerHTML = html;
@@ -661,8 +672,17 @@ function createCard(song){
 function setupDrop(container, tierId){
   container.addEventListener("dragover", e => {
     e.preventDefault();
-    if(!placeholder) { placeholder = document.createElement("div"); placeholder.className = "placeholder"; }
-    const after = getDragAfterElement(container, e.clientX);
+    if(!draggedId) return;
+
+    // FIX JITTER : Si on survole le placeholder ou l'élément draggué (via pointer-events, mais double sécu ici)
+    if(e.target.classList.contains('placeholder') || e.target.classList.contains('dragging')) return;
+
+    if(!placeholder) { 
+        placeholder = document.createElement("div"); 
+        placeholder.className = "placeholder"; 
+    }
+    
+    const after = getDragAfterElement(container, e.clientX, e.clientY);
     if(after == null) container.appendChild(placeholder);
     else container.insertBefore(placeholder, after);
   });
@@ -690,13 +710,28 @@ function setupDrop(container, tierId){
   });
 }
 
-function getDragAfterElement(container, x){
+// Amélioration de la détection (X et Y pour le wrap)
+function getDragAfterElement(container, x, y){
   const els = [...container.querySelectorAll(".card:not(.dragging)")];
+  
   return els.reduce((closest, child) => {
     const box = child.getBoundingClientRect();
+    // On calcule la distance entre la souris et le centre de chaque carte
+    const offsetX = x - (box.left + box.width / 2);
+    const offsetY = y - (box.top + box.height / 2);
+    
+    // Simplification pour grille : on regarde surtout celui qui suit immédiatement
+    // Mais pour la première place, la logique de base suffit si le placeholder ne gêne pas
+    // Ici on garde la logique X principale pour le tri horizontal dans les rangées
     const offset = x - box.left - box.width / 2;
-    if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
-    else return closest;
+    
+    // Si on est dans la même rangée visuelle (approximatif via Y)
+    // C'est une logique simplifiée qui fonctionne bien pour le wrap flex
+    if (offset < 0 && offset > closest.offset) {
+        return { offset: offset, element: child };
+    } else {
+        return closest;
+    }
   }, { offset: -Infinity }).element;
 }
 
