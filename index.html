@@ -7,184 +7,290 @@
 
 <style>
 :root{
-  --bg:#f8fafc;
+  --bg:#f4f6fb;
+  --bg-gradient: radial-gradient(circle at 20% 20%, #e9ecff 0%, #f4f6fb 40%, #f4f6fb 100%);
   --card:#ffffff;
-  --text:#1e293b;
-  --border:#e2e8f0;
-  --accent:#3b82f6;
+  --glass:rgba(255,255,255,0.7);
+  --text:#0f172a;
+  --muted:#64748b;
+  --border:rgba(15,23,42,0.08);
+  --accent:#6366f1;
+  --accent-strong:#4f46e5;
+  --shadow-soft:0 10px 30px rgba(15,23,42,0.06);
+  --shadow-card:0 8px 20px rgba(15,23,42,0.08);
 }
 
 body.dark{
-  --bg:#0f172a;
-  --card:#1e293b;
-  --text:#f8fafc;
-  --border:#334155;
+  --bg:#0b0f19;
+  --bg-gradient: radial-gradient(circle at 20% 20%, #1a1f35 0%, #0b0f19 50%, #0b0f19 100%);
+  --card:#111827;
+  --glass:rgba(17,24,39,0.7);
+  --text:#f1f5f9;
+  --muted:#94a3b8;
+  --border:rgba(255,255,255,0.06);
+  --shadow-soft:0 10px 30px rgba(0,0,0,0.4);
+  --shadow-card:0 10px 25px rgba(0,0,0,0.5);
 }
 
 body{
   margin:0;
   font-family:'Inter', sans-serif;
   background:var(--bg);
+  background-image:var(--bg-gradient);
   color:var(--text);
+  -webkit-font-smoothing:antialiased;
 }
 
-/* --- DESIGN HEADER ÉPURÉ --- */
+/* ================= HEADER ================= */
+
 header{
-  padding: 12px 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--card);
-  border-bottom: 1px solid var(--border);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  padding: 18px 40px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  backdrop-filter: blur(14px);
+  background: var(--glass);
+  border-bottom:1px solid var(--border);
+  position:sticky;
+  top:0;
+  z-index:200;
 }
 
-.header-btns {
-  display: flex;
-  gap: 10px;
+header div:first-child{
+  font-weight:700;
+  font-size:20px;
+  letter-spacing:-0.5px;
 }
 
-/* --- DESIGN ZONE DE TEXTE PROPRE --- */
-.input-section {
-  max-width: 600px;
-  margin: 30px auto;
-  display: flex;
-  gap: 8px;
-  padding: 6px;
-  background: var(--card);
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+.header-btns{
+  display:flex;
+  gap:12px;
 }
 
-input[type="text"] {
-  flex: 1;
-  border: none;
-  background: transparent;
-  padding: 10px 15px;
-  font-family: inherit;
-  color: var(--text);
-  outline: none;
-  font-size: 14px;
+button{
+  padding:9px 16px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:var(--card);
+  color:var(--text);
+  font-size:13px;
+  cursor:pointer;
+  transition:all .25s ease;
 }
 
-input[type="text"]::placeholder { opacity: 0.5; }
-
-.btn-add {
-  background: var(--accent);
-  color: white;
-  border: none;
-  padding: 8px 18px;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
+button:hover{
+  transform:translateY(-2px);
+  box-shadow:var(--shadow-soft);
 }
 
-button {
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--card);
-  color: var(--text);
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s;
+/* Accent button */
+.btn-add{
+  background:var(--accent);
+  border:none;
+  color:white;
+  font-weight:500;
 }
 
-button:hover { background: #f1f5f9; border-color: #cbd5e1; }
+.btn-add:hover{
+  background:var(--accent-strong);
+}
+
+/* ================= INPUT ================= */
+
+.input-section{
+  max-width:700px;
+  margin:50px auto 40px auto;
+  display:flex;
+  gap:10px;
+  padding:12px;
+  border-radius:18px;
+  background:var(--glass);
+  backdrop-filter:blur(18px);
+  box-shadow:var(--shadow-soft);
+  border:1px solid var(--border);
+}
+
+input[type="text"]{
+  flex:1;
+  border:none;
+  background:transparent;
+  padding:12px 16px;
+  font-family:inherit;
+  font-size:14px;
+  color:var(--text);
+  outline:none;
+}
+
+input::placeholder{
+  color:var(--muted);
+}
+
+/* ================= LAYOUT ================= */
 
 .main{
-  max-width: 1200px;
-  margin: auto;
-  padding-bottom: 220px;
+  max-width:1200px;
+  margin:auto;
+  padding-bottom:260px;
 }
 
+/* ================= TIER ================= */
+
 .tier{
-  background: var(--card);
-  border-radius: 16px;
-  margin-bottom: 20px;
-  overflow: visible;
+  margin-bottom:28px;
+  border-radius:22px;
+  background:var(--card);
+  box-shadow:var(--shadow-soft);
+  overflow:hidden;
+  border:1px solid var(--border);
 }
 
 .tier-header{
-  padding: 12px 20px;
-  color: white;
-  font-weight: 600;
-  border-radius: 16px 16px 0 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  padding:18px 24px;
+  font-weight:600;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:15px;
+  letter-spacing:0.3px;
 }
 
-.tier-controls{ display: flex; gap: 8px; align-items: center; }
+.tier-controls{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
 
 .cards{
-  display: flex;
-  gap: 14px;
-  padding: 16px;
-  flex-wrap: wrap;
-  min-height: 150px;
-  overflow: visible;
+  display:flex;
+  gap:18px;
+  padding:22px;
+  flex-wrap:wrap;
+  min-height:160px;
 }
 
-/* --- CARDS --- */
+/* ================= CARDS ================= */
+
 .card{
-  width: 140px;
-  height: 140px;
-  border-radius: 14px;
-  background-size: cover;
-  background-position: center;
-  position: relative;
-  cursor: grab;
-  transition: transform 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  width:150px;
+  height:150px;
+  border-radius:18px;
+  background-size:cover;
+  background-position:center;
+  position:relative;
+  cursor:grab;
+  transition:all .3s ease;
+  box-shadow:var(--shadow-card);
+  overflow:hidden;
 }
 
-#tiers .card:hover{
-  transform: scale(1.25);
-  z-index: 50;
-  box-shadow: 0 10px 15px rgba(0,0,0,0.2);
+.card::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.1));
+  opacity:0;
+  transition:.3s;
 }
 
-.card.dragging{ opacity: 0.3; }
+.card:hover{
+  transform:translateY(-6px) scale(1.05);
+}
 
+.card:hover::after{
+  opacity:1;
+}
+
+.card.dragging{
+  opacity:0.3;
+}
+
+/* Overlay text */
 .card-overlay{
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  padding: 10px;
-  background: linear-gradient(transparent, rgba(0,0,0,0.85));
-  border-radius: 0 0 14px 14px;
-  color: white;
-  font-size: 11px;
-  box-sizing: border-box;
+  position:absolute;
+  bottom:0;
+  padding:14px;
+  width:100%;
+  font-size:12px;
+  color:white;
+  z-index:2;
+  opacity:0;
+  transform:translateY(10px);
+  transition:.3s;
 }
 
-.card-tools{ position: absolute; top: 6px; right: 6px; display: flex; gap: 4px; }
-.card-tools button{ background: rgba(0,0,0,0.6); border: none; color: white; padding: 3px 6px; font-size: 10px; }
+.card:hover .card-overlay{
+  opacity:1;
+  transform:translateY(0);
+}
 
-/* PLACEHOLDER */
+.card-overlay strong{
+  font-weight:600;
+  font-size:13px;
+}
+
+/* Tools */
+.card-tools{
+  position:absolute;
+  top:8px;
+  right:8px;
+  display:flex;
+  gap:6px;
+  z-index:3;
+}
+
+.card-tools button{
+  background:rgba(0,0,0,0.6);
+  border:none;
+  color:white;
+  padding:4px 7px;
+  font-size:10px;
+  border-radius:6px;
+}
+
+/* Placeholder */
 .placeholder{
-  width: 140px;
-  height: 140px;
-  border-radius: 14px;
-  border: 2px dashed #94a3b8;
-  background: rgba(0,0,0,0.03);
+  width:150px;
+  height:150px;
+  border-radius:18px;
+  border:2px dashed var(--muted);
+  opacity:0.4;
 }
 
-.hidden .card-tools, .hidden .tier-controls{ display: none; }
+/* ================= POOL ================= */
 
 .pool-container{
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  background: var(--bg);
-  padding: 15px 30px;
-  border-top: 1px solid var(--border);
-  z-index: 100;
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  padding:25px 40px;
+  backdrop-filter:blur(20px);
+  background:var(--glass);
+  border-top:1px solid var(--border);
+  z-index:150;
 }
 
-.pool{ display: flex; gap: 14px; flex-wrap: wrap; min-height: 150px; }
+.pool-container h3{
+  margin:0 0 12px 0;
+  font-size:12px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+
+.pool{
+  display:flex;
+  gap:18px;
+  flex-wrap:wrap;
+  min-height:160px;
+}
+
+.hidden .card-tools,
+.hidden .tier-controls{
+  display:none;
+}
 </style>
+
 </head>
 <body>
 
