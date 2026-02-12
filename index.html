@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KPOP Tier List</title>
+<title>KPOP Tier List Ultra</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 
 <style>
@@ -51,21 +51,28 @@ body {
   min-height: 100vh;
 }
 
-/* --- HEADER --- */
+/* --- HEADER GLASS --- */
 header {
-  position: sticky; top: 0; z-index: 1000;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
   padding: 15px 30px;
-  display: flex; justify-content: space-between; align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   background: var(--card-bg);
-  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: var(--card-border);
   box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
 }
 
 .logo {
-  font-weight: 800; font-size: 24px;
+  font-weight: 800;
+  font-size: 24px;
   background: var(--accent-gradient);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   letter-spacing: -0.5px;
 }
 
@@ -74,64 +81,108 @@ header {
 /* --- BOUTONS --- */
 button {
   padding: 8px 14px;
-  border-radius: var(--radius-sm); border: var(--card-border);
-  background: var(--card-bg); color: var(--text-main);
-  font-size: 13px; font-weight: 600; cursor: pointer;
+  border-radius: var(--radius-sm);
+  border: var(--card-border);
+  background: var(--card-bg);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
   font-family: 'Outfit', sans-serif;
-  display: inline-flex; align-items: center; gap: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
+
 button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1); background: rgba(255,255,255,0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  background: rgba(255,255,255,0.1);
 }
+
 .btn-primary {
-  background: var(--accent-gradient); color: white; border: none;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); padding: 10px 18px; font-size: 14px;
+  background: var(--accent-gradient);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  padding: 10px 18px;
+  font-size: 14px;
 }
+
 .btn-primary:hover {
   box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
   background: linear-gradient(135deg, #4f46e5 0%, #db2777 100%);
 }
+
 .icon-btn { padding: 8px 12px; font-size: 16px; }
 
 /* --- INPUT SECTION --- */
 .input-section {
-  max-width: 700px; margin: 40px auto;
-  display: flex; gap: 10px; padding: 8px;
-  background: var(--card-bg); border: var(--card-border);
+  max-width: 700px;
+  margin: 40px auto;
+  display: flex;
+  gap: 10px;
+  padding: 8px;
+  background: var(--card-bg);
+  border: var(--card-border);
   border-radius: var(--radius-md);
-  box-shadow: var(--glass-shadow); backdrop-filter: blur(8px);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(8px);
 }
+
 input[type="text"] {
-  flex: 1; border: none; background: transparent; padding: 12px 20px;
-  font-family: inherit; font-size: 15px; color: var(--text-main);
-  border-radius: var(--radius-sm); transition: background 0.2s;
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 12px 20px;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--text-main);
+  border-radius: var(--radius-sm);
+  transition: background 0.2s;
 }
+
 input[type="text"]:focus { background: rgba(100,100,100,0.05); }
 input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 
 /* --- MAIN LAYOUT --- */
-.main { max-width: 1320px; margin: auto; padding: 0 20px 240px 20px; }
+.main {
+  max-width: 1320px; 
+  margin: auto;
+  padding: 0 20px 240px 20px;
+}
 
 .tier {
-  background: var(--card-bg); border: var(--card-border);
-  border-radius: var(--radius-md); margin-bottom: 25px;
+  background: var(--card-bg);
+  border: var(--card-border);
+  border-radius: var(--radius-md);
+  margin-bottom: 25px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-  overflow: visible; display: flex; flex-direction: column;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
 }
 
 .tier-header {
-  padding: 15px 25px; color: white; font-weight: 800; font-size: 20px;
-  display: flex; justify-content: space-between; align-items: center;
+  padding: 15px 25px;
+  color: white;
+  font-weight: 800;
+  font-size: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  position: relative; border-radius: var(--radius-md) var(--radius-md) 0 0;
+  position: relative;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
   overflow: hidden;
 }
+
 .tier-header::after {
   content: ''; position: absolute; top:0; left:0; right:0; bottom:0;
-  background: linear-gradient(90deg, rgba(255,255,255,0.1), transparent); pointer-events: none;
+  background: linear-gradient(90deg, rgba(255,255,255,0.1), transparent);
+  pointer-events: none;
 }
 
 .tier-controls { display: flex; gap: 8px; align-items: center; z-index: 2; }
@@ -141,102 +192,122 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 }
 .tier-controls button:hover { background: rgba(0,0,0,0.4); }
 
-/* --- DESIGN COLOR PICKER --- */
+/* --- REDESIGN COLOR PICKER --- */
 input[type="color"] {
-  -webkit-appearance: none; border: none;
-  width: 32px; height: 32px;
-  border-radius: 50%; 
-  cursor: pointer; overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  -webkit-appearance: none;
+  border: 2px solid rgba(255,255,255,0.5);
+  width: 28px; height: 28px;
+  border-radius: 50%; /* Rond */
+  cursor: pointer;
   background: none;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   transition: transform 0.2s;
 }
 input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-input[type="color"]::-webkit-color-swatch { border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; }
+input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; }
 input[type="color"]:hover { transform: scale(1.1); }
 
 .cards {
-  display: flex; gap: 16px; padding: 20px; flex-wrap: wrap;
-  min-height: 160px; align-content: flex-start;
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  flex-wrap: wrap;
+  min-height: 160px;
+  align-content: flex-start;
 }
 
 /* --- CARDS --- */
 .card {
-  width: 140px; height: 140px;
+  width: 140px;
+  height: 140px;
   border-radius: var(--radius-md);
-  background-size: cover; background-position: center;
-  position: relative; cursor: grab;
-  /* Correction Jitter: transition rapide */
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  cursor: grab;
+  /* Correction Jitter Drag & Drop : transition rapide */
   transition: transform 0.1s ease-out, box-shadow 0.2s, border-color 0.2s, height 0.2s ease;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  overflow: hidden;
+  overflow: visible; /* Important pour l'animation qui dépasse */
   border: 1px solid rgba(255,255,255,0.1);
   background-color: var(--card-bg);
 }
 
-/* ANTI-TREMBLEMENT: DÉSACTIVE ANIMATION PENDANT DRAG */
-body.is-dragging .card { transition: none !important; }
+/* --- ANIMATION FAVORIS (Bordure tournante) --- */
+@keyframes borderRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.card.fav::before {
+  content: "";
+  position: absolute;
+  top: -4px; left: -4px; right: -4px; bottom: -4px;
+  border-radius: 20px; /* Un peu plus grand que la carte */
+  background: linear-gradient(45deg, #ff00cc, #3333ff, #00ccff, #ff00cc);
+  background-size: 400%;
+  z-index: -1;
+  animation: borderRotate 4s linear infinite;
+  opacity: 0.8;
+  filter: blur(4px);
+}
+/* Le z-index -1 met l'anim derrière, on s'assure que le fond de la carte est opaque */
+.card { background-clip: padding-box; }
+
+/* ANTI-TREMBLEMENT : On coupe les animations pendant le drag */
+body.is-dragging .card {
+  transition: none !important;
+}
+
 .card.dragging {
-  opacity: 0.4; transform: scale(0.95); grayscale: 100%; pointer-events: none; 
+  opacity: 0.4;
+  transform: scale(0.95);
+  grayscale: 100%;
+  pointer-events: none; 
 }
 
 #tiers .card:hover {
-  transform: scale(1.15) translateY(-5px); z-index: 50;
-  box-shadow: 0 20px 30px rgba(0,0,0,0.25); border-color: var(--accent-secondary);
+  transform: scale(1.15) translateY(-5px);
+  z-index: 50;
+  border-color: var(--accent-secondary);
 }
-
-/* --- ANIMATION FAVORIS (BORDURE TOURNANTE) --- */
-@property --angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
-@keyframes rotateBorder { to { --angle: 360deg; } }
-
-.card.is-favorite::before {
-  content: ''; position: absolute; inset: 0;
-  padding: 3px; /* Épaisseur de la bordure */
-  border-radius: var(--radius-md);
-  background: conic-gradient(from var(--angle), transparent 20%, #ec4899, #8b5cf6, #ec4899);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor; mask-composite: exclude;
-  animation: rotateBorder 3s linear infinite;
-  pointer-events: none; z-index: 2;
-}
-/* Fallback si @property non supporté */
-.card.is-favorite { border-color: #ec4899 !important; }
 
 .card-overlay {
   position: absolute; bottom: 0; width: 100%;
   padding: 40px 10px 10px 10px;
   background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
   color: white; font-size: 12px; line-height: 1.3; text-align: center; pointer-events: none;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
   transition: all 0.2s;
-  display: flex; flex-direction: column; justify-content: flex-end;
 }
+
 .card-overlay strong {
   display: block; font-size: 13px; margin-bottom: 2px;
   color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);
 }
 
-/* --- CARD TOOLS --- */
-/* Groupe Gauche: Edit (Haut), Fav (Bas) */
-.card-tools-left {
-  position: absolute; top: 6px; left: 6px;
-  display: flex; flex-direction: column; gap: 4px;
-  opacity: 0; transform: translateY(-10px);
-  transition: all 0.2s ease; z-index: 60;
+/* --- CARD TOOLS (Redesign demandé) --- */
+/* Boutons cachés par défaut, montrés SEULEMENT si body.edit-active */
+.card-tools-left, .card-tools-right {
+  display: none; /* Caché par défaut */
+  position: absolute; 
+  top: 6px;
+  flex-direction: column; 
+  gap: 4px;
+  z-index: 60;
 }
 
-/* Groupe Droite: Delete */
-.card-tools-right {
-  position: absolute; top: 6px; right: 6px;
-  display: flex; flex-direction: column; gap: 4px;
-  opacity: 0; transform: translateY(-10px);
-  transition: all 0.2s ease; z-index: 60;
+/* On affiche uniquement quand le mode édition est ACTIF */
+body.edit-active .card-tools-left, 
+body.edit-active .card-tools-right {
+  display: flex;
+  animation: fadeIn 0.2s;
 }
 
-/* VISIBILITÉ: Seulement hover ou edit mode. Pas sur favoris auto. */
-.card:hover .card-tools-left, .card:hover .card-tools-right,
-body.edit-active .card-tools-left, body.edit-active .card-tools-right { 
-  opacity: 1; transform: translateY(0); 
-}
+.card-tools-left { left: 6px; } /* Edit en haut, Fav en dessous */
+.card-tools-right { right: 6px; } /* Delete en haut à droite */
 
 .card button {
   background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
@@ -244,18 +315,21 @@ body.edit-active .card-tools-left, body.edit-active .card-tools-right {
   padding: 0; width: 26px; height: 26px;
   display: flex; align-items: center; justify-content: center;
   border-radius: 50%; font-size: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  cursor: pointer;
 }
 .card button:hover { background: var(--accent-secondary); border-color: transparent; }
 
-.fav-btn.active {
-  background: var(--accent-secondary) !important; color: white !important;
-}
+/* Indicateur visuel pour le bouton favori actif */
+button.is-fav { color: #ff3b3b; font-weight: bold; background: rgba(255,255,255,0.9); }
+
+@keyframes fadeIn { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:translateY(0); } }
 
 /* --- MODE COMPACT --- */
 body.compact-active .card { height: 70px; }
 body.compact-active .card-overlay {
   top: 0; padding: 5px; background: rgba(0,0,0,0.7); 
   justify-content: center; gap: 2px;
+  display: flex; flex-direction: column;
 }
 body.compact-active .card-overlay strong { font-size: 12px; margin: 0; white-space: normal; line-height: 1.1; }
 body.compact-active .card-overlay span { font-size: 11px; opacity: 0.9; line-height: 1.1; }
@@ -266,11 +340,11 @@ body.compact-active .card:hover {
 body.compact-active .card:hover .card-overlay {
   top: auto; bottom: 0;
   background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
-  padding: 40px 10px 10px 10px; justify-content: flex-end;
+  padding: 40px 10px 10px 10px;
+  justify-content: flex-end;
 }
 
-/* Outils en Mode Compact */
-/* On force le positionnement en haut */
+/* Outils en Mode Compact : Mêmes positions relatives */
 body.compact-active .card-tools-left { top: 4px; left: 4px; }
 body.compact-active .card-tools-right { top: 4px; right: 4px; }
 
@@ -306,7 +380,7 @@ body.compact-active .placeholder { height: 70px; }
 .pool::-webkit-scrollbar-track { background: transparent; }
 .pool::-webkit-scrollbar-thumb { background-color: var(--text-muted); border-radius: 10px; }
 
-/* --- MODALS --- */
+/* --- MODAL FAVORIS & RESET --- */
 .modal-overlay {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
@@ -319,31 +393,19 @@ body.compact-active .placeholder { height: 70px; }
   max-height: 80vh; overflow-y: auto;
 }
 .modal-content h2 { margin-top: 0; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; border-bottom: 1px solid rgba(128,128,128,0.1); padding-bottom: 5px; }
-.stat-row strong { font-weight: 600; }
-.stat-section { margin-top: 20px; }
-.stat-title { font-size: 12px; text-transform: uppercase; color: var(--text-muted); font-weight: 800; margin-bottom: 10px; letter-spacing: 1px; }
 
-.rank-item, .fav-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; background: rgba(128,128,128,0.05); padding: 8px; border-radius: 8px; }
-.rank-pos { font-weight: 800; color: var(--accent-primary); width: 25px; }
-.rank-name { flex: 1; font-weight: 600; }
-.rank-avg { font-size: 12px; padding: 2px 6px; background: var(--accent-secondary); color: white; border-radius: 4px; min-width: 35px; text-align: center;}
-.rank-item.top { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); }
-.rank-item.top .rank-pos { color: #10b981; }
-.rank-item.top .rank-avg { background: #10b981; }
-.rank-item.flop { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); }
-.rank-item.flop .rank-pos { color: #ef4444; }
-.rank-item.flop .rank-avg { background: #ef4444; }
-
-.fav-item { cursor: pointer; transition: background 0.2s; }
-.fav-item:hover { background: rgba(128,128,128,0.1); }
-.fav-thumb { width: 40px; height: 40px; border-radius: 6px; background-size: cover; background-position: center; }
-.fav-info { flex: 1; }
+.fav-item {
+  display: flex; align-items: center; gap: 12px; padding: 10px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px; margin-bottom: 8px; cursor: pointer; transition: background 0.2s;
+}
+.fav-item:hover { background: rgba(255,255,255,0.1); }
+.fav-thumb { width: 50px; height: 50px; border-radius: 8px; background-size: cover; background-position: center; }
 .fav-info strong { display: block; font-size: 14px; }
 .fav-info span { font-size: 12px; opacity: 0.7; }
 
 .hidden .card-tools, .hidden .tier-controls { display: none !important; }
-body.edit-active .card-tools { display: flex !important; opacity: 1; transform: none; }
+/* body.edit-active gere maintenant la visibilité */
 </style>
 </head>
 <body class="dark">
@@ -353,12 +415,11 @@ body.edit-active .card-tools { display: flex !important; opacity: 1; transform: 
   <div class="header-btns">
     <button onclick="exportJson()">💾 Sauver</button>
     <button onclick="document.getElementById('fileInput').click()">📂 Charger</button>
-    <button onclick="resetData()" style="color:#ef4444; border-color:rgba(239,68,68,0.3);" title="Tout effacer">🗑️</button>
+    <button onclick="resetData()" style="color:#ef4444; border-color:rgba(239,68,68,0.3);" title="Remise à zéro">🗑️</button>
     
     <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;"></div>
     
-    <button onclick="showFavs()" class="icon-btn" title="Mes Favoris">❤️</button>
-    <button onclick="showStats()" class="icon-btn" title="Statistiques">📊</button>
+    <button onclick="openFavModal()" class="icon-btn" title="Mes Favoris">❤️</button>
     <button onclick="toggleCompact()" id="compactBtn" class="icon-btn" title="Vue Compacte">☰</button>
     
     <button onclick="toggleEdit()" id="editBtn" class="icon-btn">✏️</button>
@@ -369,20 +430,10 @@ body.edit-active .card-tools { display: flex !important; opacity: 1; transform: 
 
 <input type="file" id="fileInput" style="display:none" accept=".json" onchange="importJson(this)">
 
-<div id="statsModal" class="modal-overlay" onclick="closeModal(event, 'statsModal')">
-  <div class="modal-content">
-    <h2>Classement</h2>
-    <div id="statsBody"></div>
-    <div style="margin-top: 20px; text-align: right;">
-      <button onclick="document.getElementById('statsModal').style.display='none'">Fermer</button>
-    </div>
-  </div>
-</div>
-
 <div id="favModal" class="modal-overlay" onclick="closeModal(event, 'favModal')">
   <div class="modal-content">
     <h2>Mes Coups de Cœur ❤️</h2>
-    <div id="favBody"></div>
+    <div id="favList"></div>
     <div style="margin-top: 20px; text-align: right;">
       <button onclick="document.getElementById('favModal').style.display='none'">Fermer</button>
     </div>
@@ -406,9 +457,9 @@ body.edit-active .card-tools { display: flex !important; opacity: 1; transform: 
 
 <script>
 // ==========================================
-// CONFIGURATION
+// CONFIGURATION API
 // ==========================================
-const YOUTUBE_API_KEY = "AIzaSyBzRO4J6W-M8uSt2k9vd1HJHECCwdKdiGM"; 
+const YOUTUBE_API_KEY = ""; 
 // ==========================================
 
 let data = load();
@@ -438,152 +489,65 @@ function load(){
 
 function save(){ localStorage.setItem("tierData", JSON.stringify(data)); }
 
-function resetData() {
-  if(confirm("⚠️ ATTENTION : Cela va effacer toute votre Tier List !\n\nÊtes-vous sûr de vouloir tout remettre à zéro ?")) {
+function resetData(){
+  if(confirm("⚠️ Tout effacer et remettre à zéro ?")){
     localStorage.removeItem("tierData");
     data = defaultData();
-    save(); render();
+    render();
   }
 }
 
-function toggleFav(id) {
-  const song = findSong(id);
-  if (song) {
-    song.fav = !song.fav;
-    save(); render();
-  }
-}
-
-function showFavs() {
+function openFavModal(){
   const modal = document.getElementById('favModal');
-  const body = document.getElementById('favBody');
-  const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
+  const container = document.getElementById('favList');
+  container.innerHTML = "";
+  
+  let allSongs = [...data.pool];
+  data.tiers.forEach(t => allSongs.push(...t.songs));
   const favs = allSongs.filter(s => s.fav);
 
-  if (favs.length === 0) {
-    body.innerHTML = '<div style="text-align:center; opacity:0.6; padding:20px;">Aucun favori pour le moment.<br>Cliquez sur le ❤️ sur une carte pour l\'ajouter.</div>';
+  if(favs.length === 0){
+    container.innerHTML = "<p style='text-align:center; opacity:0.5'>Aucun favori.</p>";
   } else {
-    body.innerHTML = favs.map(s => `
-      <div class="fav-item" onclick="window.open('${s.youtubeUrl}', '_blank')">
+    favs.forEach(s => {
+      const div = document.createElement("div");
+      div.className = "fav-item";
+      div.onclick = () => window.open(s.youtubeUrl, '_blank');
+      div.innerHTML = `
         <div class="fav-thumb" style="background-image:url(${s.cover})"></div>
         <div class="fav-info">
           <strong>${s.artist}</strong>
           <span>${s.title}</span>
         </div>
-        <div style="font-size:20px">▶️</div>
-      </div>
-    `).join('');
-  }
-  modal.style.display = 'flex';
-}
-
-function exportJson() {
-  const dataStr = JSON.stringify(data, null, 2);
-  const blob = new Blob([dataStr], {type: "application/json"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = "kpop_tierlist_backup.json";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
-
-function importJson(input) {
-  const file = input.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const json = JSON.parse(e.target.result);
-      if(!json.tiers || !json.pool) throw new Error("Format invalide");
-      data = json;
-      save(); render(); alert("Sauvegarde chargée !");
-    } catch(err) { alert("Erreur fichier."); }
-  };
-  reader.readAsText(file);
-  input.value = '';
-}
-
-function showStats() {
-  const modal = document.getElementById('statsModal');
-  const body = document.getElementById('statsBody');
-  
-  let totalSongs = 0;
-  let artistStats = {};
-  const maxScore = data.tiers.length;
-  
-  data.tiers.forEach((tier, index) => {
-    const score = maxScore - index;
-    tier.songs.forEach(song => {
-      totalSongs++;
-      const name = song.artist.trim();
-      if(!artistStats[name]) artistStats[name] = { total: 0, count: 0 };
-      artistStats[name].total += score;
-      artistStats[name].count++;
+        <div style="margin-left:auto">▶️</div>
+      `;
+      container.appendChild(div);
     });
-  });
-  data.pool.forEach(song => { totalSongs++; });
-
-  let rankings = Object.keys(artistStats).map(key => {
-    return {
-      name: key,
-      avg: (artistStats[key].total / artistStats[key].count).toFixed(2),
-      count: artistStats[key].count
-    };
-  });
-
-  rankings.sort((a, b) => b.avg - a.avg);
-  
-  const top3 = rankings.slice(0, 3);
-  let flop3 = [];
-  if (rankings.length > 3) {
-      flop3 = rankings.slice(-3).reverse(); 
   }
-
-  const uniqueArtists = new Set([...rankings.map(r=>r.name), ...data.pool.map(s=>s.artist.trim())]).size;
-
-  let html = `
-    <div class="stat-row"><strong>Total Chansons :</strong> <span>${totalSongs}</span></div>
-    <div class="stat-row"><strong>Artistes :</strong> <span>${uniqueArtists}</span></div>
-    
-    <div class="stat-section">
-      <div class="stat-title">🔥 TOP 3 - L'ÉLITE</div>
-      ${top3.length > 0 ? top3.map((r, i) => `
-        <div class="rank-item top">
-          <span class="rank-pos">#${i+1}</span>
-          <span class="rank-name">${r.name}</span>
-          <span class="rank-avg">${r.avg}</span>
-        </div>
-      `).join('') : '<div style="opacity:0.5; font-size:13px">Pas assez de données.</div>'}
-    </div>
-
-    <div class="stat-section">
-      <div class="stat-title">❄️ FLOP 3 - LES DISCUTABLES</div>
-      ${flop3.length > 0 ? flop3.map((r, i) => `
-        <div class="rank-item flop">
-          <span class="rank-pos">#${i+1}</span>
-          <span class="rank-name">${r.name}</span>
-          <span class="rank-avg">${r.avg}</span>
-        </div>
-      `).join('') : '<div style="opacity:0.5; font-size:13px">Tout le monde est bon.</div>'}
-    </div>
-  `;
-  body.innerHTML = html;
   modal.style.display = 'flex';
 }
 
-function closeModal(e, id) {
+function closeModal(e, id){
   if(e.target.id === id) document.getElementById(id).style.display = 'none';
+}
+
+function toggleFav(id){
+  const s = findSong(id);
+  if(s){
+    s.fav = !s.fav;
+    save(); render();
+  }
 }
 
 function render(){
   const tiersDiv = document.getElementById("tiers");
   tiersDiv.innerHTML = "";
   
-  document.body.classList.toggle('edit-active', editMode);
-  document.body.classList.toggle('compact-active', compactMode);
+  if(editMode) document.body.classList.add('edit-active');
+  else document.body.classList.remove('edit-active');
+
+  if(compactMode) document.body.classList.add('compact-active');
+  else document.body.classList.remove('compact-active');
 
   data.tiers.forEach(t=>{
     const tier = document.createElement("div");
@@ -626,8 +590,6 @@ function render(){
   pool.innerHTML = "";
   setupDrop(pool, null);
   data.pool.forEach(s => pool.appendChild(createCard(s)));
-
-  document.body.classList.toggle("hidden", !editMode);
 }
 
 function adjustColor(color, amount) {
@@ -636,8 +598,8 @@ function adjustColor(color, amount) {
 
 function createCard(song){
   const card = document.createElement("div");
-  const favClass = song.fav ? 'is-favorite' : '';
-  card.className = `card ${favClass}`;
+  // Ajout de la classe fav si favori pour l'animation
+  card.className = `card ${song.fav ? 'fav' : ''}`;
   card.draggable = true;
   card.style.backgroundImage = `url(${song.cover})`;
 
@@ -656,7 +618,7 @@ function createCard(song){
     draggedId = null;
   });
 
-  const btnFavActive = song.fav ? 'active' : '';
+  const favClass = song.fav ? 'is-fav' : '';
 
   card.innerHTML = `
     <div class="card-overlay">
@@ -666,9 +628,8 @@ function createCard(song){
     
     <div class="card-tools-left">
       <button onclick="event.stopPropagation(); editSong('${song.id}')" title="Éditer">✎</button>
-      <button onclick="event.stopPropagation(); toggleFav('${song.id}')" title="Favori" class="fav-btn ${btnFavActive}">❤️</button>
+      <button onclick="event.stopPropagation(); toggleFav('${song.id}')" title="Favoris" class="${favClass}">❤️</button>
     </div>
-    
     <div class="card-tools-right">
       <button onclick="event.stopPropagation(); removeSong('${song.id}'); save(); render();" title="Supprimer" style="background:#ef4444; border:none;">✕</button>
     </div>
@@ -676,7 +637,8 @@ function createCard(song){
   return card;
 }
 
-/* --- LOGIQUE DRAG & DROP "SMART GRID 2D" --- */
+/* --- LOGIQUE DRAG & DROP 2D (Smart Grid) --- */
+/* C'est la version qui avait corrigé le bug de tremblement */
 function setupDrop(container, tierId){
   container.addEventListener("dragover", e => {
     e.preventDefault();
@@ -719,7 +681,7 @@ function setupDrop(container, tierId){
 function getDragAfterElement(container, x, y){
   const draggableElements = [...container.querySelectorAll('.card:not(.dragging)')];
 
-  // 1. Check bord gauche pour insertion au début
+  // 1. Insertion en tout début de liste si à gauche du premier
   if (draggableElements.length > 0) {
       const first = draggableElements[0];
       const box = first.getBoundingClientRect();
@@ -728,7 +690,7 @@ function getDragAfterElement(container, x, y){
       }
   }
 
-  // 2. Recherche du plus proche
+  // 2. Recherche par distance (Pythagore)
   const closest = draggableElements.reduce((closest, child) => {
     const box = child.getBoundingClientRect();
     const boxCenterX = box.left + box.width / 2;
@@ -809,6 +771,7 @@ async function addSong(){
       youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`;
   }
 
+  // Ajout propriété fav par défaut
   data.pool.push({ id: Date.now().toString(), artist, title, cover, youtubeUrl, fav: false });
   save(); render();
   document.getElementById("artistInput").value = "";
@@ -843,6 +806,35 @@ function toggleCompact(){
   btn.style.background = compactMode ? "var(--accent-primary)" : "";
   btn.style.color = compactMode ? "white" : "";
   render();
+}
+
+function exportJson() {
+  const dataStr = JSON.stringify(data, null, 2);
+  const blob = new Blob([dataStr], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = "kpop_tierlist_backup.json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importJson(input) {
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const json = JSON.parse(e.target.result);
+      if(!json.tiers || !json.pool) throw new Error("Format invalide");
+      data = json;
+      save(); render(); alert("Sauvegarde chargée !");
+    } catch(err) { alert("Erreur fichier."); }
+  };
+  reader.readAsText(file);
+  input.value = '';
 }
 
 function toggleDark(){ document.body.classList.toggle("dark"); }
