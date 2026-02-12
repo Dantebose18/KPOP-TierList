@@ -20,7 +20,8 @@
   
   --accent-primary: #6366f1;
   --accent-secondary: #ec4899;
-  --accent-gold: #f59e0b; /* Pour les favoris */
+  /* MODIFICATION: Couleur Favoris Rose (identique à accent-secondary) */
+  --accent-fav: #ec4899; 
   --accent-gradient: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
   
   --radius-sm: 8px;
@@ -198,7 +199,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 }
 .tier-controls button:hover { background: rgba(0,0,0,0.4); }
 
-/* NOUVEAU COLOR PICKER STYLE */
+/* COLOR PICKER STYLE */
 .color-picker-wrapper {
   width: 28px; height: 28px;
   border-radius: 50%;
@@ -240,22 +241,24 @@ input[type="color"] {
   background-color: var(--card-bg);
 }
 
-/* STYLE FAVORIS */
+/* STYLE FAVORIS MIS A JOUR */
 .card.is-favorite {
-  border: 2px solid var(--accent-gold);
-  animation: glow 3s infinite alternate;
+  border: 2px solid var(--accent-fav);
+  /* MODIFICATION: Animation plus rapide (1.5s au lieu de 3s) */
+  animation: glow 1.5s infinite alternate;
 }
 .fav-badge {
     position: absolute; top: 5px; right: 5px;
-    color: var(--accent-gold); font-size: 14px;
+    color: var(--accent-fav); font-size: 16px;
     text-shadow: 0 2px 4px rgba(0,0,0,0.8);
     display: none; pointer-events: none;
 }
 .card.is-favorite .fav-badge { display: block; }
 
+/* MODIFICATION: Lueur rose au lieu de dorée */
 @keyframes glow {
-  from { box-shadow: 0 0 5px rgba(245, 158, 11, 0.2); }
-  to { box-shadow: 0 0 15px rgba(245, 158, 11, 0.6); }
+  from { box-shadow: 0 0 5px rgba(236, 72, 153, 0.2); }
+  to { box-shadow: 0 0 15px rgba(236, 72, 153, 0.6); }
 }
 
 /* ANTI-TREMBLEMENT : On coupe les animations pendant le drag */
@@ -276,7 +279,7 @@ body.is-dragging .card {
   box-shadow: 0 20px 30px rgba(0,0,0,0.25);
   border-color: var(--accent-secondary);
 }
-.card.is-favorite:hover { border-color: var(--accent-gold); }
+.card.is-favorite:hover { border-color: var(--accent-fav); }
 
 .card-overlay {
   position: absolute; bottom: 0; width: 100%;
@@ -313,18 +316,16 @@ body.compact-active .card:hover .card-overlay {
   justify-content: flex-end;
 }
 
-/* --- REDESIGN CARD TOOLS --- */
+/* --- CARD TOOLS --- */
 .card-tools {
   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  pointer-events: none; /* Laisse passer le clic vers la carte si on ne clique pas sur un bouton */
+  pointer-events: none; 
   opacity: 0; 
   transition: opacity 0.2s;
 }
 
-/* On réactive les events sur les boutons */
 .card-tools button { pointer-events: auto; }
 
-/* Positions absolues spécifiques */
 .btn-edit-pos { position: absolute; top: 6px; left: 6px; }
 .btn-fav-pos { position: absolute; top: 40px; left: 6px; }
 .btn-del-pos { position: absolute; top: 6px; right: 6px; }
@@ -338,12 +339,8 @@ body.compact-active .card:hover .card-overlay {
   transition: transform 0.1s, background 0.2s;
 }
 .card-tools button:hover { background: var(--accent-secondary); transform: scale(1.1); }
-.card-tools button.active-fav { color: var(--accent-gold); background: rgba(0,0,0,0.8); border-color: var(--accent-gold); }
+.card-tools button.active-fav { color: var(--accent-fav); background: rgba(0,0,0,0.8); border-color: var(--accent-fav); }
 
-/* Modification compacte pour les outils */
-body.compact-active .card-tools {
-  /* En compact, on garde le positionnement absolu mais on ajuste si besoin */
-}
 
 /* Placeholder */
 .placeholder {
@@ -412,7 +409,7 @@ body.compact-active .placeholder { height: 70px; }
     background: rgba(255,255,255,0.05); margin-bottom: 8px; border-radius: 8px;
     border: 1px solid transparent;
 }
-.fav-list-item:hover { border-color: var(--accent-gold); background: rgba(245, 158, 11, 0.05); }
+.fav-list-item:hover { border-color: var(--accent-fav); background: rgba(236, 72, 153, 0.05); }
 .fav-thumb { width: 40px; height: 40px; border-radius: 6px; background-size: cover; }
 .fav-info { flex: 1; }
 .fav-info strong { display: block; font-size: 14px; }
@@ -420,7 +417,7 @@ body.compact-active .placeholder { height: 70px; }
 
 /* VISIBILITE OUTILS : Cachés par défaut, visibles si .edit-active */
 .hidden .card-tools, .hidden .tier-controls { display: none !important; }
-body.edit-active .card-tools { opacity: 1; pointer-events: none; /* Toujours none sur le container pour cliquer au travers si vide */ }
+body.edit-active .card-tools { opacity: 1; pointer-events: none; }
 body.edit-active .card-tools button { pointer-events: auto; }
 </style>
 </head>
@@ -433,7 +430,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
     <button onclick="document.getElementById('fileInput').click()">📂 Charger</button>
     <button onclick="resetData()" class="btn-danger">🗑️ Reset</button>
     <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;"></div>
-    <button onclick="showFavorites()" class="icon-btn" title="Mes Favoris" style="color:var(--accent-gold)">★</button>
+    <button onclick="showFavorites()" class="icon-btn" title="Mes Favoris" style="color:var(--accent-fav)">❤</button>
     <button onclick="showStats()" class="icon-btn" title="Statistiques">📊</button>
     <button onclick="toggleCompact()" id="compactBtn" class="icon-btn" title="Vue Compacte">☰</button>
     <button onclick="toggleEdit()" id="editBtn" class="icon-btn">✏️</button>
@@ -456,7 +453,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
 
 <div id="favModal" class="modal-overlay" onclick="closeModal(event)">
   <div class="modal-content">
-    <h2 style="color:var(--accent-gold); -webkit-text-fill-color: var(--accent-gold);">★ Mes Favoris</h2>
+    <h2 style="color:var(--accent-fav); -webkit-text-fill-color: var(--accent-fav);">❤ Mes Favoris</h2>
     <div id="favBody" style="min-height: 100px;"></div>
     <div style="margin-top: 20px; text-align: right;">
       <button onclick="document.getElementById('favModal').style.display='none'">Fermer</button>
@@ -570,7 +567,7 @@ function showFavorites() {
     const favorites = allSongs.filter(s => s.favorite === true);
     
     if(favorites.length === 0) {
-        body.innerHTML = '<div style="opacity:0.6; text-align:center; padding:20px;">Aucun favori pour le moment. <br> Cliquez sur le coeur/étoile en mode édition !</div>';
+        body.innerHTML = '<div style="opacity:0.6; text-align:center; padding:20px;">Aucun favori pour le moment. <br> Cliquez sur le coeur en mode édition !</div>';
     } else {
         let html = '';
         favorites.forEach(s => {
@@ -581,7 +578,7 @@ function showFavorites() {
                     <strong>${s.artist}</strong>
                     <span>${s.title}</span>
                 </div>
-                <div style="font-size:20px">★</div>
+                <div style="font-size:20px; color:var(--accent-fav)">❤</div>
             </div>`;
         });
         body.innerHTML = html;
@@ -749,9 +746,9 @@ function createCard(song){
     draggedId = null;
   });
 
-  /* NOUVEAU LAYOUT BOUTONS */
+  /* ICONES MODIFIÉES DANS LES OUTILS */
   card.innerHTML = `
-    <div class="fav-badge">★</div>
+    <div class="fav-badge">❤</div>
     <div class="card-overlay">
       <strong>${song.artist}</strong>
       <span>${song.title}</span>
@@ -762,7 +759,7 @@ function createCard(song){
       <button class="btn-fav-pos ${song.favorite ? 'active-fav' : ''}" 
               onclick="event.stopPropagation(); toggleFavorite('${song.id}')" 
               title="Favoris">
-          ${song.favorite ? '★' : '☆'}
+          ${song.favorite ? '❤' : '♡'}
       </button>
 
       <button class="btn-del-pos" 
