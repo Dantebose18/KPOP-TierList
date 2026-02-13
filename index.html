@@ -79,6 +79,25 @@ header {
 
 .header-btns { display: flex; gap: 8px; align-items: center; }
 
+/* STYLE BARRE DE RECHERCHE */
+#searchBar {
+  background: rgba(128,128,128,0.1);
+  border: var(--card-border);
+  padding: 8px 15px;
+  border-radius: 20px;
+  color: var(--text-main);
+  width: 160px;
+  transition: all 0.3s ease;
+  font-size: 13px;
+}
+#searchBar:focus {
+  width: 240px;
+  background: rgba(255,255,255,0.15);
+  box-shadow: 0 0 0 2px var(--accent-primary);
+}
+#searchBar::placeholder { color: var(--text-muted); opacity: 0.7; }
+
+
 /* --- BOUTONS --- */
 button {
   padding: 8px 14px;
@@ -242,33 +261,29 @@ input[type="color"] {
 
 /* STYLE FAVORIS VOYANT */
 .card.is-favorite {
-  /* Animation intense avec ombre externe ET interne */
   animation: glow 1.5s infinite alternate;
-  z-index: 10; /* Faire passer les favoris légèrement au-dessus */
+  z-index: 10;
 }
 
-/* MODIFICATION: On cache le badge "coeur" quand on est en mode édition */
 body.edit-active .fav-badge {
     display: none !important;
 }
 
 .fav-badge {
     position: absolute; top: 5px; right: 5px;
-    color: var(--accent-fav); font-size: 18px; /* Un peu plus grand */
-    filter: drop-shadow(0 0 3px rgba(0,0,0,0.8)); /* Meilleure visibilité sur fond clair */
+    color: var(--accent-fav); font-size: 18px; 
+    filter: drop-shadow(0 0 3px rgba(0,0,0,0.8));
     display: none; pointer-events: none;
     z-index: 5;
 }
 .card.is-favorite .fav-badge { display: block; }
 
-/* MODIFICATION: Lueur beaucoup plus forte */
 @keyframes glow {
   0% { 
     box-shadow: 0 0 5px var(--accent-fav), inset 0 0 0px var(--accent-fav);
     border-color: rgba(236, 72, 153, 0.5);
   }
   100% { 
-    /* Grosse ombre externe + ombre interne pour illuminer la carte */
     box-shadow: 0 0 25px var(--accent-fav), inset 0 0 15px rgba(236, 72, 153, 0.6);
     border-color: var(--accent-fav);
   }
@@ -440,9 +455,11 @@ body.edit-active .card-tools button { pointer-events: auto; }
 <header>
   <div class="logo">K-TIER ✨</div>
   <div class="header-btns">
-    <button onclick="exportJson()">💾 Sauver</button>
-    <button onclick="document.getElementById('fileInput').click()">📂 Charger</button>
-    <button onclick="resetData()" class="btn-danger">🗑️ Reset</button>
+    <input type="text" id="searchBar" placeholder="🔍 Filtrer artiste/titre..." oninput="filterCards()">
+    
+    <button onclick="exportJson()">💾</button>
+    <button onclick="document.getElementById('fileInput').click()">📂</button>
+    <button onclick="resetData()" class="btn-danger">🗑️</button>
     <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;"></div>
     <button onclick="showFavorites()" class="icon-btn" title="Mes Favoris" style="color:var(--accent-fav)">❤</button>
     <button onclick="showStats()" class="icon-btn" title="Statistiques">📊</button>
@@ -561,6 +578,24 @@ function importJson(input) {
   reader.readAsText(file);
   input.value = '';
 }
+
+/* --- FONCTION FILTRE --- */
+function filterCards() {
+    const term = document.getElementById("searchBar").value.toLowerCase().trim();
+    const cards = document.querySelectorAll(".card");
+    
+    cards.forEach(card => {
+        // On récupère le texte visible dans la carte (Artiste + Titre)
+        const text = card.innerText.toLowerCase();
+        
+        if (text.includes(term)) {
+            card.style.display = ""; // Réaffiche (défaut)
+        } else {
+            card.style.display = "none"; // Cache
+        }
+    });
+}
+
 
 /* --- GESTION DES FAVORIS --- */
 function toggleFavorite(id) {
@@ -731,6 +766,9 @@ function render(){
   data.pool.forEach(s => pool.appendChild(createCard(s)));
 
   document.body.classList.toggle("hidden", !editMode);
+  
+  // Applique le filtre si une recherche est déjà en cours
+  filterCards();
 }
 
 function adjustColor(color, amount) {
