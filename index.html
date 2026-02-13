@@ -20,7 +20,6 @@
   
   --accent-primary: #6366f1;
   --accent-secondary: #ec4899;
-  /* MODIFICATION: Couleur Favoris Rose (identique à accent-secondary) */
   --accent-fav: #ec4899; 
   --accent-gradient: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
   
@@ -241,24 +240,38 @@ input[type="color"] {
   background-color: var(--card-bg);
 }
 
-/* STYLE FAVORIS MIS A JOUR */
+/* STYLE FAVORIS VOYANT */
 .card.is-favorite {
-  border: 2px solid var(--accent-fav);
-  /* MODIFICATION: Animation plus rapide (1.5s au lieu de 3s) */
+  /* Animation intense avec ombre externe ET interne */
   animation: glow 1.5s infinite alternate;
+  z-index: 10; /* Faire passer les favoris légèrement au-dessus */
 }
+
+/* MODIFICATION: On cache le badge "coeur" quand on est en mode édition */
+body.edit-active .fav-badge {
+    display: none !important;
+}
+
 .fav-badge {
     position: absolute; top: 5px; right: 5px;
-    color: var(--accent-fav); font-size: 16px;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    color: var(--accent-fav); font-size: 18px; /* Un peu plus grand */
+    filter: drop-shadow(0 0 3px rgba(0,0,0,0.8)); /* Meilleure visibilité sur fond clair */
     display: none; pointer-events: none;
+    z-index: 5;
 }
 .card.is-favorite .fav-badge { display: block; }
 
-/* MODIFICATION: Lueur rose au lieu de dorée */
+/* MODIFICATION: Lueur beaucoup plus forte */
 @keyframes glow {
-  from { box-shadow: 0 0 5px rgba(236, 72, 153, 0.2); }
-  to { box-shadow: 0 0 15px rgba(236, 72, 153, 0.6); }
+  0% { 
+    box-shadow: 0 0 5px var(--accent-fav), inset 0 0 0px var(--accent-fav);
+    border-color: rgba(236, 72, 153, 0.5);
+  }
+  100% { 
+    /* Grosse ombre externe + ombre interne pour illuminer la carte */
+    box-shadow: 0 0 25px var(--accent-fav), inset 0 0 15px rgba(236, 72, 153, 0.6);
+    border-color: var(--accent-fav);
+  }
 }
 
 /* ANTI-TREMBLEMENT : On coupe les animations pendant le drag */
@@ -322,6 +335,7 @@ body.compact-active .card:hover .card-overlay {
   pointer-events: none; 
   opacity: 0; 
   transition: opacity 0.2s;
+  z-index: 20; /* Toujours au dessus */
 }
 
 .card-tools button { pointer-events: auto; }
