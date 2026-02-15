@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KPOP Tier List 2024</title>
+<title>KPOP Tier List</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 
 <style>
@@ -96,7 +96,6 @@ header {
   box-shadow: 0 0 0 2px var(--accent-primary);
 }
 #searchBar::placeholder { color: var(--text-muted); opacity: 0.7; }
-
 
 /* --- BOUTONS --- */
 button {
@@ -252,7 +251,6 @@ input[type="color"] {
   background-position: center;
   position: relative;
   cursor: grab;
-  /* MODIFICATION : On adoucit la transition pour que l'apparition de l'image soit fluide */
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, height 0.2s ease, background-image 0.5s ease-in;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   overflow: hidden;
@@ -260,7 +258,6 @@ input[type="color"] {
   background-color: var(--card-bg);
 }
 
-/* STYLE FAVORIS VOYANT */
 .card.is-favorite {
   animation: glow 1.5s infinite alternate;
   z-index: 10;
@@ -290,7 +287,6 @@ body.edit-active .fav-badge {
   }
 }
 
-/* ANTI-TREMBLEMENT : On coupe les animations pendant le drag */
 body.is-dragging .card {
   transition: none !important;
 }
@@ -425,7 +421,7 @@ body.compact-active .placeholder { height: 70px; }
 .rank-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; background: rgba(128,128,128,0.05); padding: 8px; border-radius: 8px; }
 .rank-pos { font-weight: 800; color: var(--accent-primary); width: 25px; }
 .rank-name { flex: 1; font-weight: 600; }
-.rank-avg { font-size: 12px; padding: 2px 6px; background: var(--accent-secondary); color: white; border-radius: 4px; min-width: 35px; text-align: center;}
+.rank-avg { font-size: 12px; padding: 2px 6px; background: var(--accent-secondary); color: white; border-radius: 4px; min-width: 60px; text-align: center;}
 .rank-item.top { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); }
 .rank-item.top .rank-pos { color: #10b981; }
 .rank-item.top .rank-avg { background: #10b981; }
@@ -457,14 +453,18 @@ body.edit-active .card-tools button { pointer-events: auto; }
   <div class="header-btns">
     <input type="text" id="searchBar" placeholder="🔍 Filtrer artiste/titre..." oninput="filterCards()">
     
-    <button onclick="exportJson()">💾</button>
-    <button onclick="document.getElementById('fileInput').click()">📂</button>
-    <button onclick="resetData()" class="btn-danger">🗑️</button>
+    <button onclick="exportJson()" title="Sauvegarder">💾</button>
+    <button onclick="document.getElementById('fileInput').click()" title="Charger">📂</button>
+    <button onclick="resetData()" class="btn-danger" title="Tout effacer">🗑️</button>
+    
     <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;"></div>
+    
+    <button onclick="forceSync()" class="icon-btn" title="Relancer recherche d'images">🔄</button>
+    
     <button onclick="showFavorites()" class="icon-btn" title="Mes Favoris" style="color:var(--accent-fav)">❤</button>
     <button onclick="showStats()" class="icon-btn" title="Statistiques">📊</button>
     <button onclick="toggleCompact()" id="compactBtn" class="icon-btn" title="Vue Compacte">☰</button>
-    <button onclick="toggleEdit()" id="editBtn" class="icon-btn">✏️</button>
+    <button onclick="toggleEdit()" id="editBtn" class="icon-btn" title="Mode Édition">✏️</button>
     <button onclick="addTier()" class="icon-btn">➕ Tier</button>
     <button onclick="toggleDark()" class="icon-btn">🌙</button>
   </div>
@@ -563,7 +563,6 @@ function exportJson() {
   URL.revokeObjectURL(url);
 }
 
-// MODIFICATION DE L'IMPORTATION POUR LANCER LA RECHERCHE AUTOMATIQUE
 function importJson(input) {
   const file = input.files[0];
   if(!file) return;
@@ -575,7 +574,7 @@ function importJson(input) {
       data = json;
       save(); render(); 
       alert("Sauvegarde chargée !");
-      syncCovers(); // Lance la recherche des images manquantes
+      syncCovers(); 
     } catch(err) { alert("Erreur fichier."); }
   };
   reader.readAsText(file);
@@ -585,13 +584,24 @@ function importJson(input) {
 /* --- FONCTION DE SYNCHRONISATION EN ARRIÈRE-PLAN --- */
 let isSyncing = false;
 
+// Nouvelle fonction pour forcer la reprise
+function forceSync() {
+    const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
+    // On réinitialise l'état "cherché" pour celles qui ont toujours le placeholder
+    allSongs.forEach(s => {
+        if(s.cover && s.cover.includes('via.placeholder.com')) {
+            s.coverSearched = false;
+        }
+    });
+    save();
+    syncCovers();
+}
+
 async function syncCovers() {
-  if (isSyncing) return; // Empêche de lancer deux recherches en même temps
+  if (isSyncing) return; 
   isSyncing = true;
 
   const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
-  
-  // On filtre les chansons avec l'image par défaut (placeholder) et qu'on n'a pas encore essayées
   const missingCovers = allSongs.filter(s => s.cover && s.cover.includes('via.placeholder.com') && !s.coverSearched);
 
   if(missingCovers.length === 0) {
@@ -599,7 +609,6 @@ async function syncCovers() {
       return;
   }
 
-  // Ajoute un indicateur visuel dans le menu en haut
   let syncBadge = document.getElementById("syncBadge");
   if(!syncBadge) {
       syncBadge = document.createElement("div");
@@ -613,32 +622,37 @@ async function syncCovers() {
     syncBadge.innerText = `🔄 Albums : ${i + 1}/${missingCovers.length}`;
 
     try {
-      // Recherche sur l'API iTunes
       const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(song.artist + " " + song.title)}&entity=song&limit=1`);
+      
+      // Si Apple bloque (Trop de requêtes = 429 ou 403), on coupe proprement
+      if(!res.ok) {
+          syncBadge.innerText = "⏸️ API Apple en pause";
+          syncBadge.style.background = "#f59e0b"; // Orange
+          isSyncing = false;
+          setTimeout(() => syncBadge.remove(), 5000);
+          return; // On arrête la boucle sans marquer la carte comme "coverSearched = true"
+      }
+
       const json = await res.json();
       
       if(json.results && json.results.length > 0) {
         song.cover = json.results[0].artworkUrl100.replace("100x100", "300x300");
-        
-        // On met à jour visuellement UNIQUEMENT cette carte, pour ne pas gêner ta navigation
         const cardEl = document.getElementById(`card-${song.id}`);
-        if(cardEl) {
-            cardEl.style.backgroundImage = `url(${song.cover})`;
-        }
+        if(cardEl) cardEl.style.backgroundImage = `url(${song.cover})`;
       }
     } catch(e) {
         console.log("Erreur de recherche pour", song.title);
     }
 
-    song.coverSearched = true; // On marque la carte comme "traitée" pour ne pas boucler indéfiniment
-    save(); // Sauvegarde silencieuse en fond
+    song.coverSearched = true; 
+    save(); 
     
-    // On met en pause la recherche 600 millisecondes pour ne pas que l'API Apple nous bloque
-    await new Promise(resolve => setTimeout(resolve, 600)); 
+    // MODIFICATION : On attend 1 seconde complète pour être plus discret face à Apple
+    await new Promise(resolve => setTimeout(resolve, 1000)); 
   }
 
   syncBadge.innerText = "✅ Images récupérées !";
-  syncBadge.style.background = "#10b981"; // Vert succès
+  syncBadge.style.background = "#10b981"; 
   syncBadge.style.boxShadow = "0 2px 10px rgba(16, 185, 129, 0.4)";
   
   setTimeout(() => {
@@ -699,18 +713,21 @@ function showFavorites() {
     modal.style.display = 'flex';
 }
 
+/* --- CLASSEMENT AMÉLIORÉ --- */
 function showStats() {
   const modal = document.getElementById('statsModal');
   const body = document.getElementById('statsBody');
   
   let totalSongs = 0;
+  let totalGlobalScore = 0;
   let artistStats = {};
   const maxScore = data.tiers.length;
   
   data.tiers.forEach((tier, index) => {
-    const score = maxScore - index;
+    const score = maxScore - index; // Ex: S=9, A=8, etc.
     tier.songs.forEach(song => {
       totalSongs++;
+      totalGlobalScore += score;
       const name = song.artist.trim();
       if(!artistStats[name]) artistStats[name] = { total: 0, count: 0 };
       artistStats[name].total += score;
@@ -719,15 +736,27 @@ function showStats() {
   });
   data.pool.forEach(song => { totalSongs++; });
 
+  // Algorithme de Moyenne Bayésienne (Score Pondéré)
+  const minimumSongs = 2; // Niveau d'exigence avant de donner la "vraie" moyenne
+  const globalAverage = totalSongs > 0 ? (totalGlobalScore / totalSongs) : 0;
+
   let rankings = Object.keys(artistStats).map(key => {
+    const trueAvg = artistStats[key].total / artistStats[key].count;
+    const count = artistStats[key].count;
+    
+    // Le "bayesianScore" tire les artistes avec peu de chansons vers la moyenne globale
+    const bayesianScore = ((count / (count + minimumSongs)) * trueAvg) + ((minimumSongs / (count + minimumSongs)) * globalAverage);
+
     return {
       name: key,
-      avg: (artistStats[key].total / artistStats[key].count).toFixed(2),
-      count: artistStats[key].count
+      avg: trueAvg.toFixed(2),
+      count: count,
+      score: bayesianScore // C'est ce score secret qui sert pour le classement juste
     };
   });
 
-  rankings.sort((a, b) => b.avg - a.avg);
+  // On trie par le Score Bayésien au lieu de la simple moyenne
+  rankings.sort((a, b) => b.score - a.score);
   
   const top3 = rankings.slice(0, 3);
   let flop3 = [];
@@ -740,6 +769,7 @@ function showStats() {
   let html = `
     <div class="stat-row"><strong>Total Chansons :</strong> <span>${totalSongs}</span></div>
     <div class="stat-row"><strong>Artistes :</strong> <span>${uniqueArtists}</span></div>
+    <div style="font-size:11px; color:var(--text-muted); text-align:right; margin-bottom:15px;">*Classement ajusté selon la régularité des artistes</div>
     
     <div class="stat-section">
       <div class="stat-title">🔥 TOP 3 - L'ÉLITE</div>
@@ -747,7 +777,7 @@ function showStats() {
         <div class="rank-item top">
           <span class="rank-pos">#${i+1}</span>
           <span class="rank-name">${r.name}</span>
-          <span class="rank-avg">${r.avg}</span>
+          <span class="rank-avg">${r.avg} ★ <small>(${r.count} 🎵)</small></span>
         </div>
       `).join('') : '<div style="opacity:0.5; font-size:13px">Pas assez de données.</div>'}
     </div>
@@ -758,7 +788,7 @@ function showStats() {
         <div class="rank-item flop">
           <span class="rank-pos">#${i+1}</span>
           <span class="rank-name">${r.name}</span>
-          <span class="rank-avg">${r.avg}</span>
+          <span class="rank-avg">${r.avg} ★ <small>(${r.count} 🎵)</small></span>
         </div>
       `).join('') : '<div style="opacity:0.5; font-size:13px">Tout le monde est bon.</div>'}
     </div>
@@ -785,7 +815,9 @@ function render(){
     const header = document.createElement("div");
     header.className = "tier-header";
     header.style.background = `linear-gradient(90deg, ${t.color}, ${adjustColor(t.color, -40)})`;
-    header.innerHTML = `<span>${t.name}</span>`;
+    
+    // MODIFICATION : Ajout du compteur de chansons dans l'en-tête
+    header.innerHTML = `<span>${t.name} <span style="font-size:14px; opacity:0.75; font-weight:normal; margin-left:8px;">(${t.songs.length})</span></span>`;
 
     const controls = document.createElement("div");
     controls.className = "tier-controls";
@@ -838,7 +870,6 @@ function adjustColor(color, amount) {
 function createCard(song){
   const card = document.createElement("div");
   card.className = "card";
-  // MODIFICATION : Ajout d'un ID unique pour pouvoir modifier l'image sans recharger toute la carte
   card.id = `card-${song.id}`;
   
   if(song.favorite) card.classList.add("is-favorite"); 
@@ -1037,7 +1068,6 @@ function toggleDark(){ document.body.classList.toggle("dark"); }
 
 render();
 
-// MODIFICATION : Au lancement de la page, on vérifie s'il y a des images à télécharger
 setTimeout(syncCovers, 1500); 
 
 </script>
