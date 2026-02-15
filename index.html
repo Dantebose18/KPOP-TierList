@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KPOP Tier List</title>
+<title>KPOP Tier List 2024</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 
 <style>
@@ -252,7 +252,8 @@ input[type="color"] {
   background-position: center;
   position: relative;
   cursor: grab;
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, height 0.2s ease;
+  /* MODIFICATION : On adoucit la transition pour que l'apparition de l'image soit fluide */
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, height 0.2s ease, background-image 0.5s ease-in;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.1);
@@ -350,7 +351,7 @@ body.compact-active .card:hover .card-overlay {
   pointer-events: none; 
   opacity: 0; 
   transition: opacity 0.2s;
-  z-index: 20; /* Toujours au dessus */
+  z-index: 20; 
 }
 
 .card-tools button { pointer-events: auto; }
@@ -444,7 +445,6 @@ body.compact-active .placeholder { height: 70px; }
 .fav-info strong { display: block; font-size: 14px; }
 .fav-info span { font-size: 12px; opacity: 0.7; }
 
-/* VISIBILITE OUTILS : Cachés par défaut, visibles si .edit-active */
 .hidden .card-tools, .hidden .tier-controls { display: none !important; }
 body.edit-active .card-tools { opacity: 1; pointer-events: none; }
 body.edit-active .card-tools button { pointer-events: auto; }
@@ -563,6 +563,7 @@ function exportJson() {
   URL.revokeObjectURL(url);
 }
 
+// MODIFICATION DE L'IMPORTATION POUR LANCER LA RECHERCHE AUTOMATIQUE
 function importJson(input) {
   const file = input.files[0];
   if(!file) return;
@@ -572,32 +573,95 @@ function importJson(input) {
       const json = JSON.parse(e.target.result);
       if(!json.tiers || !json.pool) throw new Error("Format invalide");
       data = json;
-      save(); render(); alert("Sauvegarde chargée !");
+      save(); render(); 
+      alert("Sauvegarde chargée !");
+      syncCovers(); // Lance la recherche des images manquantes
     } catch(err) { alert("Erreur fichier."); }
   };
   reader.readAsText(file);
   input.value = '';
 }
 
-/* --- FONCTION FILTRE --- */
+/* --- FONCTION DE SYNCHRONISATION EN ARRIÈRE-PLAN --- */
+let isSyncing = false;
+
+async function syncCovers() {
+  if (isSyncing) return; // Empêche de lancer deux recherches en même temps
+  isSyncing = true;
+
+  const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
+  
+  // On filtre les chansons avec l'image par défaut (placeholder) et qu'on n'a pas encore essayées
+  const missingCovers = allSongs.filter(s => s.cover && s.cover.includes('via.placeholder.com') && !s.coverSearched);
+
+  if(missingCovers.length === 0) {
+      isSyncing = false;
+      return;
+  }
+
+  // Ajoute un indicateur visuel dans le menu en haut
+  let syncBadge = document.getElementById("syncBadge");
+  if(!syncBadge) {
+      syncBadge = document.createElement("div");
+      syncBadge.id = "syncBadge";
+      syncBadge.style = "font-size: 13px; font-weight: 600; background: var(--accent-secondary); color: white; padding: 6px 14px; border-radius: 20px; margin-right: 10px; white-space: nowrap; box-shadow: 0 2px 10px rgba(236, 72, 153, 0.4);";
+      document.querySelector(".header-btns").prepend(syncBadge);
+  }
+
+  for (let i = 0; i < missingCovers.length; i++) {
+    const song = missingCovers[i];
+    syncBadge.innerText = `🔄 Albums : ${i + 1}/${missingCovers.length}`;
+
+    try {
+      // Recherche sur l'API iTunes
+      const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(song.artist + " " + song.title)}&entity=song&limit=1`);
+      const json = await res.json();
+      
+      if(json.results && json.results.length > 0) {
+        song.cover = json.results[0].artworkUrl100.replace("100x100", "300x300");
+        
+        // On met à jour visuellement UNIQUEMENT cette carte, pour ne pas gêner ta navigation
+        const cardEl = document.getElementById(`card-${song.id}`);
+        if(cardEl) {
+            cardEl.style.backgroundImage = `url(${song.cover})`;
+        }
+      }
+    } catch(e) {
+        console.log("Erreur de recherche pour", song.title);
+    }
+
+    song.coverSearched = true; // On marque la carte comme "traitée" pour ne pas boucler indéfiniment
+    save(); // Sauvegarde silencieuse en fond
+    
+    // On met en pause la recherche 600 millisecondes pour ne pas que l'API Apple nous bloque
+    await new Promise(resolve => setTimeout(resolve, 600)); 
+  }
+
+  syncBadge.innerText = "✅ Images récupérées !";
+  syncBadge.style.background = "#10b981"; // Vert succès
+  syncBadge.style.boxShadow = "0 2px 10px rgba(16, 185, 129, 0.4)";
+  
+  setTimeout(() => {
+      syncBadge.remove();
+      isSyncing = false;
+  }, 4000);
+}
+
+
 function filterCards() {
     const term = document.getElementById("searchBar").value.toLowerCase().trim();
     const cards = document.querySelectorAll(".card");
     
     cards.forEach(card => {
-        // On récupère le texte visible dans la carte (Artiste + Titre)
         const text = card.innerText.toLowerCase();
-        
         if (text.includes(term)) {
-            card.style.display = ""; // Réaffiche (défaut)
+            card.style.display = ""; 
         } else {
-            card.style.display = "none"; // Cache
+            card.style.display = "none"; 
         }
     });
 }
 
-
-/* --- GESTION DES FAVORIS --- */
 function toggleFavorite(id) {
     const s = findSong(id);
     if(s) {
@@ -611,7 +675,6 @@ function showFavorites() {
     const modal = document.getElementById('favModal');
     const body = document.getElementById('favBody');
     
-    // Récupérer toutes les chansons
     const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
     const favorites = allSongs.filter(s => s.favorite === true);
     
@@ -636,7 +699,6 @@ function showFavorites() {
     modal.style.display = 'flex';
 }
 
-/* --- STATS --- */
 function showStats() {
   const modal = document.getElementById('statsModal');
   const body = document.getElementById('statsBody');
@@ -728,7 +790,6 @@ function render(){
     const controls = document.createElement("div");
     controls.className = "tier-controls";
 
-    // Nouveau Style Color Picker
     const colorWrapper = document.createElement("div");
     colorWrapper.className = "color-picker-wrapper";
     colorWrapper.style.backgroundColor = t.color;
@@ -767,7 +828,6 @@ function render(){
 
   document.body.classList.toggle("hidden", !editMode);
   
-  // Applique le filtre si une recherche est déjà en cours
   filterCards();
 }
 
@@ -778,7 +838,10 @@ function adjustColor(color, amount) {
 function createCard(song){
   const card = document.createElement("div");
   card.className = "card";
-  if(song.favorite) card.classList.add("is-favorite"); // Classe si favori
+  // MODIFICATION : Ajout d'un ID unique pour pouvoir modifier l'image sans recharger toute la carte
+  card.id = `card-${song.id}`;
+  
+  if(song.favorite) card.classList.add("is-favorite"); 
   
   card.draggable = true;
   card.style.backgroundImage = `url(${song.cover})`;
@@ -798,7 +861,6 @@ function createCard(song){
     draggedId = null;
   });
 
-  /* ICONES MODIFIÉES DANS LES OUTILS */
   card.innerHTML = `
     <div class="fav-badge">❤</div>
     <div class="card-overlay">
@@ -825,7 +887,6 @@ function createCard(song){
   return card;
 }
 
-/* --- LOGIQUE DRAG & DROP "Z-ORDER" (ROBUSTE) --- */
 function setupDrop(container, tierId){
   container.addEventListener("dragover", e => {
     e.preventDefault();
@@ -837,7 +898,6 @@ function setupDrop(container, tierId){
         placeholder.className = "placeholder"; 
     }
     
-    // On utilise la logique d'ordre séquentiel
     const after = getDragAfterElement(container, e.clientX, e.clientY);
     if(after == null) container.appendChild(placeholder);
     else container.insertBefore(placeholder, after);
@@ -866,24 +926,16 @@ function setupDrop(container, tierId){
   });
 }
 
-// Fonction de tri séquentiel (Ordre de lecture: Haut->Bas puis Gauche->Droite)
 function getDragAfterElement(container, x, y){
   const draggableElements = [...container.querySelectorAll('.card:not(.dragging)')];
 
-  // On cherche le premier élément dont le centre est "après" la souris
   return draggableElements.find(child => {
     const box = child.getBoundingClientRect();
     const boxCenterY = box.top + box.height / 2;
     const boxCenterX = box.left + box.width / 2;
 
-    // Si on est nettement au-dessus de la ligne de cet élément, il est "après" nous
     if (y < box.top) return true;
-    
-    // Si on est nettement en-dessous, il est "avant" nous, on continue
     if (y > box.bottom) return false;
-
-    // Si on est sur la même "ligne" (visuellement), on regarde le X
-    // Si la souris est à gauche du centre de cet élément, alors cet élément est "après"
     if (x < boxCenterX) return true;
 
     return false;
@@ -945,7 +997,6 @@ async function addSong(){
       youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`;
   }
 
-  // Ajout de la propriété favorite par défaut à false
   data.pool.push({ id: Date.now().toString(), artist, title, cover, youtubeUrl, favorite: false });
   save(); render();
   document.getElementById("artistInput").value = "";
@@ -985,6 +1036,10 @@ function toggleCompact(){
 function toggleDark(){ document.body.classList.toggle("dark"); }
 
 render();
+
+// MODIFICATION : Au lancement de la page, on vérifie s'il y a des images à télécharger
+setTimeout(syncCovers, 1500); 
+
 </script>
 </body>
 </html>
