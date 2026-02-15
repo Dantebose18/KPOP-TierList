@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KPOP Tier List</title>
+<title>KPOP Tier List 2024</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 
 <style>
@@ -171,19 +171,22 @@ input[type="text"] {
 input[type="text"]:focus { background: rgba(100,100,100,0.05); }
 input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 
-/* --- MAIN LAYOUT (MODIFIÉ POUR TWITCH) --- */
+/* --- MAIN LAYOUT (MODIFIÉ POUR TWITCH & TAILLE ORIGINALE) --- */
 .main-layout {
-  max-width: 1500px; /* Élargi pour faire de la place au tchat */
+  max-width: 1750px; /* Assez grand pour tout contenir sans compresser */
   margin: auto;
   padding: 0 20px 240px 20px;
   display: flex;
-  gap: 25px;
+  gap: 30px;
   align-items: flex-start;
+  justify-content: center;
 }
 
 .tier-content {
   flex: 1;
+  max-width: 1320px; /* Taille exacte de ta Tier List à l'origine */
   min-width: 0;
+  width: 100%;
 }
 
 /* --- TWITCH SIDEBAR --- */
@@ -191,7 +194,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   width: 340px;
   flex-shrink: 0;
   position: sticky;
-  top: 90px; /* Colle juste en dessous du header */
+  top: 90px;
   height: calc(100vh - 120px);
   background: var(--card-bg);
   border: var(--card-border);
@@ -227,7 +230,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 .twitch-header input:focus {
     width: 150px;
     background: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 0 0 2px #9146FF; /* Couleur Twitch */
+    box-shadow: 0 0 0 2px #9146FF;
 }
 
 iframe.twitch-iframe {
@@ -236,10 +239,9 @@ iframe.twitch-iframe {
   border: none;
 }
 
-/* Responsive pour masquer/réorganiser le tchat sur petits écrans */
-@media (max-width: 1100px) {
-  .main-layout { flex-direction: column; }
-  .twitch-sidebar { width: 100%; position: static; height: 500px; margin-top: 40px; }
+@media (max-width: 1200px) {
+  .main-layout { flex-direction: column; align-items: center; }
+  .twitch-sidebar { width: 100%; max-width: 1320px; position: static; height: 500px; margin-top: 40px; }
 }
 
 /* --- TIERS --- */
@@ -659,7 +661,6 @@ function importJson(input) {
   input.value = '';
 }
 
-/* --- FONCTION TWITCH --- */
 function changeTwitchChannel() {
     const channel = document.getElementById("twitchChannelInput").value.trim();
     const iframe = document.getElementById("twitchIframe");
@@ -669,17 +670,14 @@ function changeTwitchChannel() {
         return;
     }
     
-    // Récupération dynamique du nom de domaine parent
     let parentDomain = window.location.hostname;
     if (!parentDomain) {
-        parentDomain = "localhost"; // Par défaut en cas d'ouverture directe de fichier
+        parentDomain = "localhost"; 
     }
     
-    // Rechargement de l'iframe avec le dark mode forcé
     iframe.src = `https://www.twitch.tv/embed/${channel}/chat?parent=${parentDomain}&darkpopout`;
 }
 
-/* --- FONCTION DE SYNCHRONISATION EN ARRIÈRE-PLAN --- */
 let isSyncing = false;
 
 function forceSync() {
@@ -760,7 +758,6 @@ async function syncCovers() {
       isSyncing = false;
   }, 4000);
 }
-
 
 function filterCards() {
     const term = document.getElementById("searchBar").value.toLowerCase().trim();
@@ -1169,10 +1166,9 @@ function toggleCompact(){
 
 function toggleDark(){ document.body.classList.toggle("dark"); }
 
-// Initialisation globale
 render();
 setTimeout(syncCovers, 1500); 
-changeTwitchChannel(); // Charger le tchat au démarrage
+changeTwitchChannel(); 
 
 </script>
 </body>
