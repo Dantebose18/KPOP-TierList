@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KPOP Tier List 2024</title>
+<title>KPOP Tier List</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 
 <style>
@@ -171,13 +171,78 @@ input[type="text"] {
 input[type="text"]:focus { background: rgba(100,100,100,0.05); }
 input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 
-/* --- MAIN LAYOUT --- */
-.main {
-  max-width: 1320px; 
+/* --- MAIN LAYOUT (MODIFIÉ POUR TWITCH) --- */
+.main-layout {
+  max-width: 1500px; /* Élargi pour faire de la place au tchat */
   margin: auto;
   padding: 0 20px 240px 20px;
+  display: flex;
+  gap: 25px;
+  align-items: flex-start;
 }
 
+.tier-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* --- TWITCH SIDEBAR --- */
+.twitch-sidebar {
+  width: 340px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 90px; /* Colle juste en dessous du header */
+  height: calc(100vh - 120px);
+  background: var(--card-bg);
+  border: var(--card-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.twitch-header {
+  padding: 12px 15px;
+  background: rgba(0, 0, 0, 0.1);
+  border-bottom: var(--card-border);
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.twitch-header input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-main);
+  padding: 4px 8px;
+  border-radius: 6px;
+  width: 120px;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+.twitch-header input:focus {
+    width: 150px;
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 0 2px #9146FF; /* Couleur Twitch */
+}
+
+iframe.twitch-iframe {
+  flex: 1;
+  width: 100%;
+  border: none;
+}
+
+/* Responsive pour masquer/réorganiser le tchat sur petits écrans */
+@media (max-width: 1100px) {
+  .main-layout { flex-direction: column; }
+  .twitch-sidebar { width: 100%; position: static; height: 500px; margin-top: 40px; }
+}
+
+/* --- TIERS --- */
 .tier {
   background: var(--card-bg);
   border: var(--card-border);
@@ -493,14 +558,26 @@ body.edit-active .card-tools button { pointer-events: auto; }
   </div>
 </div>
 
-<div class="main">
-  <div class="input-section">
-    <input type="text" id="artistInput" placeholder="Artiste (ex: NMIXX)">
-    <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
-    <input type="text" id="titleInput" placeholder="Titre (ex: Dash)">
-    <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
+<div class="main-layout">
+  
+  <div class="tier-content">
+    <div class="input-section">
+      <input type="text" id="artistInput" placeholder="Artiste (ex: NMIXX)">
+      <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
+      <input type="text" id="titleInput" placeholder="Titre (ex: Dash)">
+      <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
+    </div>
+    <div id="tiers"></div>
   </div>
-  <div id="tiers"></div>
+
+  <div class="twitch-sidebar">
+    <div class="twitch-header">
+      <span style="color: #bfdbfe;">🟣 Tchat Twitch</span>
+      <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
+    </div>
+    <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
+  </div>
+
 </div>
 
 <div class="pool-container">
@@ -582,6 +659,26 @@ function importJson(input) {
   input.value = '';
 }
 
+/* --- FONCTION TWITCH --- */
+function changeTwitchChannel() {
+    const channel = document.getElementById("twitchChannelInput").value.trim();
+    const iframe = document.getElementById("twitchIframe");
+    
+    if(!channel) {
+        iframe.src = "";
+        return;
+    }
+    
+    // Récupération dynamique du nom de domaine parent
+    let parentDomain = window.location.hostname;
+    if (!parentDomain) {
+        parentDomain = "localhost"; // Par défaut en cas d'ouverture directe de fichier
+    }
+    
+    // Rechargement de l'iframe avec le dark mode forcé
+    iframe.src = `https://www.twitch.tv/embed/${channel}/chat?parent=${parentDomain}&darkpopout`;
+}
+
 /* --- FONCTION DE SYNCHRONISATION EN ARRIÈRE-PLAN --- */
 let isSyncing = false;
 
@@ -638,7 +735,6 @@ async function syncCovers() {
         const cardEl = document.getElementById(`card-${song.id}`);
         if(cardEl) cardEl.style.backgroundImage = `url(${song.cover})`;
       } else {
-        // MODIFICATION: Génération d'une couleur de fond aléatoire si Apple ne trouve rien
         const randomColor = Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
         const initial = song.artist ? song.artist.charAt(0).toUpperCase() : "?";
         song.cover = `https://via.placeholder.com/300/${randomColor}/ffffff?text=${encodeURIComponent(initial)}`;
@@ -816,13 +912,11 @@ function render(){
     header.className = "tier-header";
     header.style.background = `linear-gradient(90deg, ${t.color}, ${adjustColor(t.color, -40)})`;
     
-    // Le titre redevient simple sans le compteur
     header.innerHTML = `<span>${t.name}</span>`;
 
     const controls = document.createElement("div");
     controls.className = "tier-controls";
 
-    // MODIFICATION : Compteur placé à droite, avant les outils
     const countSpan = document.createElement("span");
     countSpan.style.cssText = "font-size:14px; opacity:0.8; font-weight:600; margin-right: 10px;";
     countSpan.innerText = `(${t.songs.length})`;
@@ -1015,7 +1109,6 @@ async function addSong(){
     cover = json.results[0]?.artworkUrl100?.replace("100x100", "300x300") || "";
   } catch(e) {}
 
-  // MODIFICATION: Génération d'une couleur aléatoire pour l'ajout manuel aussi
   if(!cover) {
       const randomColor = Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
       cover = `https://via.placeholder.com/300/${randomColor}/ffffff?text=${encodeURIComponent(artist.charAt(0).toUpperCase())}`;
@@ -1076,9 +1169,10 @@ function toggleCompact(){
 
 function toggleDark(){ document.body.classList.toggle("dark"); }
 
+// Initialisation globale
 render();
-
 setTimeout(syncCovers, 1500); 
+changeTwitchChannel(); // Charger le tchat au démarrage
 
 </script>
 </body>
