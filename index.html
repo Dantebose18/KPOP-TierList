@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KPOP Tier List</title>
+<title>KPOP Tier List 2024</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 
 <style>
@@ -453,6 +453,8 @@ body.edit-active .card-tools button { pointer-events: auto; }
   <div class="header-btns">
     <input type="text" id="searchBar" placeholder="🔍 Filtrer artiste/titre..." oninput="filterCards()">
     
+    <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;"></div>
+    
     <button onclick="exportJson()" title="Sauvegarder">💾</button>
     <button onclick="document.getElementById('fileInput').click()" title="Charger">📂</button>
     <button onclick="resetData()" class="btn-danger" title="Tout effacer">🗑️</button>
@@ -460,7 +462,6 @@ body.edit-active .card-tools button { pointer-events: auto; }
     <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;"></div>
     
     <button onclick="forceSync()" class="icon-btn" title="Relancer recherche d'images">🔄</button>
-    
     <button onclick="showFavorites()" class="icon-btn" title="Mes Favoris" style="color:var(--accent-fav)">❤</button>
     <button onclick="showStats()" class="icon-btn" title="Statistiques">📊</button>
     <button onclick="toggleCompact()" id="compactBtn" class="icon-btn" title="Vue Compacte">☰</button>
@@ -584,10 +585,8 @@ function importJson(input) {
 /* --- FONCTION DE SYNCHRONISATION EN ARRIÈRE-PLAN --- */
 let isSyncing = false;
 
-// Nouvelle fonction pour forcer la reprise
 function forceSync() {
     const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
-    // On réinitialise l'état "cherché" pour celles qui ont toujours le placeholder
     allSongs.forEach(s => {
         if(s.cover && s.cover.includes('via.placeholder.com')) {
             s.coverSearched = false;
@@ -624,19 +623,25 @@ async function syncCovers() {
     try {
       const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(song.artist + " " + song.title)}&entity=song&limit=1`);
       
-      // Si Apple bloque (Trop de requêtes = 429 ou 403), on coupe proprement
       if(!res.ok) {
           syncBadge.innerText = "⏸️ API Apple en pause";
-          syncBadge.style.background = "#f59e0b"; // Orange
+          syncBadge.style.background = "#f59e0b"; 
           isSyncing = false;
           setTimeout(() => syncBadge.remove(), 5000);
-          return; // On arrête la boucle sans marquer la carte comme "coverSearched = true"
+          return; 
       }
 
       const json = await res.json();
       
       if(json.results && json.results.length > 0) {
         song.cover = json.results[0].artworkUrl100.replace("100x100", "300x300");
+        const cardEl = document.getElementById(`card-${song.id}`);
+        if(cardEl) cardEl.style.backgroundImage = `url(${song.cover})`;
+      } else {
+        // MODIFICATION: Génération d'une couleur de fond aléatoire si Apple ne trouve rien
+        const randomColor = Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+        const initial = song.artist ? song.artist.charAt(0).toUpperCase() : "?";
+        song.cover = `https://via.placeholder.com/300/${randomColor}/ffffff?text=${encodeURIComponent(initial)}`;
         const cardEl = document.getElementById(`card-${song.id}`);
         if(cardEl) cardEl.style.backgroundImage = `url(${song.cover})`;
       }
@@ -647,7 +652,6 @@ async function syncCovers() {
     song.coverSearched = true; 
     save(); 
     
-    // MODIFICATION : On attend 1 seconde complète pour être plus discret face à Apple
     await new Promise(resolve => setTimeout(resolve, 1000)); 
   }
 
@@ -713,7 +717,6 @@ function showFavorites() {
     modal.style.display = 'flex';
 }
 
-/* --- CLASSEMENT AMÉLIORÉ --- */
 function showStats() {
   const modal = document.getElementById('statsModal');
   const body = document.getElementById('statsBody');
@@ -724,7 +727,7 @@ function showStats() {
   const maxScore = data.tiers.length;
   
   data.tiers.forEach((tier, index) => {
-    const score = maxScore - index; // Ex: S=9, A=8, etc.
+    const score = maxScore - index; 
     tier.songs.forEach(song => {
       totalSongs++;
       totalGlobalScore += score;
@@ -736,26 +739,23 @@ function showStats() {
   });
   data.pool.forEach(song => { totalSongs++; });
 
-  // Algorithme de Moyenne Bayésienne (Score Pondéré)
-  const minimumSongs = 2; // Niveau d'exigence avant de donner la "vraie" moyenne
+  const minimumSongs = 2; 
   const globalAverage = totalSongs > 0 ? (totalGlobalScore / totalSongs) : 0;
 
   let rankings = Object.keys(artistStats).map(key => {
     const trueAvg = artistStats[key].total / artistStats[key].count;
     const count = artistStats[key].count;
     
-    // Le "bayesianScore" tire les artistes avec peu de chansons vers la moyenne globale
     const bayesianScore = ((count / (count + minimumSongs)) * trueAvg) + ((minimumSongs / (count + minimumSongs)) * globalAverage);
 
     return {
       name: key,
       avg: trueAvg.toFixed(2),
       count: count,
-      score: bayesianScore // C'est ce score secret qui sert pour le classement juste
+      score: bayesianScore 
     };
   });
 
-  // On trie par le Score Bayésien au lieu de la simple moyenne
   rankings.sort((a, b) => b.score - a.score);
   
   const top3 = rankings.slice(0, 3);
@@ -816,11 +816,17 @@ function render(){
     header.className = "tier-header";
     header.style.background = `linear-gradient(90deg, ${t.color}, ${adjustColor(t.color, -40)})`;
     
-    // MODIFICATION : Ajout du compteur de chansons dans l'en-tête
-    header.innerHTML = `<span>${t.name} <span style="font-size:14px; opacity:0.75; font-weight:normal; margin-left:8px;">(${t.songs.length})</span></span>`;
+    // Le titre redevient simple sans le compteur
+    header.innerHTML = `<span>${t.name}</span>`;
 
     const controls = document.createElement("div");
     controls.className = "tier-controls";
+
+    // MODIFICATION : Compteur placé à droite, avant les outils
+    const countSpan = document.createElement("span");
+    countSpan.style.cssText = "font-size:14px; opacity:0.8; font-weight:600; margin-right: 10px;";
+    countSpan.innerText = `(${t.songs.length})`;
+    controls.append(countSpan);
 
     const colorWrapper = document.createElement("div");
     colorWrapper.className = "color-picker-wrapper";
@@ -1009,7 +1015,11 @@ async function addSong(){
     cover = json.results[0]?.artworkUrl100?.replace("100x100", "300x300") || "";
   } catch(e) {}
 
-  if(!cover) cover = "https://via.placeholder.com/300/6366f1/ffffff?text=" + artist.charAt(0);
+  // MODIFICATION: Génération d'une couleur aléatoire pour l'ajout manuel aussi
+  if(!cover) {
+      const randomColor = Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+      cover = `https://via.placeholder.com/300/${randomColor}/ffffff?text=${encodeURIComponent(artist.charAt(0).toUpperCase())}`;
+  }
 
   let youtubeUrl = "";
   if(YOUTUBE_API_KEY) {
