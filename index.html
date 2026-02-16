@@ -171,44 +171,21 @@ input[type="text"] {
 input[type="text"]:focus { background: rgba(100,100,100,0.05); }
 input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 
-/* --- MAIN LAYOUT : GRILLE DE CENTRAGE ABSOLU --- */
-.main-layout {
-  width: 100%;
+/* --- MAIN LAYOUT : CENTRAGE D'ORIGINE CONSERVÉ --- */
+.main {
+  max-width: 1320px; 
   margin: auto;
   padding: 0 20px 240px 20px;
-  display: grid;
-  /* Colonne 1 (Vide 320px) | Colonne 2 (Tier List centrée) | Colonne 3 (Tchat Twitch) */
-  grid-template-columns: minmax(320px, 1fr) minmax(300px, 1320px) minmax(320px, 1fr);
-  row-gap: 0;
 }
 
-.input-container {
-  grid-column: 2;
-  grid-row: 1;
-  width: 100%;
-}
-
-.tier-content {
-  grid-column: 2;
-  grid-row: 2;
-  width: 100%;
-}
-
-/* --- TWITCH SIDEBAR --- */
-.twitch-sidebar-wrapper {
-  grid-column: 3;
-  grid-row: 2; /* S'aligne mathématiquement sur la même ligne que la première catégorie */
-  display: flex;
-  justify-content: center; /* Centre parfaitement le tchat dans l'espace vide à droite */
-  align-items: flex-start; /* Aligne le bord supérieur du tchat avec le bord supérieur de la catégorie */
-}
-
+/* --- TWITCH SIDEBAR (FLOTTANT À DROITE) --- */
 .twitch-sidebar {
-  position: sticky;
-  top: 90px; /* Reste collé sous le menu principal quand on descend */
+  position: fixed;
+  top: 180px; /* Aligné précisément avec le haut de la première catégorie */
+  /* Formule pour centrer le tchat dans l'espace vide à droite de la Tier List */
+  right: max(20px, calc(25vw - 490px)); 
   width: 320px;
-  height: 80vh; /* Hauteur ré-augmentée */
-  max-height: 900px;
+  height: 75vh; /* Hauteur augmentée */
   background: var(--card-bg);
   border: var(--card-border);
   border-radius: var(--radius-md);
@@ -217,6 +194,15 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  z-index: 100;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+}
+
+/* Classe pour masquer Twitch via le bouton */
+.twitch-sidebar.hidden {
+  transform: translateX(150%);
+  opacity: 0;
+  pointer-events: none;
 }
 
 .twitch-header {
@@ -252,13 +238,6 @@ iframe.twitch-iframe {
   border: none;
 }
 
-/* Comportement sur petit écran (inférieur à 1600px) */
-@media (max-width: 1600px) {
-  .main-layout { display: flex; flex-direction: column; align-items: center; }
-  .twitch-sidebar-wrapper { width: 100%; max-width: 1320px; justify-content: flex-end; }
-  .twitch-sidebar { position: relative; top: 0; height: 500px; margin-top: 30px; }
-}
-
 /* --- TIERS --- */
 .tier {
   background: var(--card-bg);
@@ -280,9 +259,12 @@ iframe.twitch-iframe {
   justify-content: space-between;
   align-items: center;
   text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  position: relative;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
-  overflow: hidden;
+  
+  /* REMIS : Le titre de la catégorie reste affiché en haut quand on scroll */
+  position: sticky;
+  top: 60px; /* Colle juste en dessous du menu principal */
+  z-index: 40;
 }
 
 .tier-header::after {
@@ -543,6 +525,8 @@ body.edit-active .card-tools button { pointer-events: auto; }
     
     <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;"></div>
     
+    <button onclick="toggleTwitch()" class="icon-btn" title="Afficher/Cacher Tchat Twitch">🟣</button>
+    
     <button onclick="forceSync()" class="icon-btn" title="Relancer recherche d'images">🔄</button>
     <button onclick="showFavorites()" class="icon-btn" title="Mes Favoris" style="color:var(--accent-fav)">❤</button>
     <button onclick="showStats()" class="icon-btn" title="Statistiques">📊</button>
@@ -575,31 +559,22 @@ body.edit-active .card-tools button { pointer-events: auto; }
   </div>
 </div>
 
-<div class="main-layout">
-  
-  <div class="input-container">
-    <div class="input-section">
-      <input type="text" id="artistInput" placeholder="Artiste (ex: NMIXX)">
-      <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
-      <input type="text" id="titleInput" placeholder="Titre (ex: Dash)">
-      <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
-    </div>
+<div class="twitch-sidebar" id="twitchSidebar">
+  <div class="twitch-header">
+    <span style="color: #bfdbfe;">🟣 Tchat Twitch</span>
+    <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
   </div>
+  <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
+</div>
 
-  <div class="tier-content">
-    <div id="tiers"></div>
+<div class="main">
+  <div class="input-section">
+    <input type="text" id="artistInput" placeholder="Artiste (ex: NMIXX)">
+    <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
+    <input type="text" id="titleInput" placeholder="Titre (ex: Dash)">
+    <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
   </div>
-
-  <div class="twitch-sidebar-wrapper">
-    <div class="twitch-sidebar" id="twitchSidebar">
-      <div class="twitch-header">
-        <span style="color: #bfdbfe;">🟣 Tchat Twitch</span>
-        <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
-      </div>
-      <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
-    </div>
-  </div>
-
+  <div id="tiers"></div>
 </div>
 
 <div class="pool-container">
@@ -619,6 +594,7 @@ let editMode = false;
 let compactMode = false; 
 let draggedId = null;
 let placeholder = null;
+let twitchVisible = true; // Variable pour le tchat
 
 function defaultData(){
   return {
@@ -679,6 +655,17 @@ function importJson(input) {
   };
   reader.readAsText(file);
   input.value = '';
+}
+
+// Fonction pour masquer/afficher Twitch
+function toggleTwitch() {
+    const chat = document.getElementById("twitchSidebar");
+    twitchVisible = !twitchVisible;
+    if(twitchVisible) {
+        chat.classList.remove("hidden");
+    } else {
+        chat.classList.add("hidden");
+    }
 }
 
 function changeTwitchChannel() {
@@ -929,7 +916,6 @@ function render(){
     header.className = "tier-header";
     header.style.background = `linear-gradient(90deg, ${t.color}, ${adjustColor(t.color, -40)})`;
     
-    // Le titre redevient simple sans le compteur
     header.innerHTML = `<span>${t.name}</span>`;
 
     const controls = document.createElement("div");
