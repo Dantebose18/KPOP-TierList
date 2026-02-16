@@ -171,21 +171,22 @@ input[type="text"] {
 input[type="text"]:focus { background: rgba(100,100,100,0.05); }
 input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 
-/* --- MAIN LAYOUT : CENTRAGE D'ORIGINE CONSERVÉ --- */
+/* --- MAIN LAYOUT : CENTRAGE D'ORIGINE --- */
 .main {
   max-width: 1320px; 
   margin: auto;
   padding: 0 20px 240px 20px;
 }
 
-/* --- TWITCH SIDEBAR (FLOTTANT À DROITE) --- */
+/* --- TWITCH SIDEBAR FLOTTANT --- */
 .twitch-sidebar {
   position: fixed;
-  top: 180px; /* Aligné précisément avec le haut de la première catégorie */
-  /* Formule pour centrer le tchat dans l'espace vide à droite de la Tier List */
+  top: 195px; /* S'aligne parfaitement sur la première catégorie par défaut */
+  /* Formule mathématique pour centrer le tchat dans le vide droit de la page */
   right: max(20px, calc(25vw - 490px)); 
   width: 320px;
-  height: 75vh; /* Hauteur augmentée */
+  height: 80vh; /* Hauteur augmentée comme demandé */
+  max-height: 900px;
   background: var(--card-bg);
   border: var(--card-border);
   border-radius: var(--radius-md);
@@ -195,10 +196,9 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   display: flex;
   flex-direction: column;
   z-index: 100;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
 }
 
-/* Classe pour masquer Twitch via le bouton */
 .twitch-sidebar.hidden {
   transform: translateX(150%);
   opacity: 0;
@@ -261,16 +261,20 @@ iframe.twitch-iframe {
   text-shadow: 0 2px 4px rgba(0,0,0,0.2);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   
-  /* REMIS : Le titre de la catégorie reste affiché en haut quand on scroll */
+  /* L'effet sticky pour que le titre suive au scroll */
   position: sticky;
   top: 60px; /* Colle juste en dessous du menu principal */
   z-index: 40;
+  
+  /* INDISPENSABLE pour que la partie grise de ::after ne dépasse pas les coins arrondis */
+  overflow: hidden; 
 }
 
 .tier-header::after {
   content: ''; position: absolute; top:0; left:0; right:0; bottom:0;
   background: linear-gradient(90deg, rgba(255,255,255,0.1), transparent);
   pointer-events: none;
+  border-radius: inherit;
 }
 
 .tier-controls { display: flex; gap: 8px; align-items: center; z-index: 2; }
@@ -594,7 +598,7 @@ let editMode = false;
 let compactMode = false; 
 let draggedId = null;
 let placeholder = null;
-let twitchVisible = true; // Variable pour le tchat
+let twitchVisible = true;
 
 function defaultData(){
   return {
@@ -657,7 +661,6 @@ function importJson(input) {
   input.value = '';
 }
 
-// Fonction pour masquer/afficher Twitch
 function toggleTwitch() {
     const chat = document.getElementById("twitchSidebar");
     twitchVisible = !twitchVisible;
