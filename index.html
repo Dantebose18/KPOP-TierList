@@ -50,7 +50,6 @@ body {
   color: var(--text-main);
   transition: background-color 0.3s ease, color 0.3s ease;
   min-height: 100vh;
-  overflow-x: hidden; /* Empêche la barre de défilement horizontale */
 }
 
 /* --- HEADER GLASS --- */
@@ -91,7 +90,11 @@ header {
   transition: all 0.3s ease;
   font-size: 13px;
 }
-#searchBar:focus { width: 240px; background: rgba(255,255,255,0.15); box-shadow: 0 0 0 2px var(--accent-primary); }
+#searchBar:focus {
+  width: 240px;
+  background: rgba(255,255,255,0.15);
+  box-shadow: 0 0 0 2px var(--accent-primary);
+}
 #searchBar::placeholder { color: var(--text-muted); opacity: 0.7; }
 
 /* --- BOUTONS --- */
@@ -111,18 +114,38 @@ button {
   align-items: center;
   gap: 6px;
 }
-button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); background: rgba(255,255,255,0.1); }
-.btn-primary { background: var(--accent-gradient); color: white; border: none; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); padding: 10px 18px; font-size: 14px; }
-.btn-primary:hover { box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4); background: linear-gradient(135deg, #4f46e5 0%, #db2777 100%); }
-.btn-danger { color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  background: rgba(255,255,255,0.1);
+}
+
+.btn-primary {
+  background: var(--accent-gradient);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  padding: 10px 18px;
+  font-size: 14px;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
+  background: linear-gradient(135deg, #4f46e5 0%, #db2777 100%);
+}
+
+.btn-danger {
+    color: #ef4444; border-color: rgba(239, 68, 68, 0.3);
+}
 .btn-danger:hover { background: rgba(239, 68, 68, 0.1); }
+
 .icon-btn { padding: 8px 12px; font-size: 16px; }
 
 /* --- INPUT SECTION --- */
 .input-section {
-  width: 100%;
   max-width: 700px;
-  margin: 0 auto;
+  margin: 40px auto;
   display: flex;
   gap: 10px;
   padding: 8px;
@@ -132,39 +155,37 @@ button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.
   box-shadow: var(--glass-shadow);
   backdrop-filter: blur(8px);
 }
-input[type="text"] { flex: 1; border: none; background: transparent; padding: 12px 20px; font-family: inherit; font-size: 15px; color: var(--text-main); border-radius: var(--radius-sm); transition: background 0.2s; }
+
+input[type="text"] {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 12px 20px;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--text-main);
+  border-radius: var(--radius-sm);
+  transition: background 0.2s;
+}
+
 input[type="text"]:focus { background: rgba(100,100,100,0.05); }
 input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 
-/* --- MAIN LAYOUT : GRILLE DE CENTRAGE ABSOLU --- */
-.main-layout {
-  width: 100%;
+/* --- MAIN LAYOUT : RETOUR AU CENTRAGE PARFAIT --- */
+.main {
+  max-width: 1320px; 
   margin: auto;
-  padding: 40px 20px 240px 20px;
-  display: grid;
-  /* COL 1 (Vide), COL 2 (TierList=1320px maxi), COL 3 (Twitch) */
-  grid-template-columns: minmax(340px, 1fr) minmax(300px, 1320px) minmax(340px, 1fr);
-  row-gap: 40px; /* Espace entre l'ajout et les catégories */
+  padding: 0 20px 240px 20px;
 }
 
-.input-container { grid-column: 2; width: 100%; }
-.tier-content { grid-column: 2; width: 100%; }
-
-/* --- TWITCH SIDEBAR WRAPPER --- */
-.twitch-sidebar-wrapper {
-  grid-column: 3;
-  grid-row: 2; /* S'aligne parfaitement sur la même ligne que la Tier List */
-  display: flex;
-  justify-content: center; /* Centré dans son "côté vide" */
-  align-items: flex-start; /* Aligné avec le haut exact de la première catégorie */
-}
-
+/* --- TWITCH SIDEBAR FLOTTANT --- */
 .twitch-sidebar {
-  position: sticky;
-  top: 80px; /* Reste à 80px du haut pendant le scroll */
+  position: fixed;
+  top: 180px; /* Aligné précisément avec le haut de la première catégorie */
+  right: 20px;
   width: 320px;
-  height: 75vh; /* Tchat plus grand */
-  max-height: 850px;
+  height: 60vh; /* Hauteur réduite */
+  max-height: 550px; /* Limite de sécurité pour ne pas sortir de l'écran */
   background: var(--card-bg);
   border: var(--card-border);
   border-radius: var(--radius-md);
@@ -173,32 +194,48 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+  z-index: 100;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
 }
 
-/* Cache le tchat hors de l'écran */
+/* Classe pour cacher le tchat via le bouton */
 .twitch-sidebar.hidden {
-  transform: translateX(150%);
+  transform: translateX(120%);
   opacity: 0;
   pointer-events: none;
 }
 
 .twitch-header {
-  padding: 12px 15px; background: rgba(0, 0, 0, 0.1); border-bottom: var(--card-border);
-  font-weight: 600; display: flex; justify-content: space-between; align-items: center; font-size: 14px;
+  padding: 12px 15px;
+  background: rgba(0, 0, 0, 0.1);
+  border-bottom: var(--card-border);
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
 }
-.twitch-header input {
-  background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: var(--text-main);
-  padding: 4px 8px; border-radius: 6px; width: 120px; font-size: 12px; transition: all 0.2s;
-}
-.twitch-header input:focus { width: 150px; background: rgba(255, 255, 255, 0.2); box-shadow: 0 0 0 2px #9146FF; }
-iframe.twitch-iframe { flex: 1; width: 100%; border: none; }
 
-/* Responsive : Si l'écran est trop petit, on passe en colonne */
-@media (max-width: 1600px) {
-  .main-layout { display: flex; flex-direction: column; align-items: center; }
-  .twitch-sidebar-wrapper { width: 100%; max-width: 1320px; justify-content: flex-end; }
-  .twitch-sidebar { position: relative; top: 0; height: 500px; margin-top: 20px; }
+.twitch-header input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-main);
+  padding: 4px 8px;
+  border-radius: 6px;
+  width: 120px;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+.twitch-header input:focus {
+    width: 150px;
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 0 2px #9146FF;
+}
+
+iframe.twitch-iframe {
+  flex: 1;
+  width: 100%;
+  border: none;
 }
 
 /* --- TIERS --- */
@@ -206,167 +243,241 @@ iframe.twitch-iframe { flex: 1; width: 100%; border: none; }
   background: var(--card-bg);
   border: var(--card-border);
   border-radius: var(--radius-md);
-  margin-bottom: 30px;
+  margin-bottom: 25px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-  overflow: visible;
+  overflow: visible; /* Permet aux cartes de grossir sans être coupées */
   display: flex;
   flex-direction: column;
 }
 
-/* WRAPPER POUR L'EFFET INTERCALAIRE */
-.tier-header-wrapper {
-  position: sticky;
-  top: 80px; /* L'endroit où le titre s'accroche pendant le scroll */
-  z-index: 40;
-  height: 60px; /* Maintient l'espace pour éviter les sauts */
-}
-
 .tier-header {
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 60px;
-  display: block; /* Utilisation du line-height pour centrer verticalement */
+  padding: 15px 25px;
   color: white;
+  font-weight: 800;
+  font-size: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   text-shadow: 0 2px 4px rgba(0,0,0,0.2);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
-  overflow: hidden;
   
-  /* L'animation fluide */
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  transform-origin: top left; /* Point de pivotement : Haut Gauche */
+  /* MODIFICATION : Le titre est maintenant sticky et restera accroché au scroll */
+  position: sticky;
+  top: 60px; /* Juste en dessous du header principal */
+  z-index: 40; /* Au-dessus des cartes (sauf au survol) */
 }
 
-/* L'EFFET INTERCALAIRE VERTICAL QUAND ON SCROLL */
-@media (min-width: 1200px) {
-    .tier-header.is-stuck {
-        width: 220px; /* Longueur de l'intercalaire */
-        height: 45px; /* Épaisseur de l'intercalaire */
-        
-        /* Rotation à la verticale + Décalage sur la gauche dans le vide */
-        transform: rotate(90deg) translateX(20px) translateY(15px);
-        
-        /* On arrondit uniquement les bords qui dépassent sur la gauche */
-        border-radius: 0 0 16px 16px; 
-        box-shadow: -5px 5px 15px rgba(0,0,0,0.3);
-    }
-}
-
+/* Le fond dégradé du header, on doit l'attacher autrement à cause du sticky */
 .tier-header::after {
   content: ''; position: absolute; top:0; left:0; right:0; bottom:0;
   background: linear-gradient(90deg, rgba(255,255,255,0.1), transparent);
   pointer-events: none;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 
-.tier-title-text {
-  display: block;
-  font-size: 20px;
-  font-weight: 800;
-  line-height: 60px;
-  padding-left: 25px;
-  width: calc(100% - 180px); /* Laisse la place aux boutons */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition: all 0.4s;
+.tier-controls { display: flex; gap: 8px; align-items: center; z-index: 2; }
+.tier-controls button {
+  background: rgba(0,0,0,0.2); border: none; color: white;
+  padding: 6px 10px; font-size: 12px; border-radius: 6px; backdrop-filter: blur(4px);
 }
-
-/* Texte centré et réduit dans l'intercalaire */
-.tier-header.is-stuck .tier-title-text {
-    width: 100%;
-    padding-left: 0;
-    text-align: center;
-    font-size: 16px;
-    line-height: 45px;
-}
-
-/* --- BOUTONS D'ÉDITION DES TIERS --- */
-.tier-controls { 
-  position: absolute;
-  top: 16px; /* Centré dans la barre de 60px */
-  right: 25px;
-  display: flex; gap: 8px; align-items: center; z-index: 2; 
-  transition: opacity 0.2s ease;
-}
-
-/* Ils disparaissent quand l'intercalaire est actif */
-.tier-header.is-stuck .tier-controls {
-    opacity: 0;
-    pointer-events: none;
-}
-
-.tier-controls button { background: rgba(0,0,0,0.2); border: none; color: white; padding: 6px 10px; font-size: 12px; border-radius: 6px; backdrop-filter: blur(4px); }
 .tier-controls button:hover { background: rgba(0,0,0,0.4); }
 
-.color-picker-wrapper { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 5px rgba(0,0,0,0.2); overflow: hidden; position: relative; cursor: pointer; transition: transform 0.2s; }
+/* COLOR PICKER STYLE */
+.color-picker-wrapper {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.8);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
 .color-picker-wrapper:hover { transform: scale(1.1); }
-input[type="color"] { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; cursor: pointer; padding: 0; margin: 0; border: none; }
+input[type="color"] {
+  position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+  cursor: pointer; padding: 0; margin: 0; border: none;
+}
 
-.cards { display: flex; gap: 16px; padding: 20px; flex-wrap: wrap; min-height: 160px; align-content: flex-start; }
+.cards {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  flex-wrap: wrap;
+  min-height: 160px;
+  align-content: flex-start;
+}
 
 /* --- CARDS --- */
 .card {
-  width: 140px; height: 140px; border-radius: var(--radius-md); background-size: cover; background-position: center; position: relative; cursor: grab;
+  width: 140px;
+  height: 140px;
+  border-radius: var(--radius-md);
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  cursor: grab;
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, height 0.2s ease, background-image 0.5s ease-in;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; border: 1px solid rgba(255,255,255,0.1); background-color: var(--card-bg);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  background-color: var(--card-bg);
 }
 
-.card.is-favorite { animation: glow 1.5s infinite alternate; z-index: 10; }
-body.edit-active .fav-badge { display: none !important; }
-.fav-badge { position: absolute; top: 5px; right: 5px; color: var(--accent-fav); font-size: 18px; filter: drop-shadow(0 0 3px rgba(0,0,0,0.8)); display: none; pointer-events: none; z-index: 5; }
+.card.is-favorite {
+  animation: glow 1.5s infinite alternate;
+  z-index: 10;
+}
+
+body.edit-active .fav-badge {
+    display: none !important;
+}
+
+.fav-badge {
+    position: absolute; top: 5px; right: 5px;
+    color: var(--accent-fav); font-size: 18px; 
+    filter: drop-shadow(0 0 3px rgba(0,0,0,0.8));
+    display: none; pointer-events: none;
+    z-index: 5;
+}
 .card.is-favorite .fav-badge { display: block; }
 
 @keyframes glow {
-  0% { box-shadow: 0 0 5px var(--accent-fav), inset 0 0 0px var(--accent-fav); border-color: rgba(236, 72, 153, 0.5); }
-  100% { box-shadow: 0 0 25px var(--accent-fav), inset 0 0 15px rgba(236, 72, 153, 0.6); border-color: var(--accent-fav); }
+  0% { 
+    box-shadow: 0 0 5px var(--accent-fav), inset 0 0 0px var(--accent-fav);
+    border-color: rgba(236, 72, 153, 0.5);
+  }
+  100% { 
+    box-shadow: 0 0 25px var(--accent-fav), inset 0 0 15px rgba(236, 72, 153, 0.6);
+    border-color: var(--accent-fav);
+  }
 }
 
-body.is-dragging .card { transition: none !important; }
-.card.dragging { opacity: 0.4; transform: scale(0.95); grayscale: 100%; pointer-events: none; }
-#tiers .card:hover { transform: scale(1.15) translateY(-5px); z-index: 50; box-shadow: 0 20px 30px rgba(0,0,0,0.25); border-color: var(--accent-secondary); }
+body.is-dragging .card {
+  transition: none !important;
+}
+
+.card.dragging {
+  opacity: 0.4;
+  transform: scale(0.95);
+  grayscale: 100%;
+  pointer-events: none; 
+}
+
+#tiers .card:hover {
+  transform: scale(1.15) translateY(-5px);
+  z-index: 50; /* Passe au dessus du header collant */
+  box-shadow: 0 20px 30px rgba(0,0,0,0.25);
+  border-color: var(--accent-secondary);
+}
 .card.is-favorite:hover { border-color: var(--accent-fav); }
 
-.card-overlay { position: absolute; bottom: 0; width: 100%; padding: 40px 10px 10px 10px; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%); color: white; font-size: 12px; line-height: 1.3; text-align: center; pointer-events: none; transition: all 0.2s; display: flex; flex-direction: column; justify-content: flex-end; }
-.card-overlay strong { display: block; font-size: 13px; margin-bottom: 2px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+.card-overlay {
+  position: absolute; bottom: 0; width: 100%;
+  padding: 40px 10px 10px 10px;
+  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
+  color: white; font-size: 12px; line-height: 1.3; text-align: center; pointer-events: none;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.card-overlay strong {
+  display: block; font-size: 13px; margin-bottom: 2px;
+  color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
 
 /* --- MODE COMPACT --- */
 body.compact-active .card { height: 70px; }
-body.compact-active .card-overlay { top: 0; padding: 5px; background: rgba(0,0,0,0.7); justify-content: center; gap: 2px; }
+body.compact-active .card-overlay {
+  top: 0; padding: 5px; background: rgba(0,0,0,0.7); 
+  justify-content: center; gap: 2px;
+}
 body.compact-active .card-overlay strong { font-size: 12px; margin: 0; white-space: normal; line-height: 1.1; }
 body.compact-active .card-overlay span { font-size: 11px; opacity: 0.9; line-height: 1.1; }
-body.compact-active .card:hover { height: 140px; transform: scale(1.15) translateY(-5px); z-index: 100; background-blend-mode: normal; }
-body.compact-active .card:hover .card-overlay { top: auto; bottom: 0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%); padding: 40px 10px 10px 10px; justify-content: flex-end; }
+
+body.compact-active .card:hover {
+  height: 140px; transform: scale(1.15) translateY(-5px); z-index: 100; background-blend-mode: normal;
+}
+body.compact-active .card:hover .card-overlay {
+  top: auto; bottom: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
+  padding: 40px 10px 10px 10px;
+  justify-content: flex-end;
+}
 
 /* --- CARD TOOLS --- */
-.card-tools { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 20; }
+.card-tools {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; 
+  opacity: 0; 
+  transition: opacity 0.2s;
+  z-index: 20; 
+}
+
 .card-tools button { pointer-events: auto; }
+
 .btn-edit-pos { position: absolute; top: 6px; left: 6px; }
 .btn-fav-pos { position: absolute; top: 40px; left: 6px; }
 .btn-del-pos { position: absolute; top: 6px; right: 6px; }
 
 .card-tools button {
-  background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2); color: white;
-  padding: 0; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
-  border-radius: 50%; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: transform 0.1s, background 0.2s;
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+  border: 1px solid rgba(255,255,255,0.2); color: white;
+  padding: 0; width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  transition: transform 0.1s, background 0.2s;
 }
 .card-tools button:hover { background: var(--accent-secondary); transform: scale(1.1); }
 .card-tools button.active-fav { color: var(--accent-fav); background: rgba(0,0,0,0.8); border-color: var(--accent-fav); }
 
+
 /* Placeholder */
-.placeholder { width: 140px; height: 140px; border-radius: var(--radius-md); border: 2px dashed var(--text-muted); background: rgba(100,100,100,0.05); opacity: 0.5; animation: pulse 1.5s infinite; transition: none; pointer-events: none; }
+.placeholder {
+  width: 140px; height: 140px; border-radius: var(--radius-md);
+  border: 2px dashed var(--text-muted); background: rgba(100,100,100,0.05);
+  opacity: 0.5; animation: pulse 1.5s infinite; 
+  transition: none; pointer-events: none;
+}
 body.compact-active .placeholder { height: 70px; }
+
 @keyframes pulse { 0%{opacity:0.3} 50%{opacity:0.6} 100%{opacity:0.3} }
 
 /* --- POOL --- */
-.pool-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 1200px; background: var(--card-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 20px; border: var(--card-border); border-radius: var(--radius-lg); box-shadow: 0 -10px 40px rgba(0,0,0,0.1); z-index: 100; }
-.pool-header { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+.pool-container {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  width: 90%; max-width: 1200px;
+  background: var(--card-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  padding: 20px; border: var(--card-border); border-radius: var(--radius-lg);
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.1); z-index: 100;
+}
+.pool-header {
+  font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;
+}
 .pool-header::after { content:''; flex:1; height:1px; background: var(--text-muted); opacity: 0.2; }
-.pool { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; min-height: 150px; scrollbar-width: thin; scrollbar-color: var(--accent-primary) transparent; }
+.pool {
+  display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; min-height: 150px;
+  scrollbar-width: thin; scrollbar-color: var(--accent-primary) transparent;
+}
 .pool::-webkit-scrollbar { height: 6px; }
 .pool::-webkit-scrollbar-track { background: transparent; }
 .pool::-webkit-scrollbar-thumb { background-color: var(--text-muted); border-radius: 10px; }
 
 /* --- MODAL STATS & FAV --- */
-.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 2000; display: none; justify-content: center; align-items: center; }
-.modal-content { background: var(--card-bg); border: var(--card-border); width: 90%; max-width: 500px; border-radius: var(--radius-lg); padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); color: var(--text-main); max-height: 80vh; overflow-y: auto; }
+.modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+  z-index: 2000; display: none; justify-content: center; align-items: center;
+}
+.modal-content {
+  background: var(--card-bg); border: var(--card-border);
+  width: 90%; max-width: 500px; border-radius: var(--radius-lg); padding: 30px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.2); color: var(--text-main);
+  max-height: 80vh; overflow-y: auto;
+}
 .modal-content h2 { margin-top: 0; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; border-bottom: 1px solid rgba(128,128,128,0.1); padding-bottom: 5px; }
 .stat-row strong { font-weight: 600; }
@@ -384,7 +495,12 @@ body.compact-active .placeholder { height: 70px; }
 .rank-item.flop .rank-pos { color: #ef4444; }
 .rank-item.flop .rank-avg { background: #ef4444; }
 
-.fav-list-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(255,255,255,0.05); margin-bottom: 8px; border-radius: 8px; border: 1px solid transparent; }
+/* Liste Favoris dans Modal */
+.fav-list-item {
+    display: flex; align-items: center; gap: 10px; padding: 10px;
+    background: rgba(255,255,255,0.05); margin-bottom: 8px; border-radius: 8px;
+    border: 1px solid transparent;
+}
 .fav-list-item:hover { border-color: var(--accent-fav); background: rgba(236, 72, 153, 0.05); }
 .fav-thumb { width: 40px; height: 40px; border-radius: 6px; background-size: cover; }
 .fav-info { flex: 1; }
@@ -412,7 +528,6 @@ body.edit-active .card-tools button { pointer-events: auto; }
     <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;"></div>
     
     <button onclick="toggleTwitch()" class="icon-btn" title="Afficher/Cacher Tchat Twitch">🟣</button>
-    
     <button onclick="forceSync()" class="icon-btn" title="Relancer recherche d'images">🔄</button>
     <button onclick="showFavorites()" class="icon-btn" title="Mes Favoris" style="color:var(--accent-fav)">❤</button>
     <button onclick="showStats()" class="icon-btn" title="Statistiques">📊</button>
@@ -445,31 +560,22 @@ body.edit-active .card-tools button { pointer-events: auto; }
   </div>
 </div>
 
-<div class="main-layout">
-  
-  <div class="input-container">
-    <div class="input-section">
-      <input type="text" id="artistInput" placeholder="Artiste (ex: NMIXX)">
-      <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
-      <input type="text" id="titleInput" placeholder="Titre (ex: Dash)">
-      <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
-    </div>
+<div class="twitch-sidebar" id="twitchSidebar">
+  <div class="twitch-header">
+    <span style="color: #bfdbfe;">🟣 Tchat Twitch</span>
+    <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
   </div>
+  <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
+</div>
 
-  <div class="tier-content">
-    <div id="tiers"></div>
+<div class="main">
+  <div class="input-section">
+    <input type="text" id="artistInput" placeholder="Artiste (ex: NMIXX)">
+    <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
+    <input type="text" id="titleInput" placeholder="Titre (ex: Dash)">
+    <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
   </div>
-
-  <div class="twitch-sidebar-wrapper">
-    <div class="twitch-sidebar" id="twitchSidebar">
-      <div class="twitch-header">
-        <span style="color: #bfdbfe;">🟣 Tchat Twitch</span>
-        <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
-      </div>
-      <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
-    </div>
-  </div>
-
+  <div id="tiers"></div>
 </div>
 
 <div class="pool-container">
@@ -489,7 +595,7 @@ let editMode = false;
 let compactMode = false; 
 let draggedId = null;
 let placeholder = null;
-let twitchVisible = true;
+let twitchVisible = true; // Variable pour le tchat
 
 function defaultData(){
   return {
@@ -552,6 +658,7 @@ function importJson(input) {
   input.value = '';
 }
 
+// Fonction pour masquer/afficher Twitch
 function toggleTwitch() {
     const chat = document.getElementById("twitchSidebar");
     twitchVisible = !twitchVisible;
@@ -739,9 +846,15 @@ function showStats() {
   let rankings = Object.keys(artistStats).map(key => {
     const trueAvg = artistStats[key].total / artistStats[key].count;
     const count = artistStats[key].count;
+    
     const bayesianScore = ((count / (count + minimumSongs)) * trueAvg) + ((minimumSongs / (count + minimumSongs)) * globalAverage);
 
-    return { name: key, avg: trueAvg.toFixed(2), count: count, score: bayesianScore };
+    return {
+      name: key,
+      avg: trueAvg.toFixed(2),
+      count: count,
+      score: bayesianScore 
+    };
   });
 
   rankings.sort((a, b) => b.score - a.score);
@@ -800,18 +913,11 @@ function render(){
     const tier = document.createElement("div");
     tier.className = "tier";
     
-    // WRAPPER INDISPENSABLE POUR L'INTERCALAIRE
-    const headerWrapper = document.createElement("div");
-    headerWrapper.className = "tier-header-wrapper";
-
     const header = document.createElement("div");
     header.className = "tier-header";
     header.style.background = `linear-gradient(90deg, ${t.color}, ${adjustColor(t.color, -40)})`;
     
-    const titleSpan = document.createElement("span");
-    titleSpan.className = "tier-title-text";
-    titleSpan.innerText = t.name;
-    header.appendChild(titleSpan);
+    header.innerHTML = `<span>${t.name}</span>`;
 
     const controls = document.createElement("div");
     controls.className = "tier-controls";
@@ -842,8 +948,7 @@ function render(){
 
     controls.append(colorWrapper, renameBtn, delBtn);
     header.append(controls);
-    headerWrapper.append(header);
-    tier.append(headerWrapper);
+    tier.append(header);
 
     const container = document.createElement("div");
     container.className = "cards";
@@ -861,7 +966,6 @@ function render(){
   document.body.classList.toggle("hidden", !editMode);
   
   filterCards();
-  checkStickyHeaders(); // Force la vérification de l'intercalaire au chargement
 }
 
 function adjustColor(color, amount) {
@@ -872,9 +976,12 @@ function createCard(song){
   const card = document.createElement("div");
   card.className = "card";
   card.id = `card-${song.id}`;
+  
   if(song.favorite) card.classList.add("is-favorite"); 
+  
   card.draggable = true;
   card.style.backgroundImage = `url(${song.cover})`;
+
   card.onclick = () => { if(!editMode) window.open(song.youtubeUrl, '_blank'); };
 
   card.addEventListener("dragstart", () => {
@@ -898,8 +1005,19 @@ function createCard(song){
     </div>
     <div class="card-tools">
       <button class="btn-edit-pos" onclick="event.stopPropagation(); editSong('${song.id}')" title="Éditer">✎</button>
-      <button class="btn-fav-pos ${song.favorite ? 'active-fav' : ''}" onclick="event.stopPropagation(); toggleFavorite('${song.id}')" title="Favoris">${song.favorite ? '❤' : '♡'}</button>
-      <button class="btn-del-pos" onclick="event.stopPropagation(); removeSong('${song.id}'); save(); render();" title="Supprimer" style="background:#ef4444; border:none;">✕</button>
+      
+      <button class="btn-fav-pos ${song.favorite ? 'active-fav' : ''}" 
+              onclick="event.stopPropagation(); toggleFavorite('${song.id}')" 
+              title="Favoris">
+          ${song.favorite ? '❤' : '♡'}
+      </button>
+
+      <button class="btn-del-pos" 
+              onclick="event.stopPropagation(); removeSong('${song.id}'); save(); render();" 
+              title="Supprimer" 
+              style="background:#ef4444; border:none;">
+          ✕
+      </button>
     </div>
   `;
   return card;
@@ -910,7 +1028,12 @@ function setupDrop(container, tierId){
     e.preventDefault();
     if(!draggedId) return;
     if(e.target.classList.contains('placeholder') || e.target.classList.contains('dragging')) return;
-    if(!placeholder) { placeholder = document.createElement("div"); placeholder.className = "placeholder"; }
+
+    if(!placeholder) { 
+        placeholder = document.createElement("div"); 
+        placeholder.className = "placeholder"; 
+    }
+    
     const after = getDragAfterElement(container, e.clientX, e.clientY);
     if(after == null) container.appendChild(placeholder);
     else container.insertBefore(placeholder, after);
@@ -919,10 +1042,13 @@ function setupDrop(container, tierId){
   container.addEventListener("drop", e => {
     e.preventDefault();
     if(!draggedId) return;
+    
     const song = findSong(draggedId);
+    
     const children = [...container.querySelectorAll('.card:not(.dragging)')];
     const index = children.indexOf(placeholder.nextElementSibling);
     const finalIndex = index === -1 ? children.length : index;
+
     if(placeholder) placeholder.remove();
     placeholder = null;
 
@@ -938,13 +1064,16 @@ function setupDrop(container, tierId){
 
 function getDragAfterElement(container, x, y){
   const draggableElements = [...container.querySelectorAll('.card:not(.dragging)')];
+
   return draggableElements.find(child => {
     const box = child.getBoundingClientRect();
     const boxCenterY = box.top + box.height / 2;
     const boxCenterX = box.left + box.width / 2;
+
     if (y < box.top) return true;
     if (y > box.bottom) return false;
     if (x < boxCenterX) return true;
+
     return false;
   });
 }
@@ -954,7 +1083,9 @@ function removeSong(id){
   data.tiers.forEach(t => t.songs = t.songs.filter(s => s.id !== id));
 }
 
-function findSong(id){ return [...data.pool, ...data.tiers.flatMap(t => t.songs)].find(s => s.id === id); }
+function findSong(id){
+  return [...data.pool, ...data.tiers.flatMap(t => t.songs)].find(s => s.id === id);
+}
 
 function editSong(id){
   const s = findSong(id);
@@ -1020,8 +1151,15 @@ function addTier(){
 function toggleEdit(){
   editMode = !editMode;
   const btn = document.getElementById("editBtn");
-  if(editMode) { btn.innerHTML = "✅"; btn.style.background = "var(--accent-secondary)"; btn.style.color = "white"; } 
-  else { btn.innerHTML = "✏️"; btn.style.background = ""; btn.style.color = ""; }
+  if(editMode) {
+      btn.innerHTML = "✅";
+      btn.style.background = "var(--accent-secondary)";
+      btn.style.color = "white";
+  } else {
+      btn.innerHTML = "✏️";
+      btn.style.background = "";
+      btn.style.color = "";
+  }
   render();
 }
 
@@ -1035,25 +1173,6 @@ function toggleCompact(){
 }
 
 function toggleDark(){ document.body.classList.toggle("dark"); }
-
-/* --- LOGIQUE DE L'INTERCALAIRE AU SCROLL --- */
-function checkStickyHeaders() {
-    const wrappers = document.querySelectorAll('.tier-header-wrapper');
-    wrappers.forEach(wrapper => {
-        const header = wrapper.querySelector('.tier-header');
-        const tier = wrapper.parentElement;
-        const rect = wrapper.getBoundingClientRect();
-        const tierRect = tier.getBoundingClientRect();
-        
-        // Si le wrapper touche le haut (bloqué par sticky) ET que la fin de la catégorie n'est pas encore passée
-        if (rect.top <= 81 && tierRect.bottom > 120) {
-            header.classList.add('is-stuck');
-        } else {
-            header.classList.remove('is-stuck');
-        }
-    });
-}
-window.addEventListener('scroll', checkStickyHeaders);
 
 render();
 setTimeout(syncCovers, 1500); 
