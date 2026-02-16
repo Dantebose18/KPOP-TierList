@@ -50,7 +50,7 @@ body {
   color: var(--text-main);
   transition: background-color 0.3s ease, color 0.3s ease;
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow-x: hidden; /* Empêche la barre de défilement horizontale */
 }
 
 /* --- HEADER GLASS --- */
@@ -91,11 +91,8 @@ header {
   transition: all 0.3s ease;
   font-size: 13px;
 }
-#searchBar:focus {
-  width: 240px;
-  background: rgba(255,255,255,0.15);
-  box-shadow: 0 0 0 2px var(--accent-primary);
-}
+#searchBar:focus { width: 240px; background: rgba(255,255,255,0.15); box-shadow: 0 0 0 2px var(--accent-primary); }
+#searchBar::placeholder { color: var(--text-muted); opacity: 0.7; }
 
 /* --- BOUTONS --- */
 button {
@@ -114,28 +111,16 @@ button {
   align-items: center;
   gap: 6px;
 }
-
-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  background: rgba(255,255,255,0.1);
-}
-
-.btn-primary {
-  background: var(--accent-gradient);
-  color: white;
-  border: none;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-  padding: 10px 18px;
-  font-size: 14px;
-}
-
+button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); background: rgba(255,255,255,0.1); }
+.btn-primary { background: var(--accent-gradient); color: white; border: none; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); padding: 10px 18px; font-size: 14px; }
+.btn-primary:hover { box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4); background: linear-gradient(135deg, #4f46e5 0%, #db2777 100%); }
 .btn-danger { color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
 .btn-danger:hover { background: rgba(239, 68, 68, 0.1); }
 .icon-btn { padding: 8px 12px; font-size: 16px; }
 
 /* --- INPUT SECTION --- */
 .input-section {
+  width: 100%;
   max-width: 700px;
   margin: 0 auto;
   display: flex;
@@ -147,20 +132,9 @@ button:hover {
   box-shadow: var(--glass-shadow);
   backdrop-filter: blur(8px);
 }
-
-input[type="text"] {
-  flex: 1;
-  border: none;
-  background: transparent;
-  padding: 12px 20px;
-  font-family: inherit;
-  font-size: 15px;
-  color: var(--text-main);
-  border-radius: var(--radius-sm);
-  transition: background 0.2s;
-}
-
+input[type="text"] { flex: 1; border: none; background: transparent; padding: 12px 20px; font-family: inherit; font-size: 15px; color: var(--text-main); border-radius: var(--radius-sm); transition: background 0.2s; }
 input[type="text"]:focus { background: rgba(100,100,100,0.05); }
+input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 
 /* --- MAIN LAYOUT : GRILLE DE CENTRAGE ABSOLU --- */
 .main-layout {
@@ -169,38 +143,27 @@ input[type="text"]:focus { background: rgba(100,100,100,0.05); }
   padding: 40px 20px 240px 20px;
   display: grid;
   /* COL 1 (Vide), COL 2 (TierList=1320px maxi), COL 3 (Twitch) */
-  grid-template-columns: minmax(320px, 1fr) minmax(300px, 1320px) minmax(320px, 1fr);
-  grid-template-rows: auto 1fr;
-  row-gap: 40px; /* Espace entre la barre d'ajout et les catégories */
+  grid-template-columns: minmax(340px, 1fr) minmax(300px, 1320px) minmax(340px, 1fr);
+  row-gap: 40px; /* Espace entre l'ajout et les catégories */
 }
 
-/* Ligne 1 : L'input de recherche */
-.input-container {
-  grid-column: 2; /* Parfaitement au centre */
-  width: 100%;
-}
+.input-container { grid-column: 2; width: 100%; }
+.tier-content { grid-column: 2; width: 100%; }
 
-/* Ligne 2, Colonne 2 : La Tier List */
-.tier-content {
-  grid-column: 2; /* Parfaitement au centre */
-  width: 100%;
-}
-
-/* Ligne 2, Colonne 3 : Twitch Wrapper */
+/* --- TWITCH SIDEBAR WRAPPER --- */
 .twitch-sidebar-wrapper {
   grid-column: 3;
-  grid-row: 2; /* Aligné mathématiquement sur la même ligne horizontale que les Tiers */
+  grid-row: 2; /* S'aligne parfaitement sur la même ligne que la Tier List */
   display: flex;
-  justify-content: center; /* Centré dans son "côté droit vide" */
-  align-items: flex-start;
+  justify-content: center; /* Centré dans son "côté vide" */
+  align-items: flex-start; /* Aligné avec le haut exact de la première catégorie */
 }
 
-/* TCHAT TWITCH */
 .twitch-sidebar {
   position: sticky;
-  top: 80px; /* Positionné juste en dessous du menu (Même top que l'intercalaire) */
+  top: 80px; /* Reste à 80px du haut pendant le scroll */
   width: 320px;
-  height: 75vh; /* Plus long */
+  height: 75vh; /* Tchat plus grand */
   max-height: 850px;
   background: var(--card-bg);
   border: var(--card-border);
@@ -210,10 +173,10 @@ input[type="text"]:focus { background: rgba(100,100,100,0.05); }
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
 }
 
-/* Bouton pour cacher Twitch */
+/* Cache le tchat hors de l'écran */
 .twitch-sidebar.hidden {
   transform: translateX(150%);
   opacity: 0;
@@ -221,34 +184,18 @@ input[type="text"]:focus { background: rgba(100,100,100,0.05); }
 }
 
 .twitch-header {
-  padding: 12px 15px;
-  background: rgba(0, 0, 0, 0.1);
-  border-bottom: var(--card-border);
-  font-weight: 600;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 14px;
+  padding: 12px 15px; background: rgba(0, 0, 0, 0.1); border-bottom: var(--card-border);
+  font-weight: 600; display: flex; justify-content: space-between; align-items: center; font-size: 14px;
 }
-
 .twitch-header input {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: var(--text-main);
-  padding: 4px 8px;
-  border-radius: 6px;
-  width: 120px;
-  font-size: 12px;
+  background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: var(--text-main);
+  padding: 4px 8px; border-radius: 6px; width: 120px; font-size: 12px; transition: all 0.2s;
 }
-.twitch-header input:focus {
-    width: 150px;
-    background: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 0 0 2px #9146FF;
-}
-
+.twitch-header input:focus { width: 150px; background: rgba(255, 255, 255, 0.2); box-shadow: 0 0 0 2px #9146FF; }
 iframe.twitch-iframe { flex: 1; width: 100%; border: none; }
 
-@media (max-width: 1500px) {
+/* Responsive : Si l'écran est trop petit, on passe en colonne */
+@media (max-width: 1600px) {
   .main-layout { display: flex; flex-direction: column; align-items: center; }
   .twitch-sidebar-wrapper { width: 100%; max-width: 1320px; justify-content: flex-end; }
   .twitch-sidebar { position: relative; top: 0; height: 500px; margin-top: 20px; }
@@ -259,104 +206,107 @@ iframe.twitch-iframe { flex: 1; width: 100%; border: none; }
   background: var(--card-bg);
   border: var(--card-border);
   border-radius: var(--radius-md);
-  margin-bottom: 25px;
+  margin-bottom: 30px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.03);
   overflow: visible;
   display: flex;
   flex-direction: column;
 }
 
-/* --- NOUVEAU SYSTÈME INTERCALAIRE (ANIMATION) --- */
+/* WRAPPER POUR L'EFFET INTERCALAIRE */
 .tier-header-wrapper {
   position: sticky;
-  top: 80px; /* L'intercalaire s'arrêtera à 80px du haut (sous le header) */
+  top: 80px; /* L'endroit où le titre s'accroche pendant le scroll */
   z-index: 40;
-  height: 60px; /* Réserve l'espace pour ne pas faire sauter les cartes */
-  margin-bottom: 0;
+  height: 60px; /* Maintient l'espace pour éviter les sauts */
 }
 
 .tier-header {
-  width: 100%;
-  height: 100%;
-  padding: 0 25px;
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 60px;
+  display: block; /* Utilisation du line-height pour centrer verticalement */
   color: white;
-  font-weight: 800;
-  font-size: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   text-shadow: 0 2px 4px rgba(0,0,0,0.2);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
-  
-  /* L'animation ultra-fluide pour le passage en intercalaire */
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  transform-origin: left center;
-}
-
-.tier-title-text {
-  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 300px;
+  
+  /* L'animation fluide */
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: top left; /* Point de pivotement : Haut Gauche */
 }
 
-/* EFFET INTERCALAIRE (Glisse sur la gauche quand on scroll) */
-.tier-header.is-stuck {
-  width: 280px; /* Il rétrécit */
-  height: 50px;
-  transform: translateX(-40px) translateY(5px); /* Il sort sur la gauche */
-  border-radius: var(--radius-md);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-  border: 1px solid rgba(255,255,255,0.2);
-  padding: 0 20px;
+/* L'EFFET INTERCALAIRE VERTICAL QUAND ON SCROLL */
+@media (min-width: 1200px) {
+    .tier-header.is-stuck {
+        width: 220px; /* Longueur de l'intercalaire */
+        height: 45px; /* Épaisseur de l'intercalaire */
+        
+        /* Rotation à la verticale + Décalage sur la gauche dans le vide */
+        transform: rotate(90deg) translateX(20px) translateY(15px);
+        
+        /* On arrondit uniquement les bords qui dépassent sur la gauche */
+        border-radius: 0 0 16px 16px; 
+        box-shadow: -5px 5px 15px rgba(0,0,0,0.3);
+    }
 }
 
 .tier-header::after {
   content: ''; position: absolute; top:0; left:0; right:0; bottom:0;
   background: linear-gradient(90deg, rgba(255,255,255,0.1), transparent);
   pointer-events: none;
-  border-radius: inherit;
 }
 
-.tier-controls {
-  display: flex; gap: 8px; align-items: center; z-index: 2;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+.tier-title-text {
+  display: block;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 60px;
+  padding-left: 25px;
+  width: calc(100% - 180px); /* Laisse la place aux boutons */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: all 0.4s;
 }
 
-/* Cache les outils quand il est sous forme d'intercalaire */
-.tier-header.is-stuck .tier-controls {
-  opacity: 0;
-  pointer-events: none;
+/* Texte centré et réduit dans l'intercalaire */
+.tier-header.is-stuck .tier-title-text {
+    width: 100%;
+    padding-left: 0;
+    text-align: center;
+    font-size: 16px;
+    line-height: 45px;
+}
+
+/* --- BOUTONS D'ÉDITION DES TIERS --- */
+.tier-controls { 
   position: absolute;
-  right: 10px;
+  top: 16px; /* Centré dans la barre de 60px */
+  right: 25px;
+  display: flex; gap: 8px; align-items: center; z-index: 2; 
+  transition: opacity 0.2s ease;
 }
 
-.tier-controls button {
-  background: rgba(0,0,0,0.2); border: none; color: white;
-  padding: 6px 10px; font-size: 12px; border-radius: 6px; backdrop-filter: blur(4px);
+/* Ils disparaissent quand l'intercalaire est actif */
+.tier-header.is-stuck .tier-controls {
+    opacity: 0;
+    pointer-events: none;
 }
+
+.tier-controls button { background: rgba(0,0,0,0.2); border: none; color: white; padding: 6px 10px; font-size: 12px; border-radius: 6px; backdrop-filter: blur(4px); }
 .tier-controls button:hover { background: rgba(0,0,0,0.4); }
 
-.color-picker-wrapper {
-  width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.8);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2); overflow: hidden; position: relative; cursor: pointer;
-  transition: transform 0.2s;
-}
+.color-picker-wrapper { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 5px rgba(0,0,0,0.2); overflow: hidden; position: relative; cursor: pointer; transition: transform 0.2s; }
 .color-picker-wrapper:hover { transform: scale(1.1); }
 input[type="color"] { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; cursor: pointer; padding: 0; margin: 0; border: none; }
 
-.cards {
-  display: flex; gap: 16px; padding: 20px; flex-wrap: wrap;
-  min-height: 160px; align-content: flex-start;
-}
+.cards { display: flex; gap: 16px; padding: 20px; flex-wrap: wrap; min-height: 160px; align-content: flex-start; }
 
 /* --- CARDS --- */
 .card {
-  width: 140px; height: 140px; border-radius: var(--radius-md); background-size: cover;
-  background-position: center; position: relative; cursor: grab;
+  width: 140px; height: 140px; border-radius: var(--radius-md); background-size: cover; background-position: center; position: relative; cursor: grab;
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, height 0.2s ease, background-image 0.5s ease-in;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.1); background-color: var(--card-bg);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; border: 1px solid rgba(255,255,255,0.1); background-color: var(--card-bg);
 }
 
 .card.is-favorite { animation: glow 1.5s infinite alternate; z-index: 10; }
@@ -374,12 +324,7 @@ body.is-dragging .card { transition: none !important; }
 #tiers .card:hover { transform: scale(1.15) translateY(-5px); z-index: 50; box-shadow: 0 20px 30px rgba(0,0,0,0.25); border-color: var(--accent-secondary); }
 .card.is-favorite:hover { border-color: var(--accent-fav); }
 
-.card-overlay {
-  position: absolute; bottom: 0; width: 100%; padding: 40px 10px 10px 10px;
-  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
-  color: white; font-size: 12px; line-height: 1.3; text-align: center; pointer-events: none;
-  transition: all 0.2s; display: flex; flex-direction: column; justify-content: flex-end;
-}
+.card-overlay { position: absolute; bottom: 0; width: 100%; padding: 40px 10px 10px 10px; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%); color: white; font-size: 12px; line-height: 1.3; text-align: center; pointer-events: none; transition: all 0.2s; display: flex; flex-direction: column; justify-content: flex-end; }
 .card-overlay strong { display: block; font-size: 13px; margin-bottom: 2px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
 
 /* --- MODE COMPACT --- */
@@ -536,7 +481,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
 // ==========================================
 // CONFIGURATION
 // ==========================================
-const YOUTUBE_API_KEY = "AIzaSyBzRO4J6W-M8uSt2k9vd1HJHECCwdKdiGM"; 
+const YOUTUBE_API_KEY = ""; 
 // ==========================================
 
 let data = load();
@@ -794,15 +739,9 @@ function showStats() {
   let rankings = Object.keys(artistStats).map(key => {
     const trueAvg = artistStats[key].total / artistStats[key].count;
     const count = artistStats[key].count;
-    
     const bayesianScore = ((count / (count + minimumSongs)) * trueAvg) + ((minimumSongs / (count + minimumSongs)) * globalAverage);
 
-    return {
-      name: key,
-      avg: trueAvg.toFixed(2),
-      count: count,
-      score: bayesianScore 
-    };
+    return { name: key, avg: trueAvg.toFixed(2), count: count, score: bayesianScore };
   });
 
   rankings.sort((a, b) => b.score - a.score);
@@ -861,7 +800,7 @@ function render(){
     const tier = document.createElement("div");
     tier.className = "tier";
     
-    // NOUVEAU : Wrapper pour l'animation sticky (Intercalaire) sans casser le layout
+    // WRAPPER INDISPENSABLE POUR L'INTERCALAIRE
     const headerWrapper = document.createElement("div");
     headerWrapper.className = "tier-header-wrapper";
 
@@ -869,7 +808,6 @@ function render(){
     header.className = "tier-header";
     header.style.background = `linear-gradient(90deg, ${t.color}, ${adjustColor(t.color, -40)})`;
     
-    // Titre de la catégorie
     const titleSpan = document.createElement("span");
     titleSpan.className = "tier-title-text";
     titleSpan.innerText = t.name;
@@ -923,6 +861,7 @@ function render(){
   document.body.classList.toggle("hidden", !editMode);
   
   filterCards();
+  checkStickyHeaders(); // Force la vérification de l'intercalaire au chargement
 }
 
 function adjustColor(color, amount) {
@@ -933,12 +872,9 @@ function createCard(song){
   const card = document.createElement("div");
   card.className = "card";
   card.id = `card-${song.id}`;
-  
   if(song.favorite) card.classList.add("is-favorite"); 
-  
   card.draggable = true;
   card.style.backgroundImage = `url(${song.cover})`;
-
   card.onclick = () => { if(!editMode) window.open(song.youtubeUrl, '_blank'); };
 
   card.addEventListener("dragstart", () => {
@@ -962,19 +898,8 @@ function createCard(song){
     </div>
     <div class="card-tools">
       <button class="btn-edit-pos" onclick="event.stopPropagation(); editSong('${song.id}')" title="Éditer">✎</button>
-      
-      <button class="btn-fav-pos ${song.favorite ? 'active-fav' : ''}" 
-              onclick="event.stopPropagation(); toggleFavorite('${song.id}')" 
-              title="Favoris">
-          ${song.favorite ? '❤' : '♡'}
-      </button>
-
-      <button class="btn-del-pos" 
-              onclick="event.stopPropagation(); removeSong('${song.id}'); save(); render();" 
-              title="Supprimer" 
-              style="background:#ef4444; border:none;">
-          ✕
-      </button>
+      <button class="btn-fav-pos ${song.favorite ? 'active-fav' : ''}" onclick="event.stopPropagation(); toggleFavorite('${song.id}')" title="Favoris">${song.favorite ? '❤' : '♡'}</button>
+      <button class="btn-del-pos" onclick="event.stopPropagation(); removeSong('${song.id}'); save(); render();" title="Supprimer" style="background:#ef4444; border:none;">✕</button>
     </div>
   `;
   return card;
@@ -985,12 +910,7 @@ function setupDrop(container, tierId){
     e.preventDefault();
     if(!draggedId) return;
     if(e.target.classList.contains('placeholder') || e.target.classList.contains('dragging')) return;
-
-    if(!placeholder) { 
-        placeholder = document.createElement("div"); 
-        placeholder.className = "placeholder"; 
-    }
-    
+    if(!placeholder) { placeholder = document.createElement("div"); placeholder.className = "placeholder"; }
     const after = getDragAfterElement(container, e.clientX, e.clientY);
     if(after == null) container.appendChild(placeholder);
     else container.insertBefore(placeholder, after);
@@ -999,13 +919,10 @@ function setupDrop(container, tierId){
   container.addEventListener("drop", e => {
     e.preventDefault();
     if(!draggedId) return;
-    
     const song = findSong(draggedId);
-    
     const children = [...container.querySelectorAll('.card:not(.dragging)')];
     const index = children.indexOf(placeholder.nextElementSibling);
     const finalIndex = index === -1 ? children.length : index;
-
     if(placeholder) placeholder.remove();
     placeholder = null;
 
@@ -1021,16 +938,13 @@ function setupDrop(container, tierId){
 
 function getDragAfterElement(container, x, y){
   const draggableElements = [...container.querySelectorAll('.card:not(.dragging)')];
-
   return draggableElements.find(child => {
     const box = child.getBoundingClientRect();
     const boxCenterY = box.top + box.height / 2;
     const boxCenterX = box.left + box.width / 2;
-
     if (y < box.top) return true;
     if (y > box.bottom) return false;
     if (x < boxCenterX) return true;
-
     return false;
   });
 }
@@ -1040,9 +954,7 @@ function removeSong(id){
   data.tiers.forEach(t => t.songs = t.songs.filter(s => s.id !== id));
 }
 
-function findSong(id){
-  return [...data.pool, ...data.tiers.flatMap(t => t.songs)].find(s => s.id === id);
-}
+function findSong(id){ return [...data.pool, ...data.tiers.flatMap(t => t.songs)].find(s => s.id === id); }
 
 function editSong(id){
   const s = findSong(id);
@@ -1108,15 +1020,8 @@ function addTier(){
 function toggleEdit(){
   editMode = !editMode;
   const btn = document.getElementById("editBtn");
-  if(editMode) {
-      btn.innerHTML = "✅";
-      btn.style.background = "var(--accent-secondary)";
-      btn.style.color = "white";
-  } else {
-      btn.innerHTML = "✏️";
-      btn.style.background = "";
-      btn.style.color = "";
-  }
+  if(editMode) { btn.innerHTML = "✅"; btn.style.background = "var(--accent-secondary)"; btn.style.color = "white"; } 
+  else { btn.innerHTML = "✏️"; btn.style.background = ""; btn.style.color = ""; }
   render();
 }
 
@@ -1131,25 +1036,24 @@ function toggleCompact(){
 
 function toggleDark(){ document.body.classList.toggle("dark"); }
 
-/* --- LOGIQUE D'ANIMATION DE L'INTERCALAIRE AU SCROLL --- */
-window.addEventListener('scroll', () => {
-    const tiers = document.querySelectorAll('.tier');
-    
-    tiers.forEach(tier => {
-        const rect = tier.getBoundingClientRect();
-        const header = tier.querySelector('.tier-header');
+/* --- LOGIQUE DE L'INTERCALAIRE AU SCROLL --- */
+function checkStickyHeaders() {
+    const wrappers = document.querySelectorAll('.tier-header-wrapper');
+    wrappers.forEach(wrapper => {
+        const header = wrapper.querySelector('.tier-header');
+        const tier = wrapper.parentElement;
+        const rect = wrapper.getBoundingClientRect();
+        const tierRect = tier.getBoundingClientRect();
         
-        if(!header) return;
-
-        // On vérifie si le haut de la catégorie a touché le plafond (sticky = 80px)
-        // Et on s'assure que le bas de la catégorie est toujours visible à l'écran (> 100px)
-        if (rect.top <= 81 && rect.bottom > 100) {
+        // Si le wrapper touche le haut (bloqué par sticky) ET que la fin de la catégorie n'est pas encore passée
+        if (rect.top <= 81 && tierRect.bottom > 120) {
             header.classList.add('is-stuck');
         } else {
             header.classList.remove('is-stuck');
         }
     });
-});
+}
+window.addEventListener('scroll', checkStickyHeaders);
 
 render();
 setTimeout(syncCovers, 1500); 
