@@ -50,6 +50,7 @@ body {
   color: var(--text-main);
   transition: background-color 0.3s ease, color 0.3s ease;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 /* --- HEADER GLASS --- */
@@ -95,7 +96,6 @@ header {
   background: rgba(255,255,255,0.15);
   box-shadow: 0 0 0 2px var(--accent-primary);
 }
-#searchBar::placeholder { color: var(--text-muted); opacity: 0.7; }
 
 /* --- BOUTONS --- */
 button {
@@ -130,22 +130,14 @@ button:hover {
   font-size: 14px;
 }
 
-.btn-primary:hover {
-  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
-  background: linear-gradient(135deg, #4f46e5 0%, #db2777 100%);
-}
-
-.btn-danger {
-    color: #ef4444; border-color: rgba(239, 68, 68, 0.3);
-}
+.btn-danger { color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
 .btn-danger:hover { background: rgba(239, 68, 68, 0.1); }
-
 .icon-btn { padding: 8px 12px; font-size: 16px; }
 
 /* --- INPUT SECTION --- */
 .input-section {
   max-width: 700px;
-  margin: 40px auto;
+  margin: 0 auto;
   display: flex;
   gap: 10px;
   padding: 8px;
@@ -169,23 +161,47 @@ input[type="text"] {
 }
 
 input[type="text"]:focus { background: rgba(100,100,100,0.05); }
-input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 
-/* --- MAIN LAYOUT : RETOUR AU CENTRAGE PARFAIT --- */
-.main {
-  max-width: 1320px; 
+/* --- MAIN LAYOUT : GRILLE DE CENTRAGE ABSOLU --- */
+.main-layout {
+  width: 100%;
   margin: auto;
-  padding: 0 20px 240px 20px;
+  padding: 40px 20px 240px 20px;
+  display: grid;
+  /* COL 1 (Vide), COL 2 (TierList=1320px maxi), COL 3 (Twitch) */
+  grid-template-columns: minmax(320px, 1fr) minmax(300px, 1320px) minmax(320px, 1fr);
+  grid-template-rows: auto 1fr;
+  row-gap: 40px; /* Espace entre la barre d'ajout et les catégories */
 }
 
-/* --- TWITCH SIDEBAR FLOTTANT --- */
+/* Ligne 1 : L'input de recherche */
+.input-container {
+  grid-column: 2; /* Parfaitement au centre */
+  width: 100%;
+}
+
+/* Ligne 2, Colonne 2 : La Tier List */
+.tier-content {
+  grid-column: 2; /* Parfaitement au centre */
+  width: 100%;
+}
+
+/* Ligne 2, Colonne 3 : Twitch Wrapper */
+.twitch-sidebar-wrapper {
+  grid-column: 3;
+  grid-row: 2; /* Aligné mathématiquement sur la même ligne horizontale que les Tiers */
+  display: flex;
+  justify-content: center; /* Centré dans son "côté droit vide" */
+  align-items: flex-start;
+}
+
+/* TCHAT TWITCH */
 .twitch-sidebar {
-  position: fixed;
-  top: 180px; /* Aligné précisément avec le haut de la première catégorie */
-  right: 20px;
+  position: sticky;
+  top: 80px; /* Positionné juste en dessous du menu (Même top que l'intercalaire) */
   width: 320px;
-  height: 60vh; /* Hauteur réduite */
-  max-height: 550px; /* Limite de sécurité pour ne pas sortir de l'écran */
+  height: 75vh; /* Plus long */
+  max-height: 850px;
   background: var(--card-bg);
   border: var(--card-border);
   border-radius: var(--radius-md);
@@ -194,13 +210,12 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  z-index: 100;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
 }
 
-/* Classe pour cacher le tchat via le bouton */
+/* Bouton pour cacher Twitch */
 .twitch-sidebar.hidden {
-  transform: translateX(120%);
+  transform: translateX(150%);
   opacity: 0;
   pointer-events: none;
 }
@@ -224,7 +239,6 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   border-radius: 6px;
   width: 120px;
   font-size: 12px;
-  transition: all 0.2s;
 }
 .twitch-header input:focus {
     width: 150px;
@@ -232,10 +246,12 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
     box-shadow: 0 0 0 2px #9146FF;
 }
 
-iframe.twitch-iframe {
-  flex: 1;
-  width: 100%;
-  border: none;
+iframe.twitch-iframe { flex: 1; width: 100%; border: none; }
+
+@media (max-width: 1500px) {
+  .main-layout { display: flex; flex-direction: column; align-items: center; }
+  .twitch-sidebar-wrapper { width: 100%; max-width: 1320px; justify-content: flex-end; }
+  .twitch-sidebar { position: relative; top: 0; height: 500px; margin-top: 20px; }
 }
 
 /* --- TIERS --- */
@@ -245,13 +261,24 @@ iframe.twitch-iframe {
   border-radius: var(--radius-md);
   margin-bottom: 25px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-  overflow: visible; /* Permet aux cartes de grossir sans être coupées */
+  overflow: visible;
   display: flex;
   flex-direction: column;
 }
 
+/* --- NOUVEAU SYSTÈME INTERCALAIRE (ANIMATION) --- */
+.tier-header-wrapper {
+  position: sticky;
+  top: 80px; /* L'intercalaire s'arrêtera à 80px du haut (sous le header) */
+  z-index: 40;
+  height: 60px; /* Réserve l'espace pour ne pas faire sauter les cartes */
+  margin-bottom: 0;
+}
+
 .tier-header {
-  padding: 15px 25px;
+  width: 100%;
+  height: 100%;
+  padding: 0 25px;
   color: white;
   font-weight: 800;
   font-size: 20px;
@@ -261,223 +288,140 @@ iframe.twitch-iframe {
   text-shadow: 0 2px 4px rgba(0,0,0,0.2);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   
-  /* MODIFICATION : Le titre est maintenant sticky et restera accroché au scroll */
-  position: sticky;
-  top: 60px; /* Juste en dessous du header principal */
-  z-index: 40; /* Au-dessus des cartes (sauf au survol) */
+  /* L'animation ultra-fluide pour le passage en intercalaire */
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: left center;
 }
 
-/* Le fond dégradé du header, on doit l'attacher autrement à cause du sticky */
+.tier-title-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
+}
+
+/* EFFET INTERCALAIRE (Glisse sur la gauche quand on scroll) */
+.tier-header.is-stuck {
+  width: 280px; /* Il rétrécit */
+  height: 50px;
+  transform: translateX(-40px) translateY(5px); /* Il sort sur la gauche */
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 0 20px;
+}
+
 .tier-header::after {
   content: ''; position: absolute; top:0; left:0; right:0; bottom:0;
   background: linear-gradient(90deg, rgba(255,255,255,0.1), transparent);
   pointer-events: none;
-  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  border-radius: inherit;
 }
 
-.tier-controls { display: flex; gap: 8px; align-items: center; z-index: 2; }
+.tier-controls {
+  display: flex; gap: 8px; align-items: center; z-index: 2;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Cache les outils quand il est sous forme d'intercalaire */
+.tier-header.is-stuck .tier-controls {
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 10px;
+}
+
 .tier-controls button {
   background: rgba(0,0,0,0.2); border: none; color: white;
   padding: 6px 10px; font-size: 12px; border-radius: 6px; backdrop-filter: blur(4px);
 }
 .tier-controls button:hover { background: rgba(0,0,0,0.4); }
 
-/* COLOR PICKER STYLE */
 .color-picker-wrapper {
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.8);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  overflow: hidden;
-  position: relative;
-  cursor: pointer;
+  width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.8);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2); overflow: hidden; position: relative; cursor: pointer;
   transition: transform 0.2s;
 }
 .color-picker-wrapper:hover { transform: scale(1.1); }
-input[type="color"] {
-  position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-  cursor: pointer; padding: 0; margin: 0; border: none;
-}
+input[type="color"] { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; cursor: pointer; padding: 0; margin: 0; border: none; }
 
 .cards {
-  display: flex;
-  gap: 16px;
-  padding: 20px;
-  flex-wrap: wrap;
-  min-height: 160px;
-  align-content: flex-start;
+  display: flex; gap: 16px; padding: 20px; flex-wrap: wrap;
+  min-height: 160px; align-content: flex-start;
 }
 
 /* --- CARDS --- */
 .card {
-  width: 140px;
-  height: 140px;
-  border-radius: var(--radius-md);
-  background-size: cover;
-  background-position: center;
-  position: relative;
-  cursor: grab;
+  width: 140px; height: 140px; border-radius: var(--radius-md); background-size: cover;
+  background-position: center; position: relative; cursor: grab;
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, height 0.2s ease, background-image 0.5s ease-in;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.1);
-  background-color: var(--card-bg);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1); background-color: var(--card-bg);
 }
 
-.card.is-favorite {
-  animation: glow 1.5s infinite alternate;
-  z-index: 10;
-}
-
-body.edit-active .fav-badge {
-    display: none !important;
-}
-
-.fav-badge {
-    position: absolute; top: 5px; right: 5px;
-    color: var(--accent-fav); font-size: 18px; 
-    filter: drop-shadow(0 0 3px rgba(0,0,0,0.8));
-    display: none; pointer-events: none;
-    z-index: 5;
-}
+.card.is-favorite { animation: glow 1.5s infinite alternate; z-index: 10; }
+body.edit-active .fav-badge { display: none !important; }
+.fav-badge { position: absolute; top: 5px; right: 5px; color: var(--accent-fav); font-size: 18px; filter: drop-shadow(0 0 3px rgba(0,0,0,0.8)); display: none; pointer-events: none; z-index: 5; }
 .card.is-favorite .fav-badge { display: block; }
 
 @keyframes glow {
-  0% { 
-    box-shadow: 0 0 5px var(--accent-fav), inset 0 0 0px var(--accent-fav);
-    border-color: rgba(236, 72, 153, 0.5);
-  }
-  100% { 
-    box-shadow: 0 0 25px var(--accent-fav), inset 0 0 15px rgba(236, 72, 153, 0.6);
-    border-color: var(--accent-fav);
-  }
+  0% { box-shadow: 0 0 5px var(--accent-fav), inset 0 0 0px var(--accent-fav); border-color: rgba(236, 72, 153, 0.5); }
+  100% { box-shadow: 0 0 25px var(--accent-fav), inset 0 0 15px rgba(236, 72, 153, 0.6); border-color: var(--accent-fav); }
 }
 
-body.is-dragging .card {
-  transition: none !important;
-}
-
-.card.dragging {
-  opacity: 0.4;
-  transform: scale(0.95);
-  grayscale: 100%;
-  pointer-events: none; 
-}
-
-#tiers .card:hover {
-  transform: scale(1.15) translateY(-5px);
-  z-index: 50; /* Passe au dessus du header collant */
-  box-shadow: 0 20px 30px rgba(0,0,0,0.25);
-  border-color: var(--accent-secondary);
-}
+body.is-dragging .card { transition: none !important; }
+.card.dragging { opacity: 0.4; transform: scale(0.95); grayscale: 100%; pointer-events: none; }
+#tiers .card:hover { transform: scale(1.15) translateY(-5px); z-index: 50; box-shadow: 0 20px 30px rgba(0,0,0,0.25); border-color: var(--accent-secondary); }
 .card.is-favorite:hover { border-color: var(--accent-fav); }
 
 .card-overlay {
-  position: absolute; bottom: 0; width: 100%;
-  padding: 40px 10px 10px 10px;
+  position: absolute; bottom: 0; width: 100%; padding: 40px 10px 10px 10px;
   background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
   color: white; font-size: 12px; line-height: 1.3; text-align: center; pointer-events: none;
-  transition: all 0.2s;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+  transition: all 0.2s; display: flex; flex-direction: column; justify-content: flex-end;
 }
-
-.card-overlay strong {
-  display: block; font-size: 13px; margin-bottom: 2px;
-  color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-}
+.card-overlay strong { display: block; font-size: 13px; margin-bottom: 2px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
 
 /* --- MODE COMPACT --- */
 body.compact-active .card { height: 70px; }
-body.compact-active .card-overlay {
-  top: 0; padding: 5px; background: rgba(0,0,0,0.7); 
-  justify-content: center; gap: 2px;
-}
+body.compact-active .card-overlay { top: 0; padding: 5px; background: rgba(0,0,0,0.7); justify-content: center; gap: 2px; }
 body.compact-active .card-overlay strong { font-size: 12px; margin: 0; white-space: normal; line-height: 1.1; }
 body.compact-active .card-overlay span { font-size: 11px; opacity: 0.9; line-height: 1.1; }
-
-body.compact-active .card:hover {
-  height: 140px; transform: scale(1.15) translateY(-5px); z-index: 100; background-blend-mode: normal;
-}
-body.compact-active .card:hover .card-overlay {
-  top: auto; bottom: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
-  padding: 40px 10px 10px 10px;
-  justify-content: flex-end;
-}
+body.compact-active .card:hover { height: 140px; transform: scale(1.15) translateY(-5px); z-index: 100; background-blend-mode: normal; }
+body.compact-active .card:hover .card-overlay { top: auto; bottom: 0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%); padding: 40px 10px 10px 10px; justify-content: flex-end; }
 
 /* --- CARD TOOLS --- */
-.card-tools {
-  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  pointer-events: none; 
-  opacity: 0; 
-  transition: opacity 0.2s;
-  z-index: 20; 
-}
-
+.card-tools { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 20; }
 .card-tools button { pointer-events: auto; }
-
 .btn-edit-pos { position: absolute; top: 6px; left: 6px; }
 .btn-fav-pos { position: absolute; top: 40px; left: 6px; }
 .btn-del-pos { position: absolute; top: 6px; right: 6px; }
 
 .card-tools button {
-  background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
-  border: 1px solid rgba(255,255,255,0.2); color: white;
-  padding: 0; width: 28px; height: 28px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 50%; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-  transition: transform 0.1s, background 0.2s;
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2); color: white;
+  padding: 0; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: transform 0.1s, background 0.2s;
 }
 .card-tools button:hover { background: var(--accent-secondary); transform: scale(1.1); }
 .card-tools button.active-fav { color: var(--accent-fav); background: rgba(0,0,0,0.8); border-color: var(--accent-fav); }
 
-
 /* Placeholder */
-.placeholder {
-  width: 140px; height: 140px; border-radius: var(--radius-md);
-  border: 2px dashed var(--text-muted); background: rgba(100,100,100,0.05);
-  opacity: 0.5; animation: pulse 1.5s infinite; 
-  transition: none; pointer-events: none;
-}
+.placeholder { width: 140px; height: 140px; border-radius: var(--radius-md); border: 2px dashed var(--text-muted); background: rgba(100,100,100,0.05); opacity: 0.5; animation: pulse 1.5s infinite; transition: none; pointer-events: none; }
 body.compact-active .placeholder { height: 70px; }
-
 @keyframes pulse { 0%{opacity:0.3} 50%{opacity:0.6} 100%{opacity:0.3} }
 
 /* --- POOL --- */
-.pool-container {
-  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-  width: 90%; max-width: 1200px;
-  background: var(--card-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-  padding: 20px; border: var(--card-border); border-radius: var(--radius-lg);
-  box-shadow: 0 -10px 40px rgba(0,0,0,0.1); z-index: 100;
-}
-.pool-header {
-  font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
-  color: var(--text-muted); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;
-}
+.pool-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 1200px; background: var(--card-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 20px; border: var(--card-border); border-radius: var(--radius-lg); box-shadow: 0 -10px 40px rgba(0,0,0,0.1); z-index: 100; }
+.pool-header { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
 .pool-header::after { content:''; flex:1; height:1px; background: var(--text-muted); opacity: 0.2; }
-.pool {
-  display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; min-height: 150px;
-  scrollbar-width: thin; scrollbar-color: var(--accent-primary) transparent;
-}
+.pool { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; min-height: 150px; scrollbar-width: thin; scrollbar-color: var(--accent-primary) transparent; }
 .pool::-webkit-scrollbar { height: 6px; }
 .pool::-webkit-scrollbar-track { background: transparent; }
 .pool::-webkit-scrollbar-thumb { background-color: var(--text-muted); border-radius: 10px; }
 
 /* --- MODAL STATS & FAV --- */
-.modal-overlay {
-  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
-  z-index: 2000; display: none; justify-content: center; align-items: center;
-}
-.modal-content {
-  background: var(--card-bg); border: var(--card-border);
-  width: 90%; max-width: 500px; border-radius: var(--radius-lg); padding: 30px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.2); color: var(--text-main);
-  max-height: 80vh; overflow-y: auto;
-}
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 2000; display: none; justify-content: center; align-items: center; }
+.modal-content { background: var(--card-bg); border: var(--card-border); width: 90%; max-width: 500px; border-radius: var(--radius-lg); padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); color: var(--text-main); max-height: 80vh; overflow-y: auto; }
 .modal-content h2 { margin-top: 0; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; border-bottom: 1px solid rgba(128,128,128,0.1); padding-bottom: 5px; }
 .stat-row strong { font-weight: 600; }
@@ -495,12 +439,7 @@ body.compact-active .placeholder { height: 70px; }
 .rank-item.flop .rank-pos { color: #ef4444; }
 .rank-item.flop .rank-avg { background: #ef4444; }
 
-/* Liste Favoris dans Modal */
-.fav-list-item {
-    display: flex; align-items: center; gap: 10px; padding: 10px;
-    background: rgba(255,255,255,0.05); margin-bottom: 8px; border-radius: 8px;
-    border: 1px solid transparent;
-}
+.fav-list-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(255,255,255,0.05); margin-bottom: 8px; border-radius: 8px; border: 1px solid transparent; }
 .fav-list-item:hover { border-color: var(--accent-fav); background: rgba(236, 72, 153, 0.05); }
 .fav-thumb { width: 40px; height: 40px; border-radius: 6px; background-size: cover; }
 .fav-info { flex: 1; }
@@ -528,6 +467,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
     <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;"></div>
     
     <button onclick="toggleTwitch()" class="icon-btn" title="Afficher/Cacher Tchat Twitch">🟣</button>
+    
     <button onclick="forceSync()" class="icon-btn" title="Relancer recherche d'images">🔄</button>
     <button onclick="showFavorites()" class="icon-btn" title="Mes Favoris" style="color:var(--accent-fav)">❤</button>
     <button onclick="showStats()" class="icon-btn" title="Statistiques">📊</button>
@@ -560,22 +500,31 @@ body.edit-active .card-tools button { pointer-events: auto; }
   </div>
 </div>
 
-<div class="twitch-sidebar" id="twitchSidebar">
-  <div class="twitch-header">
-    <span style="color: #bfdbfe;">🟣 Tchat Twitch</span>
-    <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
+<div class="main-layout">
+  
+  <div class="input-container">
+    <div class="input-section">
+      <input type="text" id="artistInput" placeholder="Artiste (ex: NMIXX)">
+      <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
+      <input type="text" id="titleInput" placeholder="Titre (ex: Dash)">
+      <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
+    </div>
   </div>
-  <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
-</div>
 
-<div class="main">
-  <div class="input-section">
-    <input type="text" id="artistInput" placeholder="Artiste (ex: NMIXX)">
-    <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
-    <input type="text" id="titleInput" placeholder="Titre (ex: Dash)">
-    <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
+  <div class="tier-content">
+    <div id="tiers"></div>
   </div>
-  <div id="tiers"></div>
+
+  <div class="twitch-sidebar-wrapper">
+    <div class="twitch-sidebar" id="twitchSidebar">
+      <div class="twitch-header">
+        <span style="color: #bfdbfe;">🟣 Tchat Twitch</span>
+        <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
+      </div>
+      <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
+    </div>
+  </div>
+
 </div>
 
 <div class="pool-container">
@@ -595,7 +544,7 @@ let editMode = false;
 let compactMode = false; 
 let draggedId = null;
 let placeholder = null;
-let twitchVisible = true; // Variable pour le tchat
+let twitchVisible = true;
 
 function defaultData(){
   return {
@@ -658,7 +607,6 @@ function importJson(input) {
   input.value = '';
 }
 
-// Fonction pour masquer/afficher Twitch
 function toggleTwitch() {
     const chat = document.getElementById("twitchSidebar");
     twitchVisible = !twitchVisible;
@@ -913,11 +861,19 @@ function render(){
     const tier = document.createElement("div");
     tier.className = "tier";
     
+    // NOUVEAU : Wrapper pour l'animation sticky (Intercalaire) sans casser le layout
+    const headerWrapper = document.createElement("div");
+    headerWrapper.className = "tier-header-wrapper";
+
     const header = document.createElement("div");
     header.className = "tier-header";
     header.style.background = `linear-gradient(90deg, ${t.color}, ${adjustColor(t.color, -40)})`;
     
-    header.innerHTML = `<span>${t.name}</span>`;
+    // Titre de la catégorie
+    const titleSpan = document.createElement("span");
+    titleSpan.className = "tier-title-text";
+    titleSpan.innerText = t.name;
+    header.appendChild(titleSpan);
 
     const controls = document.createElement("div");
     controls.className = "tier-controls";
@@ -948,7 +904,8 @@ function render(){
 
     controls.append(colorWrapper, renameBtn, delBtn);
     header.append(controls);
-    tier.append(header);
+    headerWrapper.append(header);
+    tier.append(headerWrapper);
 
     const container = document.createElement("div");
     container.className = "cards";
@@ -1173,6 +1130,26 @@ function toggleCompact(){
 }
 
 function toggleDark(){ document.body.classList.toggle("dark"); }
+
+/* --- LOGIQUE D'ANIMATION DE L'INTERCALAIRE AU SCROLL --- */
+window.addEventListener('scroll', () => {
+    const tiers = document.querySelectorAll('.tier');
+    
+    tiers.forEach(tier => {
+        const rect = tier.getBoundingClientRect();
+        const header = tier.querySelector('.tier-header');
+        
+        if(!header) return;
+
+        // On vérifie si le haut de la catégorie a touché le plafond (sticky = 80px)
+        // Et on s'assure que le bas de la catégorie est toujours visible à l'écran (> 100px)
+        if (rect.top <= 81 && rect.bottom > 100) {
+            header.classList.add('is-stuck');
+        } else {
+            header.classList.remove('is-stuck');
+        }
+    });
+});
 
 render();
 setTimeout(syncCovers, 1500); 
