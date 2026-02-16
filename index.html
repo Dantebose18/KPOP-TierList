@@ -171,35 +171,21 @@ input[type="text"] {
 input[type="text"]:focus { background: rgba(100,100,100,0.05); }
 input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 
-/* --- MAIN LAYOUT (CENTRE ABSOLU) --- */
-.main-layout {
-  max-width: 100%; 
+/* --- MAIN LAYOUT : RETOUR AU CENTRAGE PARFAIT --- */
+.main {
+  max-width: 1320px; 
   margin: auto;
   padding: 0 20px 240px 20px;
-  display: grid;
-  /* La magie est ici : Colonne 1 (Espace Vide), Colonne 2 (Tier List centrée), Colonne 3 (Tchat) */
-  grid-template-columns: minmax(320px, 1fr) minmax(300px, 1320px) minmax(320px, 1fr);
-  gap: 20px;
-  overflow-x: hidden;
 }
 
-.tier-content {
-  grid-column: 2; /* Force la Tier List à être dans la colonne centrale */
-  width: 100%;
-}
-
-/* --- TWITCH SIDEBAR --- */
-.twitch-sidebar-wrapper {
-  grid-column: 3; /* Le tchat va se placer dans la 3ème colonne */
-  display: flex;
-  justify-content: flex-start;
-}
-
+/* --- TWITCH SIDEBAR FLOTTANT --- */
 .twitch-sidebar {
+  position: fixed;
+  top: 180px; /* Aligné précisément avec le haut de la première catégorie */
+  right: 20px;
   width: 320px;
-  position: sticky;
-  top: 90px;
-  height: calc(100vh - 120px);
+  height: 60vh; /* Hauteur réduite */
+  max-height: 550px; /* Limite de sécurité pour ne pas sortir de l'écran */
   background: var(--card-bg);
   border: var(--card-border);
   border-radius: var(--radius-md);
@@ -208,6 +194,15 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  z-index: 100;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+}
+
+/* Classe pour cacher le tchat via le bouton */
+.twitch-sidebar.hidden {
+  transform: translateX(120%);
+  opacity: 0;
+  pointer-events: none;
 }
 
 .twitch-header {
@@ -243,26 +238,6 @@ iframe.twitch-iframe {
   border: none;
 }
 
-/* Adaptabilité si l'écran est trop petit (le tchat passera en dessous) */
-@media (max-width: 1450px) {
-  .main-layout {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  .twitch-sidebar-wrapper {
-    width: 100%;
-    max-width: 1320px;
-  }
-  .twitch-sidebar {
-    width: 100%;
-    height: 500px;
-    position: relative;
-    top: 0;
-    margin-top: 30px;
-  }
-}
-
 /* --- TIERS --- */
 .tier {
   background: var(--card-bg);
@@ -270,7 +245,7 @@ iframe.twitch-iframe {
   border-radius: var(--radius-md);
   margin-bottom: 25px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-  overflow: visible;
+  overflow: visible; /* Permet aux cartes de grossir sans être coupées */
   display: flex;
   flex-direction: column;
 }
@@ -284,15 +259,20 @@ iframe.twitch-iframe {
   justify-content: space-between;
   align-items: center;
   text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  position: relative;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
-  overflow: hidden;
+  
+  /* MODIFICATION : Le titre est maintenant sticky et restera accroché au scroll */
+  position: sticky;
+  top: 60px; /* Juste en dessous du header principal */
+  z-index: 40; /* Au-dessus des cartes (sauf au survol) */
 }
 
+/* Le fond dégradé du header, on doit l'attacher autrement à cause du sticky */
 .tier-header::after {
   content: ''; position: absolute; top:0; left:0; right:0; bottom:0;
   background: linear-gradient(90deg, rgba(255,255,255,0.1), transparent);
   pointer-events: none;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 
 .tier-controls { display: flex; gap: 8px; align-items: center; z-index: 2; }
@@ -386,7 +366,7 @@ body.is-dragging .card {
 
 #tiers .card:hover {
   transform: scale(1.15) translateY(-5px);
-  z-index: 50;
+  z-index: 50; /* Passe au dessus du header collant */
   box-shadow: 0 20px 30px rgba(0,0,0,0.25);
   border-color: var(--accent-secondary);
 }
@@ -547,6 +527,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
     
     <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;"></div>
     
+    <button onclick="toggleTwitch()" class="icon-btn" title="Afficher/Cacher Tchat Twitch">🟣</button>
     <button onclick="forceSync()" class="icon-btn" title="Relancer recherche d'images">🔄</button>
     <button onclick="showFavorites()" class="icon-btn" title="Mes Favoris" style="color:var(--accent-fav)">❤</button>
     <button onclick="showStats()" class="icon-btn" title="Statistiques">📊</button>
@@ -579,28 +560,22 @@ body.edit-active .card-tools button { pointer-events: auto; }
   </div>
 </div>
 
-<div class="main-layout">
-  
-  <div class="tier-content">
-    <div class="input-section">
-      <input type="text" id="artistInput" placeholder="Artiste (ex: NMIXX)">
-      <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
-      <input type="text" id="titleInput" placeholder="Titre (ex: Dash)">
-      <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
-    </div>
-    <div id="tiers"></div>
+<div class="twitch-sidebar" id="twitchSidebar">
+  <div class="twitch-header">
+    <span style="color: #bfdbfe;">🟣 Tchat Twitch</span>
+    <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
   </div>
+  <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
+</div>
 
-  <div class="twitch-sidebar-wrapper">
-    <div class="twitch-sidebar">
-      <div class="twitch-header">
-        <span style="color: #bfdbfe;">🟣 Tchat Twitch</span>
-        <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
-      </div>
-      <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
-    </div>
+<div class="main">
+  <div class="input-section">
+    <input type="text" id="artistInput" placeholder="Artiste (ex: NMIXX)">
+    <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
+    <input type="text" id="titleInput" placeholder="Titre (ex: Dash)">
+    <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
   </div>
-
+  <div id="tiers"></div>
 </div>
 
 <div class="pool-container">
@@ -612,7 +587,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
 // ==========================================
 // CONFIGURATION
 // ==========================================
-const YOUTUBE_API_KEY = ""; 
+const YOUTUBE_API_KEY = "AIzaSyBzRO4J6W-M8uSt2k9vd1HJHECCwdKdiGM"; 
 // ==========================================
 
 let data = load();
@@ -620,6 +595,7 @@ let editMode = false;
 let compactMode = false; 
 let draggedId = null;
 let placeholder = null;
+let twitchVisible = true; // Variable pour le tchat
 
 function defaultData(){
   return {
@@ -680,6 +656,17 @@ function importJson(input) {
   };
   reader.readAsText(file);
   input.value = '';
+}
+
+// Fonction pour masquer/afficher Twitch
+function toggleTwitch() {
+    const chat = document.getElementById("twitchSidebar");
+    twitchVisible = !twitchVisible;
+    if(twitchVisible) {
+        chat.classList.remove("hidden");
+    } else {
+        chat.classList.add("hidden");
+    }
 }
 
 function changeTwitchChannel() {
