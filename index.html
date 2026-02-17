@@ -50,6 +50,7 @@ body {
   color: var(--text-main);
   transition: background-color 0.3s ease, color 0.3s ease;
   min-height: 100vh;
+  overflow-x: hidden; /* Sécurité pour éviter tout scroll horizontal */
 }
 
 /* --- HEADER GLASS --- */
@@ -168,6 +169,7 @@ input[type="text"] {
 input[type="text"]:focus { background: rgba(100,100,100,0.05); }
 input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 
+
 /* --- BOUTON SCROLL TO TOP --- */
 .scroll-top-btn {
   position: fixed;
@@ -245,11 +247,10 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   overflow-y: auto;
 }
 
-/* MODIFICATION: Passage en Flexbox pour séparer le nom et le compteur */
 .sommaire-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: flex; /* MODIFIÉ : Flexbox pour aligner nom/compteur */
+  justify-content: space-between; /* MODIFIÉ : Texte à gauche, chiffre à droite */
+  align-items: center; /* MODIFIÉ : Centrage vertical */
   padding: 8px 12px;
   color: var(--text-main);
   text-decoration: none;
@@ -259,7 +260,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   margin-bottom: 5px;
   transition: all 0.2s;
   cursor: pointer;
-  border-left: 4px solid transparent; 
+  border-left: 4px solid transparent; /* Couleur injectée en JS */
 }
 .sommaire-item:hover {
   background: rgba(255,255,255,0.1);
@@ -412,7 +413,7 @@ body.compact-active .card:hover .card-overlay { top: auto; bottom: 0; background
 .card-tools { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 20; }
 .card-tools button { pointer-events: auto; }
 .btn-edit-pos { position: absolute; top: 6px; left: 6px; }
-.btn-fav-pos { position: absolute top: 40px; left: 6px; }
+.btn-fav-pos { position: absolute; top: 40px; left: 6px; }
 .btn-del-pos { position: absolute; top: 6px; right: 6px; }
 .card-tools button { background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: transform 0.1s, background 0.2s; }
 .card-tools button:hover { background: var(--accent-secondary); transform: scale(1.1); }
@@ -940,7 +941,7 @@ function render(){
     tier.append(container);
     tiersDiv.appendChild(tier);
     
-    // MODIFICATION: Affichage du nom et du nombre de chansons dans le sommaire
+    // MODIFICATION EFFECTUÉE ICI : Le code que tu m'as demandé d'insérer
     if(sommaireList) {
         const somItem = document.createElement("div");
         somItem.className = "sommaire-item";
