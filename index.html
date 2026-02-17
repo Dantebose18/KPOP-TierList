@@ -169,12 +169,11 @@ input[type="text"] {
 input[type="text"]:focus { background: rgba(100,100,100,0.05); }
 input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 
-
 /* --- BOUTON SCROLL TO TOP --- */
 .scroll-top-btn {
   position: fixed;
   bottom: 30px;
-  left: 30px;
+  right: 30px; /* Placé en bas à droite pour plus d'ergonomie */
   width: 45px;
   height: 45px;
   border-radius: 50%;
@@ -202,7 +201,8 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   margin: auto;
   padding: 0 20px 240px 20px;
   display: grid;
-  grid-template-columns: minmax(320px, 1fr) minmax(300px, 1320px) minmax(320px, 1fr);
+  /* MODIFICATION : Force les marges latérales à être strictement identiques avec 1fr */
+  grid-template-columns: 1fr minmax(auto, 1320px) 1fr;
   row-gap: 0;
 }
 
@@ -215,7 +215,9 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   grid-column: 1;
   grid-row: 2; 
   display: flex;
-  justify-content: center; /* Centre le sommaire dans l'espace gauche */
+  /* MODIFICATION : Colle vers la tier list centrale pour sécuriser la mise en page */
+  justify-content: flex-end; 
+  padding-right: 25px;
   align-items: flex-start;
 }
 
@@ -248,9 +250,9 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 }
 
 .sommaire-item {
-  display: flex; /* MODIFIÉ : Flexbox pour aligner nom/compteur */
-  justify-content: space-between; /* MODIFIÉ : Texte à gauche, chiffre à droite */
-  align-items: center; /* MODIFIÉ : Centrage vertical */
+  display: flex; /* Flexbox pour aligner nom/compteur */
+  justify-content: space-between; /* Texte à gauche, chiffre à droite */
+  align-items: center; /* Centrage vertical */
   padding: 8px 12px;
   color: var(--text-main);
   text-decoration: none;
@@ -273,7 +275,9 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   grid-column: 3;
   grid-row: 2; 
   display: flex;
-  justify-content: center; 
+  /* MODIFICATION : Colle vers la tier list centrale pour sécuriser la mise en page */
+  justify-content: flex-start; 
+  padding-left: 25px;
   align-items: flex-start; 
 }
 
@@ -291,13 +295,16 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  /* MODIFICATION : Ajout de visibility pour un fondu parfait */
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, visibility 0.3s ease;
 }
 
+/* MODIFICATION : Correction du bug de la page qui s'étend vers la droite ! */
 .twitch-sidebar.hidden {
-  transform: translateX(150%);
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
+  transform: scale(0.95); /* Supprime le translateX qui causait le bug */
 }
 
 .twitch-header {
@@ -305,11 +312,18 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   font-weight: 600; display: flex; justify-content: space-between; align-items: center; font-size: 14px;
 }
 
+/* MODIFICATION : Zone de texte Twitch légèrement réduite */
 .twitch-header input {
   background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: var(--text-main);
-  padding: 4px 8px; border-radius: 6px; width: 120px; font-size: 12px; transition: all 0.2s;
+  padding: 4px 8px; border-radius: 6px; 
+  width: 90px; /* Réduit pour ne plus être collé au titre */
+  font-size: 12px; transition: all 0.2s;
 }
-.twitch-header input:focus { width: 150px; background: rgba(255, 255, 255, 0.2); box-shadow: 0 0 0 2px #9146FF; }
+.twitch-header input:focus { 
+  width: 120px; 
+  background: rgba(255, 255, 255, 0.2); 
+  box-shadow: 0 0 0 2px #9146FF; 
+}
 
 iframe.twitch-iframe { flex: 1; width: 100%; border: none; }
 
@@ -453,6 +467,7 @@ body.compact-active .placeholder { height: 70px; }
 .rank-item.flop .rank-pos { color: #ef4444; }
 .rank-item.flop .rank-avg { background: #ef4444; }
 
+/* Liste Favoris dans Modal */
 .fav-list-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(255,255,255,0.05); margin-bottom: 8px; border-radius: 8px; border: 1px solid transparent; }
 .fav-list-item:hover { border-color: var(--accent-fav); background: rgba(236, 72, 153, 0.05); }
 .fav-thumb { width: 40px; height: 40px; border-radius: 6px; background-size: cover; }
@@ -559,7 +574,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
 // ==========================================
 // CONFIGURATION
 // ==========================================
-const YOUTUBE_API_KEY = ""; 
+const YOUTUBE_API_KEY = "AIzaSyBzRO4J6W-M8uSt2k9vd1HJHECCwdKdiGM"; 
 // ==========================================
 
 let data = load();
@@ -941,7 +956,6 @@ function render(){
     tier.append(container);
     tiersDiv.appendChild(tier);
     
-    // MODIFICATION EFFECTUÉE ICI : Le code que tu m'as demandé d'insérer
     if(sommaireList) {
         const somItem = document.createElement("div");
         somItem.className = "sommaire-item";
