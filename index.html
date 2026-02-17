@@ -50,6 +50,7 @@ body {
   color: var(--text-main);
   transition: background-color 0.3s ease, color 0.3s ease;
   min-height: 100vh;
+  overflow-x: hidden; /* Sécurité pour éviter tout scroll horizontal */
 }
 
 /* --- HEADER GLASS --- */
@@ -168,12 +169,11 @@ input[type="text"] {
 input[type="text"]:focus { background: rgba(100,100,100,0.05); }
 input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 
-
 /* --- BOUTON SCROLL TO TOP --- */
 .scroll-top-btn {
   position: fixed;
   bottom: 30px;
-  left: 30px;
+  right: 30px; /* Placé en bas à droite pour plus d'ergonomie */
   width: 45px;
   height: 45px;
   border-radius: 50%;
@@ -195,32 +195,18 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 .scroll-top-btn:hover { transform: translateY(-5px); background: var(--accent-secondary); }
 
 
-/* --- MAIN LAYOUT : GRILLE 3 COLONNES --- */
-.main-layout {
-  width: 100%;
-  margin: auto;
+/* --- MAIN LAYOUT : RETOUR AU CENTRAGE PARFAIT --- */
+.main {
+  max-width: 1320px; 
+  margin: auto; /* Centrage absolu : Marge gauche = Marge Droite */
   padding: 0 20px 240px 20px;
-  display: grid;
-  grid-template-columns: minmax(320px, 1fr) minmax(300px, 1320px) minmax(320px, 1fr);
-  row-gap: 0;
 }
 
-.input-container { grid-column: 2; grid-row: 1; width: 100%; }
-.tier-content { grid-column: 2; grid-row: 2; width: 100%; }
-
-
-/* --- SOMMAIRE (COLONNE DE GAUCHE) --- */
-.sommaire-sidebar-wrapper {
-  grid-column: 1;
-  grid-row: 2; 
-  display: flex;
-  justify-content: center; /* Centre le sommaire dans l'espace gauche */
-  align-items: flex-start;
-}
-
+/* --- SOMMAIRE (FLOTTANT À GAUCHE) --- */
 .sommaire-sidebar {
-  position: sticky;
-  top: 195px; /* S'aligne parfaitement avec la tierlist et Twitch */
+  position: fixed;
+  top: 195px; 
+  left: max(20px, calc(25vw - 460px)); /* S'adapte au vide gauche */
   width: 250px;
   background: var(--card-bg);
   border: var(--card-border);
@@ -231,6 +217,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   display: flex;
   flex-direction: column;
   max-height: 70vh;
+  z-index: 100;
 }
 
 .sommaire-header {
@@ -257,7 +244,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   margin-bottom: 5px;
   transition: all 0.2s;
   cursor: pointer;
-  border-left: 4px solid transparent; /* Couleur injectée en JS */
+  border-left: 4px solid transparent; 
 }
 .sommaire-item:hover {
   background: rgba(255,255,255,0.1);
@@ -265,18 +252,11 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 }
 
 
-/* --- TWITCH SIDEBAR (COLONNE DE DROITE) --- */
-.twitch-sidebar-wrapper {
-  grid-column: 3;
-  grid-row: 2; 
-  display: flex;
-  justify-content: center; 
-  align-items: flex-start; 
-}
-
+/* --- TWITCH SIDEBAR (FLOTTANT À DROITE) --- */
 .twitch-sidebar {
-  position: sticky;
-  top: 195px; 
+  position: fixed;
+  top: 195px; /* Aligné précisément avec le haut de la première catégorie */
+  right: max(20px, calc(25vw - 490px)); /* S'adapte au vide droit */
   width: 320px;
   height: 80vh; 
   max-height: 900px;
@@ -288,36 +268,57 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  z-index: 100;
+  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
 }
 
+/* CORRECTION BUG D'ÉLARGISSEMENT DE LA PAGE */
 .twitch-sidebar.hidden {
-  transform: translateX(150%);
   opacity: 0;
+  visibility: hidden;
+  transform: scale(0.95) translateX(20px); /* Un tout petit mouvement invisible, ne crée pas de scroll */
   pointer-events: none;
 }
 
 .twitch-header {
-  padding: 12px 15px; background: rgba(0, 0, 0, 0.1); border-bottom: var(--card-border);
-  font-weight: 600; display: flex; justify-content: space-between; align-items: center; font-size: 14px;
+  padding: 12px 15px;
+  background: rgba(0, 0, 0, 0.1);
+  border-bottom: var(--card-border);
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
 }
 
 .twitch-header input {
-  background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: var(--text-main);
-  padding: 4px 8px; border-radius: 6px; width: 120px; font-size: 12px; transition: all 0.2s;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-main);
+  padding: 4px 8px;
+  border-radius: 6px;
+  width: 120px;
+  font-size: 12px;
+  transition: all 0.2s;
 }
-.twitch-header input:focus { width: 150px; background: rgba(255, 255, 255, 0.2); box-shadow: 0 0 0 2px #9146FF; }
+.twitch-header input:focus {
+    width: 150px;
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 0 2px #9146FF;
+}
 
-iframe.twitch-iframe { flex: 1; width: 100%; border: none; }
+iframe.twitch-iframe {
+  flex: 1;
+  width: 100%;
+  border: none;
+}
 
 /* Comportement sur petit écran */
-@media (max-width: 1600px) {
-  .main-layout { display: flex; flex-direction: column; align-items: center; }
-  .twitch-sidebar-wrapper { width: 100%; max-width: 1320px; justify-content: flex-end; }
-  .twitch-sidebar { position: relative; top: 0; height: 500px; margin-top: 30px; }
-  .sommaire-sidebar-wrapper { display: none; } /* Cache le sommaire si pas de place */
+@media (max-width: 1650px) {
+  .twitch-sidebar, .sommaire-sidebar {
+      display: none; /* Cache les panneaux si l'écran est trop petit pour ne pas gêner la tier list */
+  }
 }
-
 
 /* --- TIERS --- */
 .tier {
@@ -326,11 +327,10 @@ iframe.twitch-iframe { flex: 1; width: 100%; border: none; }
   border-radius: var(--radius-md);
   margin-bottom: 25px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-  overflow: visible;
+  overflow: visible; 
   display: flex;
   flex-direction: column;
-  /* scroll-margin-top permet au scroll de s'arrêter un peu avant le titre */
-  scroll-margin-top: 90px; 
+  scroll-margin-top: 90px; /* Pour que le sommaire s'arrête pile au bon endroit */
 }
 
 .tier-header {
@@ -342,14 +342,13 @@ iframe.twitch-iframe { flex: 1; width: 100%; border: none; }
   justify-content: space-between;
   align-items: center;
   text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  position: relative;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
-  overflow: hidden;
   
-  /* L'effet sticky pour que le titre suive au scroll */
+  /* L'effet sticky remis : le titre suit au scroll ! */
   position: sticky;
   top: 60px; /* Colle juste en dessous du menu principal */
-  z-index: 40;
+  z-index: 40; 
+  overflow: hidden; 
 }
 
 .tier-header::after {
@@ -367,7 +366,10 @@ iframe.twitch-iframe { flex: 1; width: 100%; border: none; }
 .tier-controls button:hover { background: rgba(0,0,0,0.4); }
 
 /* COLOR PICKER STYLE */
-.color-picker-wrapper { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 5px rgba(0,0,0,0.2); overflow: hidden; position: relative; cursor: pointer; transition: transform 0.2s; }
+.color-picker-wrapper {
+  width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.8);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2); overflow: hidden; position: relative; cursor: pointer; transition: transform 0.2s;
+}
 .color-picker-wrapper:hover { transform: scale(1.1); }
 input[type="color"] { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; cursor: pointer; padding: 0; margin: 0; border: none; }
 
@@ -376,8 +378,8 @@ input[type="color"] { position: absolute; top: -50%; left: -50%; width: 200%; he
 /* --- CARDS --- */
 .card {
   width: 140px; height: 140px; border-radius: var(--radius-md); background-size: cover; background-position: center; position: relative; cursor: grab;
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, height 0.2s ease, background-image 0.5s ease-in; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.1); background-color: var(--card-bg);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, height 0.2s ease, background-image 0.5s ease-in;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; border: 1px solid rgba(255,255,255,0.1); background-color: var(--card-bg);
 }
 
 .card.is-favorite { animation: glow 1.5s infinite alternate; z-index: 10; }
@@ -450,6 +452,7 @@ body.compact-active .placeholder { height: 70px; }
 .rank-item.flop .rank-pos { color: #ef4444; }
 .rank-item.flop .rank-avg { background: #ef4444; }
 
+/* Liste Favoris dans Modal */
 .fav-list-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(255,255,255,0.05); margin-bottom: 8px; border-radius: 8px; border: 1px solid transparent; }
 .fav-list-item:hover { border-color: var(--accent-fav); background: rgba(236, 72, 153, 0.05); }
 .fav-thumb { width: 40px; height: 40px; border-radius: 6px; background-size: cover; }
@@ -513,38 +516,27 @@ body.edit-active .card-tools button { pointer-events: auto; }
 
 <button id="scrollTopBtn" class="scroll-top-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Remonter tout en haut">⬆️</button>
 
-<div class="main-layout">
-  
-  <div class="sommaire-sidebar-wrapper">
-    <div class="sommaire-sidebar" id="sommaireSidebar">
-      <div class="sommaire-header">📑 Sommaire</div>
-      <div id="sommaireList" class="sommaire-list"></div>
-    </div>
-  </div>
+<div class="sommaire-sidebar" id="sommaireSidebar">
+  <div class="sommaire-header">📑 Sommaire</div>
+  <div id="sommaireList" class="sommaire-list"></div>
+</div>
 
-  <div class="input-container">
-    <div class="input-section">
-      <input type="text" id="artistInput" placeholder="Artiste (ex: NMIXX)">
-      <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
-      <input type="text" id="titleInput" placeholder="Titre (ex: Dash)">
-      <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
-    </div>
+<div class="twitch-sidebar" id="twitchSidebar">
+  <div class="twitch-header">
+    <span style="color: #bfdbfe;">🟣 Tchat Twitch</span>
+    <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
   </div>
+  <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
+</div>
 
-  <div class="tier-content">
-    <div id="tiers"></div>
+<div class="main">
+  <div class="input-section">
+    <input type="text" id="artistInput" placeholder="Artiste (ex: NMIXX)">
+    <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
+    <input type="text" id="titleInput" placeholder="Titre (ex: Dash)">
+    <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
   </div>
-
-  <div class="twitch-sidebar-wrapper">
-    <div class="twitch-sidebar" id="twitchSidebar">
-      <div class="twitch-header">
-        <span style="color: #bfdbfe;">🟣 Tchat Twitch</span>
-        <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
-      </div>
-      <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
-    </div>
-  </div>
-
+  <div id="tiers"></div>
 </div>
 
 <div class="pool-container">
@@ -795,7 +787,7 @@ function showStats() {
   let artistStats = {};
   const maxScore = data.tiers.length;
   
-  // MODIFICATION : Classement sans prise en compte de la casse des lettres
+  // Classement insensible à la casse
   data.tiers.forEach((tier, index) => {
     const score = maxScore - index; 
     tier.songs.forEach(song => {
@@ -803,10 +795,9 @@ function showStats() {
       totalGlobalScore += score;
       
       const rawName = song.artist.trim();
-      const lowerName = rawName.toLowerCase(); // On utilise les minuscules pour vérifier
+      const lowerName = rawName.toLowerCase(); 
       
       if(!artistStats[lowerName]) {
-          // On garde le vrai nom (rawName) pour l'affichage visuel, mais on se sert de lowerName pour la logique
           artistStats[lowerName] = { total: 0, count: 0, displayName: rawName };
       }
       
@@ -825,7 +816,7 @@ function showStats() {
     const bayesianScore = ((count / (count + minimumSongs)) * trueAvg) + ((minimumSongs / (count + minimumSongs)) * globalAverage);
 
     return {
-      name: artistStats[key].displayName, // On affiche avec les vraies majuscules/minuscules
+      name: artistStats[key].displayName, 
       avg: trueAvg.toFixed(2),
       count: count,
       score: bayesianScore 
@@ -840,7 +831,6 @@ function showStats() {
       flop3 = rankings.slice(-3).reverse(); 
   }
 
-  // Correction du Set pour les artistes uniques sans la casse
   const allLowerArtists = [
       ...Object.keys(artistStats),
       ...data.pool.map(s => s.artist.trim().toLowerCase())
@@ -895,7 +885,7 @@ function render(){
   data.tiers.forEach(t=>{
     const tier = document.createElement("div");
     tier.className = "tier";
-    tier.id = `tier-node-${t.id}`; // ID utilisé pour le scroll depuis le sommaire
+    tier.id = `tier-node-${t.id}`; 
     
     const header = document.createElement("div");
     header.className = "tier-header";
@@ -941,7 +931,7 @@ function render(){
     tier.append(container);
     tiersDiv.appendChild(tier);
     
-    // NOUVEAU : Ajouter l'élément au sommaire dynamique
+    // Ajout dynamique au sommaire
     if(sommaireList) {
         const somItem = document.createElement("div");
         somItem.className = "sommaire-item";
@@ -950,7 +940,6 @@ function render(){
         
         somItem.onclick = () => {
             const target = document.getElementById(`tier-node-${t.id}`);
-            // On calcule la position et on enlève 80px pour ne pas que le titre passe sous le menu fixe
             const y = target.getBoundingClientRect().top + window.pageYOffset - 80;
             window.scrollTo({top: y, behavior: 'smooth'});
         };
@@ -1174,7 +1163,7 @@ function toggleCompact(){
 
 function toggleDark(){ document.body.classList.toggle("dark"); }
 
-/* --- NOUVEAU : AJOUT AVEC LA TOUCHE ENTRÉE --- */
+/* --- AJOUT AVEC LA TOUCHE ENTRÉE --- */
 function handleEnter(e) {
     if(e.key === "Enter") {
         addSong();
@@ -1183,7 +1172,7 @@ function handleEnter(e) {
 document.getElementById("artistInput").addEventListener("keypress", handleEnter);
 document.getElementById("titleInput").addEventListener("keypress", handleEnter);
 
-/* --- NOUVEAU : SCROLL VERS LE HAUT DYNAMIQUE --- */
+/* --- SCROLL VERS LE HAUT DYNAMIQUE --- */
 window.addEventListener('scroll', () => {
     const btn = document.getElementById("scrollTopBtn");
     if (window.scrollY > 300) {
@@ -1193,18 +1182,18 @@ window.addEventListener('scroll', () => {
     }
 });
 
-/* --- NOUVEAU : AUTO-SCROLL PENDANT LE DRAG & DROP --- */
+/* --- AUTO-SCROLL PENDANT LE DRAG & DROP --- */
 let autoScrollSpeed = 0;
 let autoScrollRAF = null;
 
 document.addEventListener("dragover", (e) => {
-    const edge = 80; // Distance en pixels par rapport au bord pour déclencher le scroll
+    const edge = 80; 
     if (e.clientY < edge) {
-        autoScrollSpeed = -15; // Scroll vers le haut
+        autoScrollSpeed = -15; 
     } else if (e.clientY > window.innerHeight - edge) {
-        autoScrollSpeed = 15;  // Scroll vers le bas
+        autoScrollSpeed = 15;  
     } else {
-        autoScrollSpeed = 0;   // On arrête de scroller au milieu
+        autoScrollSpeed = 0;   
     }
 
     if (autoScrollSpeed !== 0 && !autoScrollRAF) {
