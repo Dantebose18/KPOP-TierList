@@ -50,7 +50,7 @@ body {
   color: var(--text-main);
   transition: background-color 0.3s ease, color 0.3s ease;
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow-x: hidden; 
 }
 
 /* --- HEADER GLASS --- */
@@ -169,12 +169,11 @@ input[type="text"] {
 input[type="text"]:focus { background: rgba(100,100,100,0.05); }
 input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 
-
 /* --- BOUTON SCROLL TO TOP --- */
 .scroll-top-btn {
   position: fixed;
   bottom: 30px;
-  right: 30px;
+  right: 30px; 
   width: 45px;
   height: 45px;
   border-radius: 50%;
@@ -195,33 +194,21 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 .scroll-top-btn.visible { opacity: 1; visibility: visible; }
 .scroll-top-btn:hover { transform: translateY(-5px); background: var(--accent-secondary); }
 
-
-/* --- MAIN LAYOUT : GRILLE 3 COLONNES --- */
-.main-layout {
+/* --- MAIN LAYOUT : CENTRAGE ABSOLU STRICT --- */
+/* Retour à l'exacte configuration de ton fichier index6.0.html */
+.main {
   width: 100%;
-  margin: auto;
+  max-width: 1320px; 
+  margin: 0 auto; /* C'est ce qui garantit le centrage parfait */
   padding: 0 20px 240px 20px;
-  display: grid;
-  grid-template-columns: minmax(320px, 1fr) minmax(300px, 1320px) minmax(320px, 1fr);
-  row-gap: 0;
 }
 
-.input-container { grid-column: 2; grid-row: 1; width: 100%; }
-.tier-content { grid-column: 2; grid-row: 2; width: 100%; }
-
-
-/* --- SOMMAIRE (COLONNE DE GAUCHE) --- */
-.sommaire-sidebar-wrapper {
-  grid-column: 1;
-  grid-row: 2; 
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-}
-
+/* --- SOMMAIRE (FLOTTANT À GAUCHE) --- */
 .sommaire-sidebar {
-  position: sticky;
+  position: fixed;
   top: 195px; 
+  /* Place le sommaire à 20px de la gauche de la tier list (1320/2 = 660px) */
+  right: calc(50% + 680px); 
   width: 250px;
   background: var(--card-bg);
   border: var(--card-border);
@@ -232,6 +219,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   display: flex;
   flex-direction: column;
   max-height: 70vh;
+  z-index: 100;
 }
 
 .sommaire-header {
@@ -247,7 +235,6 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   overflow-y: auto;
 }
 
-/* MODIFICATION: Utilisation de flexbox pour aligner le nom à gauche et le compteur à droite */
 .sommaire-item {
   display: flex;
   justify-content: space-between;
@@ -268,19 +255,12 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   transform: translateX(5px);
 }
 
-
-/* --- TWITCH SIDEBAR (COLONNE DE DROITE) --- */
-.twitch-sidebar-wrapper {
-  grid-column: 3;
-  grid-row: 2; 
-  display: flex;
-  justify-content: center; 
-  align-items: flex-start; 
-}
-
+/* --- TWITCH SIDEBAR (FLOTTANT À DROITE) --- */
 .twitch-sidebar {
-  position: sticky;
+  position: fixed;
   top: 195px; 
+  /* Place le tchat à 20px de la droite de la tier list */
+  left: calc(50% + 680px); 
   width: 320px;
   height: 80vh; 
   max-height: 900px;
@@ -292,36 +272,47 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  z-index: 100;
+  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
 }
 
+/* On cache juste le tchat avec de la transparence et un mini-zoom pour ne pas repousser la page ! */
 .twitch-sidebar.hidden {
-  transform: translateX(150%);
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
+  transform: scale(0.95);
 }
 
 .twitch-header {
   padding: 12px 15px; background: rgba(0, 0, 0, 0.1); border-bottom: var(--card-border);
-  font-weight: 600; display: flex; justify-content: space-between; align-items: center; font-size: 14px;
+  font-weight: 600; display: flex; justify-content: space-between; align-items: center; font-size: 13px;
 }
 
+/* MODIFICATION: Zone de texte plus petite pour le tchat Twitch */
 .twitch-header input {
   background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: var(--text-main);
-  padding: 4px 8px; border-radius: 6px; width: 120px; font-size: 12px; transition: all 0.2s;
+  padding: 4px 8px; border-radius: 6px; 
+  width: 80px; /* Réduit pour laisser respirer le texte "Tchat Twitch" */
+  font-size: 12px; transition: all 0.2s;
 }
-.twitch-header input:focus { width: 150px; background: rgba(255, 255, 255, 0.2); box-shadow: 0 0 0 2px #9146FF; }
+.twitch-header input:focus { 
+  width: 110px; /* Réduit aussi en focus */
+  background: rgba(255, 255, 255, 0.2); 
+  box-shadow: 0 0 0 2px #9146FF; 
+}
 
 iframe.twitch-iframe { flex: 1; width: 100%; border: none; }
 
-/* Comportement sur petit écran */
-@media (max-width: 1600px) {
-  .main-layout { display: flex; flex-direction: column; align-items: center; }
-  .twitch-sidebar-wrapper { width: 100%; max-width: 1320px; justify-content: flex-end; }
-  .twitch-sidebar { position: relative; top: 0; height: 500px; margin-top: 30px; }
-  .sommaire-sidebar-wrapper { display: none; } 
+/* Comportement si l'écran est plus petit que 1950px (pour éviter que les sidebars cachent la tierlist) */
+@media (max-width: 1950px) {
+  .sommaire-sidebar { right: auto; left: 10px; width: 220px; }
+  .twitch-sidebar { left: auto; right: 10px; width: 280px; }
 }
 
+@media (max-width: 1700px) {
+  .sommaire-sidebar, .twitch-sidebar { display: none !important; }
+}
 
 /* --- TIERS --- */
 .tier {
@@ -368,7 +359,6 @@ iframe.twitch-iframe { flex: 1; width: 100%; border: none; }
 }
 .tier-controls button:hover { background: rgba(0,0,0,0.4); }
 
-/* COLOR PICKER STYLE */
 .color-picker-wrapper { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 5px rgba(0,0,0,0.2); overflow: hidden; position: relative; cursor: pointer; transition: transform 0.2s; }
 .color-picker-wrapper:hover { transform: scale(1.1); }
 input[type="color"] { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; cursor: pointer; padding: 0; margin: 0; border: none; }
@@ -515,38 +505,27 @@ body.edit-active .card-tools button { pointer-events: auto; }
 
 <button id="scrollTopBtn" class="scroll-top-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Remonter tout en haut">⬆️</button>
 
-<div class="main-layout">
-  
-  <div class="sommaire-sidebar-wrapper">
-    <div class="sommaire-sidebar" id="sommaireSidebar">
-      <div class="sommaire-header">📑 Sommaire</div>
-      <div id="sommaireList" class="sommaire-list"></div>
-    </div>
-  </div>
+<div class="sommaire-sidebar" id="sommaireSidebar">
+  <div class="sommaire-header">📑 Sommaire</div>
+  <div id="sommaireList" class="sommaire-list"></div>
+</div>
 
-  <div class="input-container">
-    <div class="input-section">
-      <input type="text" id="artistInput" placeholder="Artiste (ex: NMIXX)">
-      <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
-      <input type="text" id="titleInput" placeholder="Titre (ex: Dash)">
-      <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
-    </div>
+<div class="twitch-sidebar" id="twitchSidebar">
+  <div class="twitch-header">
+    <span style="color: #bfdbfe; font-size: 13px;">🟣 Tchat Twitch</span>
+    <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
   </div>
+  <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
+</div>
 
-  <div class="tier-content">
-    <div id="tiers"></div>
+<div class="main">
+  <div class="input-section">
+    <input type="text" id="artistInput" placeholder="Artiste (ex: NMIXX)">
+    <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
+    <input type="text" id="titleInput" placeholder="Titre (ex: Dash)">
+    <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
   </div>
-
-  <div class="twitch-sidebar-wrapper">
-    <div class="twitch-sidebar" id="twitchSidebar">
-      <div class="twitch-header">
-        <span style="color: #bfdbfe;">🟣 Tchat Twitch</span>
-        <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
-      </div>
-      <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
-    </div>
-  </div>
-
+  <div id="tiers"></div>
 </div>
 
 <div class="pool-container">
@@ -558,7 +537,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
 // ==========================================
 // CONFIGURATION
 // ==========================================
-const YOUTUBE_API_KEY = ""; 
+const YOUTUBE_API_KEY = "AIzaSyBzRO4J6W-M8uSt2k9vd1HJHECCwdKdiGM"; 
 // ==========================================
 
 let data = load();
@@ -797,6 +776,7 @@ function showStats() {
   let artistStats = {};
   const maxScore = data.tiers.length;
   
+  // Classement insensible à la casse
   data.tiers.forEach((tier, index) => {
     const score = maxScore - index; 
     tier.songs.forEach(song => {
@@ -940,12 +920,11 @@ function render(){
     tier.append(container);
     tiersDiv.appendChild(tier);
     
-    // NOUVEAU : Ajout dynamique au sommaire avec le compteur de chansons bien formaté
+    // Ajout dynamique au sommaire avec le compteur de chansons bien formaté
     if(sommaireList) {
         const somItem = document.createElement("div");
         somItem.className = "sommaire-item";
         
-        // Structure HTML pour le nom et le compteur de chaque côté
         somItem.innerHTML = `
             <span>${t.name}</span>
             <span style="opacity: 0.6; font-size: 11px;">(${t.songs.length})</span>
