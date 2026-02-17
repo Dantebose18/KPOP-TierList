@@ -50,7 +50,7 @@ body {
   color: var(--text-main);
   transition: background-color 0.3s ease, color 0.3s ease;
   min-height: 100vh;
-  overflow-x: hidden; 
+  overflow-x: hidden; /* Sécurité pour éviter tout scroll horizontal */
 }
 
 /* --- HEADER GLASS --- */
@@ -173,7 +173,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 .scroll-top-btn {
   position: fixed;
   bottom: 30px;
-  right: 30px; 
+  right: 30px; /* Placé en bas à droite pour plus d'ergonomie */
   width: 45px;
   height: 45px;
   border-radius: 50%;
@@ -194,12 +194,11 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 .scroll-top-btn.visible { opacity: 1; visibility: visible; }
 .scroll-top-btn:hover { transform: translateY(-5px); background: var(--accent-secondary); }
 
-/* --- MAIN LAYOUT : CENTRAGE ABSOLU STRICT --- */
-/* Retour à l'exacte configuration de ton fichier index6.0.html */
+
+/* --- MAIN LAYOUT : RETOUR AU CENTRAGE PARFAIT --- */
 .main {
-  width: 100%;
   max-width: 1320px; 
-  margin: 0 auto; /* C'est ce qui garantit le centrage parfait */
+  margin: auto; /* Centrage absolu : Marge gauche = Marge Droite */
   padding: 0 20px 240px 20px;
 }
 
@@ -207,8 +206,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 .sommaire-sidebar {
   position: fixed;
   top: 195px; 
-  /* Place le sommaire à 20px de la gauche de la tier list (1320/2 = 660px) */
-  right: calc(50% + 680px); 
+  left: max(20px, calc(25vw - 460px)); /* S'adapte au vide gauche */
   width: 250px;
   background: var(--card-bg);
   border: var(--card-border);
@@ -236,9 +234,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 }
 
 .sommaire-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: block;
   padding: 8px 12px;
   color: var(--text-main);
   text-decoration: none;
@@ -255,12 +251,12 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   transform: translateX(5px);
 }
 
+
 /* --- TWITCH SIDEBAR (FLOTTANT À DROITE) --- */
 .twitch-sidebar {
   position: fixed;
-  top: 195px; 
-  /* Place le tchat à 20px de la droite de la tier list */
-  left: calc(50% + 680px); 
+  top: 195px; /* Aligné précisément avec le haut de la première catégorie */
+  right: max(20px, calc(25vw - 490px)); /* S'adapte au vide droit */
   width: 320px;
   height: 80vh; 
   max-height: 900px;
@@ -276,42 +272,52 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
 }
 
-/* On cache juste le tchat avec de la transparence et un mini-zoom pour ne pas repousser la page ! */
+/* CORRECTION BUG D'ÉLARGISSEMENT DE LA PAGE */
 .twitch-sidebar.hidden {
   opacity: 0;
   visibility: hidden;
+  transform: scale(0.95) translateX(20px); /* Un tout petit mouvement invisible, ne crée pas de scroll */
   pointer-events: none;
-  transform: scale(0.95);
 }
 
 .twitch-header {
-  padding: 12px 15px; background: rgba(0, 0, 0, 0.1); border-bottom: var(--card-border);
-  font-weight: 600; display: flex; justify-content: space-between; align-items: center; font-size: 13px;
+  padding: 12px 15px;
+  background: rgba(0, 0, 0, 0.1);
+  border-bottom: var(--card-border);
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
 }
 
-/* MODIFICATION: Zone de texte plus petite pour le tchat Twitch */
 .twitch-header input {
-  background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: var(--text-main);
-  padding: 4px 8px; border-radius: 6px; 
-  width: 80px; /* Réduit pour laisser respirer le texte "Tchat Twitch" */
-  font-size: 12px; transition: all 0.2s;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-main);
+  padding: 4px 8px;
+  border-radius: 6px;
+  width: 120px;
+  font-size: 12px;
+  transition: all 0.2s;
 }
-.twitch-header input:focus { 
-  width: 110px; /* Réduit aussi en focus */
-  background: rgba(255, 255, 255, 0.2); 
-  box-shadow: 0 0 0 2px #9146FF; 
-}
-
-iframe.twitch-iframe { flex: 1; width: 100%; border: none; }
-
-/* Comportement si l'écran est plus petit que 1950px (pour éviter que les sidebars cachent la tierlist) */
-@media (max-width: 1950px) {
-  .sommaire-sidebar { right: auto; left: 10px; width: 220px; }
-  .twitch-sidebar { left: auto; right: 10px; width: 280px; }
+.twitch-header input:focus {
+    width: 150px;
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 0 2px #9146FF;
 }
 
-@media (max-width: 1700px) {
-  .sommaire-sidebar, .twitch-sidebar { display: none !important; }
+iframe.twitch-iframe {
+  flex: 1;
+  width: 100%;
+  border: none;
+}
+
+/* Comportement sur petit écran */
+@media (max-width: 1650px) {
+  .twitch-sidebar, .sommaire-sidebar {
+      display: none; /* Cache les panneaux si l'écran est trop petit pour ne pas gêner la tier list */
+  }
 }
 
 /* --- TIERS --- */
@@ -321,10 +327,10 @@ iframe.twitch-iframe { flex: 1; width: 100%; border: none; }
   border-radius: var(--radius-md);
   margin-bottom: 25px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-  overflow: visible;
+  overflow: visible; 
   display: flex;
   flex-direction: column;
-  scroll-margin-top: 90px; 
+  scroll-margin-top: 90px; /* Pour que le sommaire s'arrête pile au bon endroit */
 }
 
 .tier-header {
@@ -336,13 +342,13 @@ iframe.twitch-iframe { flex: 1; width: 100%; border: none; }
   justify-content: space-between;
   align-items: center;
   text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  position: relative;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
-  overflow: hidden;
   
+  /* L'effet sticky remis : le titre suit au scroll ! */
   position: sticky;
-  top: 60px; 
-  z-index: 40;
+  top: 60px; /* Colle juste en dessous du menu principal */
+  z-index: 40; 
+  overflow: hidden; 
 }
 
 .tier-header::after {
@@ -359,7 +365,11 @@ iframe.twitch-iframe { flex: 1; width: 100%; border: none; }
 }
 .tier-controls button:hover { background: rgba(0,0,0,0.4); }
 
-.color-picker-wrapper { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 5px rgba(0,0,0,0.2); overflow: hidden; position: relative; cursor: pointer; transition: transform 0.2s; }
+/* COLOR PICKER STYLE */
+.color-picker-wrapper {
+  width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.8);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2); overflow: hidden; position: relative; cursor: pointer; transition: transform 0.2s;
+}
 .color-picker-wrapper:hover { transform: scale(1.1); }
 input[type="color"] { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; cursor: pointer; padding: 0; margin: 0; border: none; }
 
@@ -368,8 +378,8 @@ input[type="color"] { position: absolute; top: -50%; left: -50%; width: 200%; he
 /* --- CARDS --- */
 .card {
   width: 140px; height: 140px; border-radius: var(--radius-md); background-size: cover; background-position: center; position: relative; cursor: grab;
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, height 0.2s ease, background-image 0.5s ease-in; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.1); background-color: var(--card-bg);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, height 0.2s ease, background-image 0.5s ease-in;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; border: 1px solid rgba(255,255,255,0.1); background-color: var(--card-bg);
 }
 
 .card.is-favorite { animation: glow 1.5s infinite alternate; z-index: 10; }
@@ -442,6 +452,7 @@ body.compact-active .placeholder { height: 70px; }
 .rank-item.flop .rank-pos { color: #ef4444; }
 .rank-item.flop .rank-avg { background: #ef4444; }
 
+/* Liste Favoris dans Modal */
 .fav-list-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(255,255,255,0.05); margin-bottom: 8px; border-radius: 8px; border: 1px solid transparent; }
 .fav-list-item:hover { border-color: var(--accent-fav); background: rgba(236, 72, 153, 0.05); }
 .fav-thumb { width: 40px; height: 40px; border-radius: 6px; background-size: cover; }
@@ -512,7 +523,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
 
 <div class="twitch-sidebar" id="twitchSidebar">
   <div class="twitch-header">
-    <span style="color: #bfdbfe; font-size: 13px;">🟣 Tchat Twitch</span>
+    <span style="color: #bfdbfe;">🟣 Tchat Twitch</span>
     <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
   </div>
   <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
@@ -537,7 +548,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
 // ==========================================
 // CONFIGURATION
 // ==========================================
-const YOUTUBE_API_KEY = "AIzaSyBzRO4J6W-M8uSt2k9vd1HJHECCwdKdiGM"; 
+const YOUTUBE_API_KEY = ""; 
 // ==========================================
 
 let data = load();
@@ -920,16 +931,11 @@ function render(){
     tier.append(container);
     tiersDiv.appendChild(tier);
     
-    // Ajout dynamique au sommaire avec le compteur de chansons bien formaté
+    // Ajout dynamique au sommaire
     if(sommaireList) {
         const somItem = document.createElement("div");
         somItem.className = "sommaire-item";
-        
-        somItem.innerHTML = `
-            <span>${t.name}</span>
-            <span style="opacity: 0.6; font-size: 11px;">(${t.songs.length})</span>
-        `;
-        
+        somItem.innerText = t.name;
         somItem.style.borderLeftColor = t.color;
         
         somItem.onclick = () => {
