@@ -80,6 +80,7 @@ header {
 
 .header-btns { display: flex; gap: 8px; align-items: center; }
 
+/* STYLE BARRE DE RECHERCHE */
 #searchBar {
   background: rgba(128,128,128,0.1);
   border: var(--card-border);
@@ -172,7 +173,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 .scroll-top-btn {
   position: fixed;
   bottom: 30px;
-  right: 30px;
+  right: 30px; 
   width: 45px;
   height: 45px;
   border-radius: 50%;
@@ -194,18 +195,18 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 .scroll-top-btn:hover { transform: translateY(-5px); background: var(--accent-secondary); }
 
 
-/* --- MAIN LAYOUT --- */
+/* --- MAIN LAYOUT : RETOUR AU CENTRAGE PARFAIT --- */
 .main {
   max-width: 1320px; 
   margin: auto; 
   padding: 0 20px 240px 20px;
 }
 
-/* --- SOMMAIRE (AJUSTEMENT ALIGNEMENT) --- */
+/* --- SOMMAIRE (FLOTTANT À GAUCHE) --- */
 .sommaire-sidebar {
   position: fixed;
-  top: 185px; /* Alignement avec le premier Tier */
-  left: max(20px, calc(25vw - 460px));
+  top: 195px; 
+  left: max(20px, calc(25vw - 460px)); 
   width: 250px;
   background: var(--card-bg);
   border: var(--card-border);
@@ -233,9 +234,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 }
 
 .sommaire-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: block;
   padding: 8px 12px;
   color: var(--text-main);
   text-decoration: none;
@@ -251,20 +250,13 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   background: rgba(255,255,255,0.1);
   transform: translateX(5px);
 }
-.sommaire-count {
-  font-size: 11px;
-  opacity: 0.6;
-  background: rgba(0,0,0,0.1);
-  padding: 2px 6px;
-  border-radius: 10px;
-}
 
 
-/* --- TWITCH SIDEBAR (AJUSTEMENT ALIGNEMENT) --- */
+/* --- TWITCH SIDEBAR (FLOTTANT À DROITE) --- */
 .twitch-sidebar {
   position: fixed;
-  top: 185px; /* Alignement avec le premier Tier */
-  right: max(20px, calc(25vw - 490px));
+  top: 195px; 
+  right: max(20px, calc(25vw - 490px)); 
   width: 320px;
   height: 80vh; 
   max-height: 900px;
@@ -283,7 +275,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 .twitch-sidebar.hidden {
   opacity: 0;
   visibility: hidden;
-  transform: scale(0.95) translateX(20px);
+  transform: scale(0.95) translateX(20px); 
   pointer-events: none;
 }
 
@@ -304,13 +296,12 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   color: var(--text-main);
   padding: 4px 8px;
   border-radius: 6px;
-  width: 100px; /* Réduction légère de la taille */
-  margin-left: 10px; /* Espace par rapport au titre */
+  width: 120px;
   font-size: 12px;
   transition: all 0.2s;
 }
 .twitch-header input:focus {
-    width: 130px;
+    width: 150px;
     background: rgba(255, 255, 255, 0.2);
     box-shadow: 0 0 0 2px #9146FF;
 }
@@ -323,7 +314,7 @@ iframe.twitch-iframe {
 
 @media (max-width: 1650px) {
   .twitch-sidebar, .sommaire-sidebar {
-      display: none;
+      display: none; 
   }
 }
 
@@ -337,7 +328,7 @@ iframe.twitch-iframe {
   overflow: visible; 
   display: flex;
   flex-direction: column;
-  scroll-margin-top: 90px;
+  scroll-margin-top: 90px; 
 }
 
 .tier-header {
@@ -350,8 +341,9 @@ iframe.twitch-iframe {
   align-items: center;
   text-shadow: 0 2px 4px rgba(0,0,0,0.2);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
+  
   position: sticky;
-  top: 60px;
+  top: 60px; 
   z-index: 40; 
   overflow: hidden; 
 }
@@ -370,6 +362,7 @@ iframe.twitch-iframe {
 }
 .tier-controls button:hover { background: rgba(0,0,0,0.4); }
 
+/* COLOR PICKER STYLE */
 .color-picker-wrapper {
   width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.8);
   box-shadow: 0 2px 5px rgba(0,0,0,0.2); overflow: hidden; position: relative; cursor: pointer; transition: transform 0.2s;
@@ -473,7 +466,10 @@ body.edit-active .card-tools button { pointer-events: auto; }
 <header>
   <div class="logo">K-TIER ✨</div>
   <div class="header-btns">
-    <input type="text" id="searchBar" placeholder="🔍 Filtrer artiste/titre..." oninput="filterCards()">
+    <div style="position: relative; display: flex; align-items: center;">
+      <input type="text" id="searchBar" placeholder="🔍 Filtrer artiste/titre..." oninput="filterCards()" style="padding-right: 25px;">
+      <span id="clearSearchBtn" onclick="clearSearch()" style="position: absolute; right: 10px; cursor: pointer; display: none; color: var(--text-muted); font-size: 14px;">✖</span>
+    </div>
     
     <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;"></div>
     
@@ -548,7 +544,11 @@ body.edit-active .card-tools button { pointer-events: auto; }
 </div>
 
 <script>
+// ==========================================
+// CONFIGURATION
+// ==========================================
 const YOUTUBE_API_KEY = ""; 
+// ==========================================
 
 let data = load();
 let editMode = false;
@@ -650,7 +650,7 @@ let isSyncing = false;
 function forceSync() {
     const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
     allSongs.forEach(s => {
-        if(s.cover && s.cover.includes('via.placeholder.com')) {
+        if(s.cover && (s.cover.includes('via.placeholder.com') || s.cover.includes('ui-avatars.com'))) {
             s.coverSearched = false;
         }
     });
@@ -663,7 +663,7 @@ async function syncCovers() {
   isSyncing = true;
 
   const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
-  const missingCovers = allSongs.filter(s => s.cover && s.cover.includes('via.placeholder.com') && !s.coverSearched);
+  const missingCovers = allSongs.filter(s => s.cover && (s.cover.includes('via.placeholder.com') || s.cover.includes('ui-avatars.com')) && !s.coverSearched);
 
   if(missingCovers.length === 0) {
       isSyncing = false;
@@ -700,9 +700,7 @@ async function syncCovers() {
         const cardEl = document.getElementById(`card-${song.id}`);
         if(cardEl) cardEl.style.backgroundImage = `url(${song.cover})`;
       } else {
-        const randomColor = Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
-        const initial = song.artist ? song.artist.charAt(0).toUpperCase() : "?";
-        song.cover = `https://via.placeholder.com/300/${randomColor}/ffffff?text=${encodeURIComponent(initial)}`;
+        song.cover = `https://ui-avatars.com/api/?name=${encodeURIComponent(song.artist)}&background=random&color=fff&size=300&font-size=0.33`;
         const cardEl = document.getElementById(`card-${song.id}`);
         if(cardEl) cardEl.style.backgroundImage = `url(${song.cover})`;
       }
@@ -728,8 +726,13 @@ async function syncCovers() {
 
 function filterCards() {
     const term = document.getElementById("searchBar").value.toLowerCase().trim();
-    const cards = document.querySelectorAll(".card");
+    const clearBtn = document.getElementById("clearSearchBtn");
     
+    if (clearBtn) {
+        clearBtn.style.display = term ? "block" : "none";
+    }
+    
+    const cards = document.querySelectorAll(".card");
     cards.forEach(card => {
         const text = card.innerText.toLowerCase();
         if (text.includes(term)) {
@@ -740,12 +743,27 @@ function filterCards() {
     });
 }
 
+function clearSearch() {
+    document.getElementById("searchBar").value = "";
+    filterCards();
+}
+
 function toggleFavorite(id) {
     const s = findSong(id);
     if(s) {
         s.favorite = !s.favorite;
         save();
-        render();
+        
+        // Mise à jour visuelle instantanée pour éviter render()
+        const card = document.getElementById(`card-${id}`);
+        if(card) {
+            card.classList.toggle("is-favorite", s.favorite);
+            const favBtn = card.querySelector('.btn-fav-pos');
+            if(favBtn) {
+                favBtn.classList.toggle("active-fav", s.favorite);
+                favBtn.innerHTML = s.favorite ? '❤' : '♡';
+            }
+        }
     }
 }
 
@@ -796,7 +814,7 @@ function showStats() {
       const lowerName = rawName.toLowerCase(); 
       
       if(!artistStats[lowerName]) {
-          artistStats[lowerName] = { total: 0, count: 0, displayName: rawName };
+          artistStats[lowerName] = { total: 0, count: 0, displayName: rawName.toUpperCase() };
       }
       
       artistStats[lowerName].total += score;
@@ -932,8 +950,7 @@ function render(){
     if(sommaireList) {
         const somItem = document.createElement("div");
         somItem.className = "sommaire-item";
-        // Ajout du texte et du badge de compte à droite
-        somItem.innerHTML = `<span>${t.name}</span> <span class="sommaire-count">${t.songs.length}</span>`;
+        somItem.innerText = t.name;
         somItem.style.borderLeftColor = t.color;
         
         somItem.onclick = () => {
@@ -951,7 +968,6 @@ function render(){
   data.pool.forEach(s => pool.appendChild(createCard(s)));
 
   document.body.classList.toggle("hidden", !editMode);
-  
   filterCards();
 }
 
@@ -1000,7 +1016,7 @@ function createCard(song){
       </button>
 
       <button class="btn-del-pos" 
-              onclick="event.stopPropagation(); removeSong('${song.id}'); save(); render();" 
+              onclick="event.stopPropagation(); removeSong('${song.id}'); document.getElementById('card-${song.id}').remove(); updateCounters(); save();" 
               title="Supprimer" 
               style="background:#ef4444; border:none;">
           ✕
@@ -1008,6 +1024,33 @@ function createCard(song){
     </div>
   `;
   return card;
+}
+
+// Fonction pour reconstruire l'ordre des données sans tout re-render
+function rebuildDataFromDOM() {
+  const allSongsMap = {};
+  [...data.pool, ...data.tiers.flatMap(t => t.songs)].forEach(s => { allSongsMap[s.id] = s; });
+
+  data.tiers.forEach(t => {
+      const tierContainer = document.querySelector(`#tier-node-${t.id} .cards`);
+      if (tierContainer) {
+          const cardIds = Array.from(tierContainer.querySelectorAll('.card:not(.placeholder)')).map(c => c.id.replace('card-', ''));
+          t.songs = cardIds.map(id => allSongsMap[id]).filter(Boolean);
+      }
+  });
+
+  const poolContainer = document.getElementById('pool');
+  if (poolContainer) {
+      const poolCardIds = Array.from(poolContainer.querySelectorAll('.card:not(.placeholder)')).map(c => c.id.replace('card-', ''));
+      data.pool = poolCardIds.map(id => allSongsMap[id]).filter(Boolean);
+  }
+}
+
+function updateCounters() {
+  data.tiers.forEach(t => {
+      const countSpan = document.querySelector(`#tier-node-${t.id} .tier-controls span`);
+      if(countSpan) countSpan.innerText = `(${t.songs.length})`;
+  });
 }
 
 function setupDrop(container, tierId){
@@ -1030,22 +1073,26 @@ function setupDrop(container, tierId){
     e.preventDefault();
     if(!draggedId) return;
     
-    const song = findSong(draggedId);
+    const draggedElement = document.getElementById(`card-${draggedId}`);
     
-    const children = [...container.querySelectorAll('.card:not(.dragging)')];
-    const index = children.indexOf(placeholder.nextElementSibling);
-    const finalIndex = index === -1 ? children.length : index;
+    // Déplace l'élément directement à sa nouvelle place sans reload visuel global
+    if(placeholder && placeholder.parentNode === container) {
+        container.insertBefore(draggedElement, placeholder);
+        placeholder.remove();
+        placeholder = null;
+    } else {
+        container.appendChild(draggedElement);
+    }
 
-    if(placeholder) placeholder.remove();
-    placeholder = null;
-
-    removeSong(draggedId);
-    if(tierId) data.tiers.find(t => t.id === tierId).songs.splice(finalIndex, 0, song);
-    else data.pool.splice(finalIndex, 0, song);
+    // Met à jour les données instantanément
+    rebuildDataFromDOM();
 
     draggedId = null;
     document.body.classList.remove("is-dragging");
-    save(); render();
+    draggedElement.classList.remove("dragging");
+    
+    save(); 
+    updateCounters();
   });
 }
 
@@ -1081,7 +1128,17 @@ function editSong(id){
   if(a && t) { 
     s.artist = a; s.title = t; 
     s.youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(a + ' ' + t + ' official mv')}`;
-    save(); render(); 
+    save(); 
+    
+    // Modification ciblée pour éviter render()
+    const card = document.getElementById(`card-${id}`);
+    if (card) {
+        const strong = card.querySelector('.card-overlay strong');
+        const span = card.querySelector('.card-overlay span');
+        if (strong) strong.innerText = a;
+        if (span) span.innerText = t;
+    }
+    filterCards();
   }
 }
 
@@ -1102,8 +1159,7 @@ async function addSong(){
   } catch(e) {}
 
   if(!cover) {
-      const randomColor = Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
-      cover = `https://via.placeholder.com/300/${randomColor}/ffffff?text=${encodeURIComponent(artist.charAt(0).toUpperCase())}`;
+      cover = `https://ui-avatars.com/api/?name=${encodeURIComponent(artist)}&background=random&color=fff&size=300&font-size=0.33`;
   }
 
   let youtubeUrl = "";
@@ -1123,11 +1179,20 @@ async function addSong(){
       youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`;
   }
 
-  data.pool.push({ id: Date.now().toString(), artist, title, cover, youtubeUrl, favorite: false });
-  save(); render();
+  const newSong = { id: Date.now().toString(), artist, title, cover, youtubeUrl, favorite: false };
+  data.pool.push(newSong);
+  save(); 
+  
+  // Ajout direct dans le DOM sans tout recharger
+  const poolEl = document.getElementById("pool");
+  if(poolEl) {
+      poolEl.appendChild(createCard(newSong));
+  }
+  
   document.getElementById("artistInput").value = "";
   document.getElementById("titleInput").value = "";
   btn.innerText = originalText;
+  filterCards();
 }
 
 function addTier(){
@@ -1161,6 +1226,7 @@ function toggleCompact(){
 
 function toggleDark(){ document.body.classList.toggle("dark"); }
 
+/* --- AJOUT AVEC LA TOUCHE ENTRÉE --- */
 function handleEnter(e) {
     if(e.key === "Enter") {
         addSong();
@@ -1169,6 +1235,7 @@ function handleEnter(e) {
 document.getElementById("artistInput").addEventListener("keypress", handleEnter);
 document.getElementById("titleInput").addEventListener("keypress", handleEnter);
 
+/* --- SCROLL VERS LE HAUT DYNAMIQUE --- */
 window.addEventListener('scroll', () => {
     const btn = document.getElementById("scrollTopBtn");
     if (window.scrollY > 300) {
@@ -1178,6 +1245,7 @@ window.addEventListener('scroll', () => {
     }
 });
 
+/* --- AUTO-SCROLL PENDANT LE DRAG & DROP --- */
 let autoScrollSpeed = 0;
 let autoScrollRAF = null;
 
