@@ -323,22 +323,8 @@ iframe.twitch-iframe {
 }
 
 /* --- RESPONSIVE MOBILE & TABLETTE --- */
-@media (max-width: 1650px) {
-  .sommaire-sidebar { display: none; }
-  
-  /* Twitch sidebar s'intègre au contenu au lieu d'être flottante */
-  .twitch-sidebar {
-    position: relative;
-    top: 0;
-    right: 0;
-    width: 100%;
-    max-width: 700px;
-    height: 400px;
-    margin: 20px auto 0 auto;
-  }
-  .twitch-sidebar.hidden {
-    display: none; /* Cache complètement l'élément pour ne pas créer de vide */
-  }
+@media (max-width: 1750px) {
+  .twitch-sidebar, .sommaire-sidebar { display: none !important; }
 }
 
 @media (max-width: 768px) {
@@ -346,16 +332,17 @@ iframe.twitch-iframe {
   .logo { text-align: center; margin-bottom: 5px; }
   .header-btns { justify-content: center; }
   
-  /* Force la barre de recherche à prendre sa propre ligne propre */
   .search-container { width: 100%; margin-bottom: 10px; }
-  #searchBar { width: 100%; }
-  #searchBar:focus { width: 100%; }
-  .desktop-only { display: none; } /* Cache les séparateurs verticaux sur mobile */
+  #searchBar { width: 100% !important; }
+  .desktop-only { display: none; } 
 
   .input-section { flex-direction: column; margin: 20px auto; }
   .input-section > div { display: none; } 
   .main { padding: 0 10px 240px 10px; }
-  .cards { justify-content: center; gap: 10px; padding: 15px; }
+  
+  /* Ligne corrigée : flex-start remplace center */
+  .cards { justify-content: flex-start; gap: 10px; padding: 15px; }
+  
   .tier-header { font-size: 18px; padding: 12px 15px; flex-direction: column; gap: 10px; align-items: flex-start; }
   .pool-container { width: 95%; padding: 10px; bottom: 10px; }
   .scroll-top-btn { bottom: 110px; right: 15px; } 
@@ -506,12 +493,13 @@ body.edit-active .card-tools button { pointer-events: auto; }
 <header>
   <div class="logo">K-TIER ✨</div>
   
-  <div class="search-container">
-    <input type="text" id="searchBar" placeholder="🔍 Filtrer artiste/titre..." oninput="filterCards()">
-    <span id="clearSearchBtn" onclick="clearSearch()">✖</span>
-  </div>
-
   <div class="header-btns">
+    <div class="search-container">
+      <input type="text" id="searchBar" placeholder="🔍 Filtrer artiste/titre..." oninput="filterCards()">
+      <span id="clearSearchBtn" onclick="clearSearch()">✖</span>
+    </div>
+    <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;" class="desktop-only"></div>
+    
     <button onclick="exportJson()" title="Sauvegarder">💾</button>
     <button onclick="document.getElementById('fileInput').click()" title="Charger">📂</button>
     <button onclick="resetData()" class="btn-danger" title="Tout effacer">🗑️</button>
@@ -559,15 +547,15 @@ body.edit-active .card-tools button { pointer-events: auto; }
   <div id="sommaireList" class="sommaire-list"></div>
 </div>
 
-<div class="main">
-  <div class="twitch-sidebar" id="twitchSidebar">
-    <div class="twitch-header">
-      <span style="color: #bfdbfe;">🟣 Tchat Twitch</span>
-      <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
-    </div>
-    <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
+<div class="twitch-sidebar" id="twitchSidebar">
+  <div class="twitch-header">
+    <span style="color: #bfdbfe;">🟣 Tchat Twitch</span>
+    <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
   </div>
+  <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
+</div>
 
+<div class="main">
   <div class="input-section">
     <input type="text" id="artistInput" placeholder="Artiste (ex: NMIXX)">
     <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
@@ -1136,7 +1124,6 @@ function setupDrop(container, tierId){
     document.body.classList.remove("is-dragging");
     draggedElement.classList.remove("dragging");
     
-    // ANTI-LAG : On libère le navigateur immédiatement et on sauvegarde les données 10ms plus tard
     setTimeout(() => {
         rebuildDataFromDOM();
         save(); 
