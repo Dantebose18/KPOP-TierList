@@ -62,6 +62,8 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap; /* Pour le responsive */
+  gap: 15px;
   background: var(--card-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -78,7 +80,7 @@ header {
   letter-spacing: -0.5px;
 }
 
-.header-btns { display: flex; gap: 8px; align-items: center; }
+.header-btns { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
 /* STYLE BARRE DE RECHERCHE */
 #searchBar {
@@ -195,7 +197,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 .scroll-top-btn:hover { transform: translateY(-5px); background: var(--accent-secondary); }
 
 
-/* --- MAIN LAYOUT : RETOUR AU CENTRAGE PARFAIT --- */
+/* --- MAIN LAYOUT --- */
 .main {
   max-width: 1320px; 
   margin: auto; 
@@ -234,7 +236,9 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 }
 
 .sommaire-item {
-  display: block;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 8px 12px;
   color: var(--text-main);
   text-decoration: none;
@@ -250,7 +254,12 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   background: rgba(255,255,255,0.1);
   transform: translateX(5px);
 }
-
+.sommaire-count {
+  background: rgba(128, 128, 128, 0.2);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+}
 
 /* --- TWITCH SIDEBAR (FLOTTANT À DROITE) --- */
 .twitch-sidebar {
@@ -296,12 +305,13 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   color: var(--text-main);
   padding: 4px 8px;
   border-radius: 6px;
-  width: 120px;
+  width: 100px; /* Réduit pour éviter qu'il soit collé au titre */
+  margin-left: 10px; /* Petite marge d'espacement */
   font-size: 12px;
   transition: all 0.2s;
 }
 .twitch-header input:focus {
-    width: 150px;
+    width: 140px;
     background: rgba(255, 255, 255, 0.2);
     box-shadow: 0 0 0 2px #9146FF;
 }
@@ -312,10 +322,24 @@ iframe.twitch-iframe {
   border: none;
 }
 
+
+/* --- RESPONSIVE MOBILE & TABLETTE --- */
 @media (max-width: 1650px) {
-  .twitch-sidebar, .sommaire-sidebar {
-      display: none; 
-  }
+  .twitch-sidebar, .sommaire-sidebar { display: none; }
+}
+
+@media (max-width: 768px) {
+  header { flex-direction: column; padding: 10px 15px; }
+  .header-btns { justify-content: center; }
+  #searchBar { width: 100%; }
+  #searchBar:focus { width: 100%; }
+  .input-section { flex-direction: column; margin: 20px auto; }
+  .input-section > div { display: none; } /* Cache la barre séparatrice verticale */
+  .main { padding: 0 10px 240px 10px; }
+  .cards { justify-content: center; gap: 10px; padding: 15px; }
+  .tier-header { font-size: 18px; padding: 12px 15px; flex-direction: column; gap: 10px; align-items: flex-start; }
+  .pool-container { width: 95%; padding: 10px; bottom: 10px; }
+  .scroll-top-btn { bottom: 110px; right: 15px; } /* Eviter de cacher la pool */
 }
 
 /* --- TIERS --- */
@@ -341,7 +365,6 @@ iframe.twitch-iframe {
   align-items: center;
   text-shadow: 0 2px 4px rgba(0,0,0,0.2);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
-  
   position: sticky;
   top: 60px; 
   z-index: 40; 
@@ -466,18 +489,18 @@ body.edit-active .card-tools button { pointer-events: auto; }
 <header>
   <div class="logo">K-TIER ✨</div>
   <div class="header-btns">
-    <div style="position: relative; display: flex; align-items: center;">
-      <input type="text" id="searchBar" placeholder="🔍 Filtrer artiste/titre..." oninput="filterCards()" style="padding-right: 25px;">
+    <div style="position: relative; display: flex; align-items: center; width: 100%; max-width: 250px;">
+      <input type="text" id="searchBar" placeholder="🔍 Filtrer artiste/titre..." oninput="filterCards()" style="padding-right: 25px; width: 100%;">
       <span id="clearSearchBtn" onclick="clearSearch()" style="position: absolute; right: 10px; cursor: pointer; display: none; color: var(--text-muted); font-size: 14px;">✖</span>
     </div>
     
-    <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;"></div>
+    <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;" class="desktop-only"></div>
     
     <button onclick="exportJson()" title="Sauvegarder">💾</button>
     <button onclick="document.getElementById('fileInput').click()" title="Charger">📂</button>
     <button onclick="resetData()" class="btn-danger" title="Tout effacer">🗑️</button>
     
-    <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;"></div>
+    <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;" class="desktop-only"></div>
     
     <button onclick="toggleTwitch()" class="icon-btn" title="Afficher/Cacher Tchat Twitch">🟣</button>
     
@@ -557,6 +580,11 @@ let draggedId = null;
 let placeholder = null;
 let twitchVisible = true;
 
+// --- NOUVEAU GÉNÉRATEUR D'ID UNIQUE (Anti-Bug de suppression) ---
+function generateUniqueId() {
+    return Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9);
+}
+
 function defaultData(){
   return {
     tiers:[
@@ -608,6 +636,11 @@ function importJson(input) {
     try {
       const json = JSON.parse(e.target.result);
       if(!json.tiers || !json.pool) throw new Error("Format invalide");
+      
+      // Auto-réparation des vieux IDs pour éviter les bugs futurs
+      json.pool.forEach(s => { if(!s.id.includes('-')) s.id = generateUniqueId(); });
+      json.tiers.forEach(t => { t.songs.forEach(s => { if(!s.id.includes('-')) s.id = generateUniqueId(); }); });
+
       data = json;
       save(); render(); 
       alert("Sauvegarde chargée !");
@@ -754,7 +787,6 @@ function toggleFavorite(id) {
         s.favorite = !s.favorite;
         save();
         
-        // Mise à jour visuelle instantanée pour éviter render()
         const card = document.getElementById(`card-${id}`);
         if(card) {
             card.classList.toggle("is-favorite", s.favorite);
@@ -950,8 +982,9 @@ function render(){
     if(sommaireList) {
         const somItem = document.createElement("div");
         somItem.className = "sommaire-item";
-        somItem.innerText = t.name;
+        somItem.setAttribute("data-tier-id", t.id);
         somItem.style.borderLeftColor = t.color;
+        somItem.innerHTML = `<span>${t.name}</span><span class="sommaire-count">${t.songs.length}</span>`;
         
         somItem.onclick = () => {
             const target = document.getElementById(`tier-node-${t.id}`);
@@ -1048,8 +1081,13 @@ function rebuildDataFromDOM() {
 
 function updateCounters() {
   data.tiers.forEach(t => {
+      // Mise à jour du compteur sur le tier list principal
       const countSpan = document.querySelector(`#tier-node-${t.id} .tier-controls span`);
       if(countSpan) countSpan.innerText = `(${t.songs.length})`;
+      
+      // Mise à jour du compteur dans le sommaire
+      const somCount = document.querySelector(`.sommaire-item[data-tier-id="${t.id}"] .sommaire-count`);
+      if(somCount) somCount.innerText = t.songs.length;
   });
 }
 
@@ -1130,7 +1168,6 @@ function editSong(id){
     s.youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(a + ' ' + t + ' official mv')}`;
     save(); 
     
-    // Modification ciblée pour éviter render()
     const card = document.getElementById(`card-${id}`);
     if (card) {
         const strong = card.querySelector('.card-overlay strong');
@@ -1179,11 +1216,11 @@ async function addSong(){
       youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`;
   }
 
-  const newSong = { id: Date.now().toString(), artist, title, cover, youtubeUrl, favorite: false };
+  // ID ULTRA SECURISE AVEC GENERATEUR
+  const newSong = { id: generateUniqueId(), artist, title, cover, youtubeUrl, favorite: false };
   data.pool.push(newSong);
   save(); 
   
-  // Ajout direct dans le DOM sans tout recharger
   const poolEl = document.getElementById("pool");
   if(poolEl) {
       poolEl.appendChild(createCard(newSong));
@@ -1197,7 +1234,7 @@ async function addSong(){
 
 function addTier(){
   const name = prompt("Nom du Tier ?");
-  if(name) { data.tiers.push({ id: Date.now().toString(), name, color: "#6366f1", songs: [] }); save(); render(); }
+  if(name) { data.tiers.push({ id: generateUniqueId(), name, color: "#6366f1", songs: [] }); save(); render(); }
 }
 
 function toggleEdit(){
@@ -1271,15 +1308,6 @@ document.addEventListener("dragend", () => {
         autoScrollRAF = null;
     }
 });
-
-function doAutoScroll() {
-    if (autoScrollSpeed !== 0) {
-        window.scrollBy(0, autoScrollSpeed);
-        autoScrollRAF = requestAnimationFrame(doAutoScroll);
-    } else {
-        autoScrollRAF = null;
-    }
-}
 
 render();
 setTimeout(syncCovers, 1500); 
