@@ -62,7 +62,7 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap; /* Pour le responsive */
+  flex-wrap: wrap; 
   gap: 15px;
   background: var(--card-bg);
   backdrop-filter: blur(12px);
@@ -80,13 +80,14 @@ header {
   letter-spacing: -0.5px;
 }
 
-.header-btns { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.header-btns { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.search-container { position: relative; display: flex; align-items: center; }
 
 /* STYLE BARRE DE RECHERCHE */
 #searchBar {
   background: rgba(128,128,128,0.1);
   border: var(--card-border);
-  padding: 8px 15px;
+  padding: 8px 25px 8px 15px;
   border-radius: 20px;
   color: var(--text-main);
   width: 160px;
@@ -99,6 +100,7 @@ header {
   box-shadow: 0 0 0 2px var(--accent-primary);
 }
 #searchBar::placeholder { color: var(--text-muted); opacity: 0.7; }
+#clearSearchBtn { position: absolute; right: 10px; cursor: pointer; display: none; color: var(--text-muted); font-size: 14px; }
 
 /* --- BOUTONS --- */
 button {
@@ -196,7 +198,6 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 .scroll-top-btn.visible { opacity: 1; visibility: visible; }
 .scroll-top-btn:hover { transform: translateY(-5px); background: var(--accent-secondary); }
 
-
 /* --- MAIN LAYOUT --- */
 .main {
   max-width: 1320px; 
@@ -284,7 +285,6 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 .twitch-sidebar.hidden {
   opacity: 0;
   visibility: hidden;
-  transform: scale(0.95) translateX(20px); 
   pointer-events: none;
 }
 
@@ -305,8 +305,8 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   color: var(--text-main);
   padding: 4px 8px;
   border-radius: 6px;
-  width: 100px; /* Réduit pour éviter qu'il soit collé au titre */
-  margin-left: 10px; /* Petite marge d'espacement */
+  width: 100px; 
+  margin-left: 10px; 
   font-size: 12px;
   transition: all 0.2s;
 }
@@ -322,24 +322,43 @@ iframe.twitch-iframe {
   border: none;
 }
 
-
 /* --- RESPONSIVE MOBILE & TABLETTE --- */
 @media (max-width: 1650px) {
-  .twitch-sidebar, .sommaire-sidebar { display: none; }
+  .sommaire-sidebar { display: none; }
+  
+  /* Twitch sidebar s'intègre au contenu au lieu d'être flottante */
+  .twitch-sidebar {
+    position: relative;
+    top: 0;
+    right: 0;
+    width: 100%;
+    max-width: 700px;
+    height: 400px;
+    margin: 20px auto 0 auto;
+  }
+  .twitch-sidebar.hidden {
+    display: none; /* Cache complètement l'élément pour ne pas créer de vide */
+  }
 }
 
 @media (max-width: 768px) {
-  header { flex-direction: column; padding: 10px 15px; }
+  header { flex-direction: column; padding: 10px 15px; align-items: stretch; }
+  .logo { text-align: center; margin-bottom: 5px; }
   .header-btns { justify-content: center; }
+  
+  /* Force la barre de recherche à prendre sa propre ligne propre */
+  .search-container { width: 100%; margin-bottom: 10px; }
   #searchBar { width: 100%; }
   #searchBar:focus { width: 100%; }
+  .desktop-only { display: none; } /* Cache les séparateurs verticaux sur mobile */
+
   .input-section { flex-direction: column; margin: 20px auto; }
-  .input-section > div { display: none; } /* Cache la barre séparatrice verticale */
+  .input-section > div { display: none; } 
   .main { padding: 0 10px 240px 10px; }
   .cards { justify-content: center; gap: 10px; padding: 15px; }
   .tier-header { font-size: 18px; padding: 12px 15px; flex-direction: column; gap: 10px; align-items: flex-start; }
   .pool-container { width: 95%; padding: 10px; bottom: 10px; }
-  .scroll-top-btn { bottom: 110px; right: 15px; } /* Eviter de cacher la pool */
+  .scroll-top-btn { bottom: 110px; right: 15px; } 
 }
 
 /* --- TIERS --- */
@@ -385,7 +404,6 @@ iframe.twitch-iframe {
 }
 .tier-controls button:hover { background: rgba(0,0,0,0.4); }
 
-/* COLOR PICKER STYLE */
 .color-picker-wrapper {
   width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.8);
   box-shadow: 0 2px 5px rgba(0,0,0,0.2); overflow: hidden; position: relative; cursor: pointer; transition: transform 0.2s;
@@ -438,7 +456,6 @@ body.compact-active .card:hover .card-overlay { top: auto; bottom: 0; background
 .card-tools button:hover { background: var(--accent-secondary); transform: scale(1.1); }
 .card-tools button.active-fav { color: var(--accent-fav); background: rgba(0,0,0,0.8); border-color: var(--accent-fav); }
 
-/* Placeholder */
 .placeholder { width: 140px; height: 140px; border-radius: var(--radius-md); border: 2px dashed var(--text-muted); background: rgba(100,100,100,0.05); opacity: 0.5; animation: pulse 1.5s infinite; transition: none; pointer-events: none; }
 body.compact-active .placeholder { height: 70px; }
 @keyframes pulse { 0%{opacity:0.3} 50%{opacity:0.6} 100%{opacity:0.3} }
@@ -488,14 +505,13 @@ body.edit-active .card-tools button { pointer-events: auto; }
 
 <header>
   <div class="logo">K-TIER ✨</div>
+  
+  <div class="search-container">
+    <input type="text" id="searchBar" placeholder="🔍 Filtrer artiste/titre..." oninput="filterCards()">
+    <span id="clearSearchBtn" onclick="clearSearch()">✖</span>
+  </div>
+
   <div class="header-btns">
-    <div style="position: relative; display: flex; align-items: center; width: 100%; max-width: 250px;">
-      <input type="text" id="searchBar" placeholder="🔍 Filtrer artiste/titre..." oninput="filterCards()" style="padding-right: 25px; width: 100%;">
-      <span id="clearSearchBtn" onclick="clearSearch()" style="position: absolute; right: 10px; cursor: pointer; display: none; color: var(--text-muted); font-size: 14px;">✖</span>
-    </div>
-    
-    <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;" class="desktop-only"></div>
-    
     <button onclick="exportJson()" title="Sauvegarder">💾</button>
     <button onclick="document.getElementById('fileInput').click()" title="Charger">📂</button>
     <button onclick="resetData()" class="btn-danger" title="Tout effacer">🗑️</button>
@@ -543,15 +559,15 @@ body.edit-active .card-tools button { pointer-events: auto; }
   <div id="sommaireList" class="sommaire-list"></div>
 </div>
 
-<div class="twitch-sidebar" id="twitchSidebar">
-  <div class="twitch-header">
-    <span style="color: #bfdbfe;">🟣 Tchat Twitch</span>
-    <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
-  </div>
-  <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
-</div>
-
 <div class="main">
+  <div class="twitch-sidebar" id="twitchSidebar">
+    <div class="twitch-header">
+      <span style="color: #bfdbfe;">🟣 Tchat Twitch</span>
+      <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
+    </div>
+    <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
+  </div>
+
   <div class="input-section">
     <input type="text" id="artistInput" placeholder="Artiste (ex: NMIXX)">
     <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
@@ -580,7 +596,6 @@ let draggedId = null;
 let placeholder = null;
 let twitchVisible = true;
 
-// --- NOUVEAU GÉNÉRATEUR D'ID UNIQUE (Anti-Bug de suppression) ---
 function generateUniqueId() {
     return Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9);
 }
@@ -637,7 +652,6 @@ function importJson(input) {
       const json = JSON.parse(e.target.result);
       if(!json.tiers || !json.pool) throw new Error("Format invalide");
       
-      // Auto-réparation des vieux IDs pour éviter les bugs futurs
       json.pool.forEach(s => { if(!s.id.includes('-')) s.id = generateUniqueId(); });
       json.tiers.forEach(t => { t.songs.forEach(s => { if(!s.id.includes('-')) s.id = generateUniqueId(); }); });
 
@@ -1059,7 +1073,6 @@ function createCard(song){
   return card;
 }
 
-// Fonction pour reconstruire l'ordre des données sans tout re-render
 function rebuildDataFromDOM() {
   const allSongsMap = {};
   [...data.pool, ...data.tiers.flatMap(t => t.songs)].forEach(s => { allSongsMap[s.id] = s; });
@@ -1081,11 +1094,9 @@ function rebuildDataFromDOM() {
 
 function updateCounters() {
   data.tiers.forEach(t => {
-      // Mise à jour du compteur sur le tier list principal
       const countSpan = document.querySelector(`#tier-node-${t.id} .tier-controls span`);
       if(countSpan) countSpan.innerText = `(${t.songs.length})`;
       
-      // Mise à jour du compteur dans le sommaire
       const somCount = document.querySelector(`.sommaire-item[data-tier-id="${t.id}"] .sommaire-count`);
       if(somCount) somCount.innerText = t.songs.length;
   });
@@ -1113,7 +1124,6 @@ function setupDrop(container, tierId){
     
     const draggedElement = document.getElementById(`card-${draggedId}`);
     
-    // Déplace l'élément directement à sa nouvelle place sans reload visuel global
     if(placeholder && placeholder.parentNode === container) {
         container.insertBefore(draggedElement, placeholder);
         placeholder.remove();
@@ -1122,32 +1132,28 @@ function setupDrop(container, tierId){
         container.appendChild(draggedElement);
     }
 
-    // Met à jour les données instantanément
-    rebuildDataFromDOM();
-
     draggedId = null;
     document.body.classList.remove("is-dragging");
     draggedElement.classList.remove("dragging");
     
-    save(); 
-    updateCounters();
+    // ANTI-LAG : On libère le navigateur immédiatement et on sauvegarde les données 10ms plus tard
+    setTimeout(() => {
+        rebuildDataFromDOM();
+        save(); 
+        updateCounters();
+    }, 10);
   });
 }
 
-function getDragAfterElement(container, x, y){
-  const draggableElements = [...container.querySelectorAll('.card:not(.dragging)')];
-
-  return draggableElements.find(child => {
-    const box = child.getBoundingClientRect();
-    const boxCenterY = box.top + box.height / 2;
-    const boxCenterX = box.left + box.width / 2;
-
-    if (y < box.top) return true;
-    if (y > box.bottom) return false;
-    if (x < boxCenterX) return true;
-
-    return false;
-  });
+function getDragAfterElement(container, x, y) {
+  const cards = container.querySelectorAll('.card:not(.dragging)');
+  for (let i = 0; i < cards.length; i++) {
+      const box = cards[i].getBoundingClientRect();
+      if (y <= box.bottom && x <= box.left + box.width / 2) {
+          return cards[i];
+      }
+  }
+  return null;
 }
 
 function removeSong(id){
@@ -1216,7 +1222,6 @@ async function addSong(){
       youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`;
   }
 
-  // ID ULTRA SECURISE AVEC GENERATEUR
   const newSong = { id: generateUniqueId(), artist, title, cover, youtubeUrl, favorite: false };
   data.pool.push(newSong);
   save(); 
@@ -1263,7 +1268,6 @@ function toggleCompact(){
 
 function toggleDark(){ document.body.classList.toggle("dark"); }
 
-/* --- AJOUT AVEC LA TOUCHE ENTRÉE --- */
 function handleEnter(e) {
     if(e.key === "Enter") {
         addSong();
@@ -1272,7 +1276,6 @@ function handleEnter(e) {
 document.getElementById("artistInput").addEventListener("keypress", handleEnter);
 document.getElementById("titleInput").addEventListener("keypress", handleEnter);
 
-/* --- SCROLL VERS LE HAUT DYNAMIQUE --- */
 window.addEventListener('scroll', () => {
     const btn = document.getElementById("scrollTopBtn");
     if (window.scrollY > 300) {
@@ -1282,7 +1285,6 @@ window.addEventListener('scroll', () => {
     }
 });
 
-/* --- AUTO-SCROLL PENDANT LE DRAG & DROP --- */
 let autoScrollSpeed = 0;
 let autoScrollRAF = null;
 
