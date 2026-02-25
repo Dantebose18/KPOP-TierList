@@ -340,7 +340,6 @@ iframe.twitch-iframe {
   .input-section > div { display: none; } 
   .main { padding: 0 10px 240px 10px; }
   
-  /* Ligne corrigée : flex-start remplace center */
   .cards { justify-content: flex-start; gap: 10px; padding: 15px; }
   
   .tier-header { font-size: 18px; padding: 12px 15px; flex-direction: column; gap: 10px; align-items: flex-start; }
@@ -359,7 +358,28 @@ iframe.twitch-iframe {
   display: flex;
   flex-direction: column;
   scroll-margin-top: 90px; 
+  position: relative; /* Pour positionner l'onglet de déplacement */
 }
+
+/* ONGLET FLÈCHES (MODE ÉDITION) */
+.tier-reorder-tab {
+  position: absolute;
+  right: -38px;
+  top: 20px;
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--card-bg);
+  border: var(--card-border);
+  border-left: none;
+  padding: 10px 6px;
+  border-radius: 0 12px 12px 0;
+  box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+  z-index: 30;
+  backdrop-filter: blur(8px);
+}
+body.edit-active .tier-reorder-tab { display: flex; }
+.tier-reorder-tab button { width: 28px; height: 28px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; border-radius: 6px; }
 
 .tier-header {
   padding: 15px 25px;
@@ -400,11 +420,20 @@ input[type="color"] { position: absolute; top: -50%; left: -50%; width: 200%; he
 
 .cards { display: flex; gap: 16px; padding: 20px; flex-wrap: wrap; min-height: 160px; align-content: flex-start; }
 
-/* --- CARDS --- */
+/* --- CARDS & SÉLECTION --- */
 .card {
   width: 140px; height: 140px; border-radius: var(--radius-md); background-size: cover; background-position: center; position: relative; cursor: grab;
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, height 0.2s ease, background-image 0.5s ease-in;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; border: 1px solid rgba(255,255,255,0.1); background-color: var(--card-bg);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; border: 2px solid rgba(255,255,255,0.1); background-color: var(--card-bg);
+}
+
+body.edit-active .card { cursor: pointer; } /* Pointeur cliquable en mode édition */
+
+/* Effet Carte Sélectionnée (Sélection Multiple) */
+.card.selected {
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.6), inset 0 0 10px rgba(99, 102, 241, 0.3) !important;
+  transform: translateY(-5px);
 }
 
 .card.is-favorite { animation: glow 1.5s infinite alternate; z-index: 10; }
@@ -421,6 +450,7 @@ body.is-dragging .card { transition: none !important; }
 .card.dragging { opacity: 0.4; transform: scale(0.95); grayscale: 100%; pointer-events: none; }
 #tiers .card:hover { transform: scale(1.15) translateY(-5px); z-index: 50; box-shadow: 0 20px 30px rgba(0,0,0,0.25); border-color: var(--accent-secondary); }
 .card.is-favorite:hover { border-color: var(--accent-fav); }
+.card.selected:hover { border-color: var(--accent-primary); }
 
 .card-overlay { position: absolute; bottom: 0; width: 100%; padding: 40px 10px 10px 10px; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%); color: white; font-size: 12px; line-height: 1.3; text-align: center; pointer-events: none; transition: all 0.2s; display: flex; flex-direction: column; justify-content: flex-end; }
 .card-overlay strong { display: block; font-size: 13px; margin-bottom: 2px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
@@ -583,6 +613,8 @@ let compactMode = false;
 let draggedId = null;
 let placeholder = null;
 let twitchVisible = true;
+let currentDragAfter = undefined; // OPTIMISATION MAJEURE
+let selectedIds = new Set(); // SÉLECTION MULTIPLE
 
 function generateUniqueId() {
     return Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9);
@@ -922,6 +954,26 @@ function closeModal(e) {
   if(e.target.classList.contains('modal-overlay')) e.target.style.display = 'none';
 }
 
+function moveTierUp(id) {
+    const index = data.tiers.findIndex(t => t.id === id);
+    if (index > 0) {
+        const temp = data.tiers[index - 1];
+        data.tiers[index - 1] = data.tiers[index];
+        data.tiers[index] = temp;
+        save(); render();
+    }
+}
+
+function moveTierDown(id) {
+    const index = data.tiers.findIndex(t => t.id === id);
+    if (index < data.tiers.length - 1) {
+        const temp = data.tiers[index + 1];
+        data.tiers[index + 1] = data.tiers[index];
+        data.tiers[index] = temp;
+        save(); render();
+    }
+}
+
 function render(){
   const tiersDiv = document.getElementById("tiers");
   tiersDiv.innerHTML = "";
@@ -937,6 +989,15 @@ function render(){
     tier.className = "tier";
     tier.id = `tier-node-${t.id}`; 
     
+    /* ONGLET FLÈCHES (AJOUT) */
+    const reorderTab = document.createElement("div");
+    reorderTab.className = "tier-reorder-tab";
+    reorderTab.innerHTML = `
+        <button onclick="moveTierUp('${t.id}')" title="Monter">▲</button>
+        <button onclick="moveTierDown('${t.id}')" title="Descendre">▼</button>
+    `;
+    tier.appendChild(reorderTab);
+
     const header = document.createElement("div");
     header.className = "tier-header";
     header.style.background = `linear-gradient(90deg, ${t.color}, ${adjustColor(t.color, -40)})`;
@@ -1004,6 +1065,12 @@ function render(){
 
   document.body.classList.toggle("hidden", !editMode);
   filterCards();
+  
+  // Rétablissement visuel des sélections existantes
+  selectedIds.forEach(id => {
+      const el = document.getElementById(`card-${id}`);
+      if(el) el.classList.add('selected');
+  });
 }
 
 function adjustColor(color, amount) {
@@ -1016,23 +1083,59 @@ function createCard(song){
   card.id = `card-${song.id}`;
   
   if(song.favorite) card.classList.add("is-favorite"); 
+  if(selectedIds.has(song.id)) card.classList.add("selected");
   
   card.draggable = true;
   card.style.backgroundImage = `url(${song.cover})`;
 
-  card.onclick = () => { if(!editMode) window.open(song.youtubeUrl, '_blank'); };
+  // LOGIQUE SÉLECTION MULTIPLE OU REDIRECTION YOUTUBE
+  card.onclick = (e) => { 
+      if(!editMode) {
+          window.open(song.youtubeUrl, '_blank'); 
+      } else {
+          // Mode Édition : Sélectionner la carte
+          if(selectedIds.has(song.id)) {
+              selectedIds.delete(song.id);
+              card.classList.remove('selected');
+          } else {
+              selectedIds.add(song.id);
+              card.classList.add('selected');
+          }
+      }
+  };
 
-  card.addEventListener("dragstart", () => {
+  card.addEventListener("dragstart", (e) => {
+    // Si la carte qu'on attrape n'était pas sélectionnée, on désélectionne les autres
+    if (!selectedIds.has(song.id)) {
+        selectedIds.clear();
+        document.querySelectorAll('.card.selected').forEach(c => c.classList.remove('selected'));
+        selectedIds.add(song.id);
+        card.classList.add('selected');
+    }
+
     draggedId = song.id;
     document.body.classList.add("is-dragging");
-    setTimeout(() => card.classList.add("dragging"), 0);
+    
+    // Mettre l'effet drag sur TOUTES les cartes sélectionnées
+    selectedIds.forEach(id => {
+        const c = document.getElementById(`card-${id}`);
+        if(c) setTimeout(() => c.classList.add("dragging"), 0);
+    });
   });
 
   card.addEventListener("dragend", () => {
     document.body.classList.remove("is-dragging");
-    card.classList.remove("dragging");
+    selectedIds.forEach(id => {
+        const c = document.getElementById(`card-${id}`);
+        if(c) {
+            c.classList.remove("dragging", "selected");
+        }
+    });
+    selectedIds.clear();
+    
     if(placeholder) placeholder.remove();
     draggedId = null;
+    currentDragAfter = undefined;
   });
 
   card.innerHTML = `
@@ -1093,7 +1196,7 @@ function updateCounters() {
 function setupDrop(container, tierId){
   container.addEventListener("dragover", e => {
     e.preventDefault();
-    if(!draggedId) return;
+    if(selectedIds.size === 0 && !draggedId) return;
     if(e.target.classList.contains('placeholder') || e.target.classList.contains('dragging')) return;
 
     if(!placeholder) { 
@@ -1102,27 +1205,47 @@ function setupDrop(container, tierId){
     }
     
     const after = getDragAfterElement(container, e.clientX, e.clientY);
-    if(after == null) container.appendChild(placeholder);
-    else container.insertBefore(placeholder, after);
+    
+    // ANTI-LAG ABSOLU : On ne manipule le DOM QUE si la position change vraiment
+    if (after !== currentDragAfter) {
+        currentDragAfter = after;
+        if(after == null) container.appendChild(placeholder);
+        else container.insertBefore(placeholder, after);
+    }
   });
 
   container.addEventListener("drop", e => {
     e.preventDefault();
-    if(!draggedId) return;
+    if(selectedIds.size === 0) return;
     
-    const draggedElement = document.getElementById(`card-${draggedId}`);
-    
+    // Déplace TOUTES les cartes sélectionnées en une seule fois pour éviter le lag
+    const fragment = document.createDocumentFragment();
+    selectedIds.forEach(id => {
+        const draggedElement = document.getElementById(`card-${id}`);
+        if(draggedElement) {
+            fragment.appendChild(draggedElement);
+        }
+    });
+
     if(placeholder && placeholder.parentNode === container) {
-        container.insertBefore(draggedElement, placeholder);
+        container.insertBefore(fragment, placeholder);
         placeholder.remove();
         placeholder = null;
     } else {
-        container.appendChild(draggedElement);
+        container.appendChild(fragment);
     }
 
-    draggedId = null;
     document.body.classList.remove("is-dragging");
-    draggedElement.classList.remove("dragging");
+    
+    // Nettoyage visuel de la sélection
+    selectedIds.forEach(id => {
+        const c = document.getElementById(`card-${id}`);
+        if(c) c.classList.remove("dragging", "selected");
+    });
+    selectedIds.clear();
+    
+    draggedId = null;
+    currentDragAfter = undefined;
     
     setTimeout(() => {
         rebuildDataFromDOM();
@@ -1134,13 +1257,22 @@ function setupDrop(container, tierId){
 
 function getDragAfterElement(container, x, y) {
   const cards = container.querySelectorAll('.card:not(.dragging)');
+  let closest = null;
+  let closestDistance = Number.POSITIVE_INFINITY;
+
+  // Calcul mathématique allégé pour trouver où on est
   for (let i = 0; i < cards.length; i++) {
       const box = cards[i].getBoundingClientRect();
-      if (y <= box.bottom && x <= box.left + box.width / 2) {
-          return cards[i];
+      // On vérifie d'abord si on est sur la même ligne
+      if (y >= box.top && y <= box.bottom) {
+          const distance = x - (box.left + box.width / 2);
+          if (distance < 0 && Math.abs(distance) < closestDistance) {
+              closestDistance = Math.abs(distance);
+              closest = cards[i];
+          }
       }
   }
-  return null;
+  return closest;
 }
 
 function removeSong(id){
@@ -1232,6 +1364,16 @@ function addTier(){
 function toggleEdit(){
   editMode = !editMode;
   const btn = document.getElementById("editBtn");
+  
+  // Désélectionner toutes les cartes quand on quitte le mode édition
+  if (!editMode) {
+      selectedIds.forEach(id => {
+          const c = document.getElementById(`card-${id}`);
+          if(c) c.classList.remove('selected');
+      });
+      selectedIds.clear();
+  }
+  
   if(editMode) {
       btn.innerHTML = "✅";
       btn.style.background = "var(--accent-secondary)";
