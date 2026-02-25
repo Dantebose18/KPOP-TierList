@@ -358,7 +358,7 @@ iframe.twitch-iframe {
   display: flex;
   flex-direction: column;
   scroll-margin-top: 90px; 
-  position: relative; /* Pour positionner l'onglet de déplacement */
+  position: relative; 
 }
 
 /* ONGLET FLÈCHES (MODE ÉDITION) */
@@ -427,9 +427,8 @@ input[type="color"] { position: absolute; top: -50%; left: -50%; width: 200%; he
   box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; border: 2px solid rgba(255,255,255,0.1); background-color: var(--card-bg);
 }
 
-body.edit-active .card { cursor: pointer; } /* Pointeur cliquable en mode édition */
+body.edit-active .card { cursor: pointer; } 
 
-/* Effet Carte Sélectionnée (Sélection Multiple) */
 .card.selected {
   border-color: var(--accent-primary) !important;
   box-shadow: 0 0 20px rgba(99, 102, 241, 0.6), inset 0 0 10px rgba(99, 102, 241, 0.3) !important;
@@ -506,6 +505,10 @@ body.compact-active .placeholder { height: 70px; }
 .rank-item.flop .rank-pos { color: #ef4444; }
 .rank-item.flop .rank-avg { background: #ef4444; }
 
+/* Jauge de stats */
+.stat-bar-container { width: 100%; height: 6px; background: rgba(128,128,128,0.2); border-radius: 3px; overflow: hidden; margin-top: 4px; display: flex; }
+.stat-bar-fill { height: 100%; }
+
 .fav-list-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(255,255,255,0.05); margin-bottom: 8px; border-radius: 8px; border: 1px solid transparent; }
 .fav-list-item:hover { border-color: var(--accent-fav); background: rgba(236, 72, 153, 0.05); }
 .fav-thumb { width: 40px; height: 40px; border-radius: 6px; background-size: cover; }
@@ -540,7 +543,10 @@ body.edit-active .card-tools button { pointer-events: auto; }
     
     <button onclick="forceSync()" class="icon-btn" title="Relancer recherche d'images">🔄</button>
     <button onclick="showFavorites()" class="icon-btn" title="Mes Favoris" style="color:var(--accent-fav)">❤</button>
+    
     <button onclick="showStats()" class="icon-btn" title="Statistiques">📊</button>
+    <button onclick="showAllArtists()" class="icon-btn" title="Liste Complète des Artistes">📑 Liste Complète</button>
+
     <button onclick="toggleCompact()" id="compactBtn" class="icon-btn" title="Vue Compacte">☰</button>
     <button onclick="toggleEdit()" id="editBtn" class="icon-btn" title="Mode Édition">✏️</button>
     <button onclick="addTier()" class="icon-btn">➕ Tier</button>
@@ -552,10 +558,21 @@ body.edit-active .card-tools button { pointer-events: auto; }
 
 <div id="statsModal" class="modal-overlay" onclick="closeModal(event)">
   <div class="modal-content">
-    <h2>Classement</h2>
+    <h2>Classement & Stats</h2>
     <div id="statsBody"></div>
     <div style="margin-top: 20px; text-align: right;">
       <button onclick="document.getElementById('statsModal').style.display='none'">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<div id="allArtistsModal" class="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-content">
+    <h2>Tous les Artistes</h2>
+    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">Classés par moyenne pondérée (qualité + quantité)</div>
+    <div id="allArtistsBody"></div>
+    <div style="margin-top: 20px; text-align: right;">
+      <button onclick="document.getElementById('allArtistsModal').style.display='none'">Fermer</button>
     </div>
   </div>
 </div>
@@ -613,8 +630,8 @@ let compactMode = false;
 let draggedId = null;
 let placeholder = null;
 let twitchVisible = true;
-let currentDragAfter = undefined; // OPTIMISATION MAJEURE
-let selectedIds = new Set(); // SÉLECTION MULTIPLE
+let currentDragAfter = undefined; 
+let selectedIds = new Set(); 
 
 function generateUniqueId() {
     return Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9);
@@ -861,10 +878,8 @@ function showFavorites() {
     modal.style.display = 'flex';
 }
 
-function showStats() {
-  const modal = document.getElementById('statsModal');
-  const body = document.getElementById('statsBody');
-  
+// Fonction utilitaire pour calculer le classement
+function calculateRankings() {
   let totalSongs = 0;
   let totalGlobalScore = 0;
   let artistStats = {};
@@ -906,23 +921,59 @@ function showStats() {
   });
 
   rankings.sort((a, b) => b.score - a.score);
+  return { rankings, totalSongs, uniqueArtists: Object.keys(artistStats).length + (data.pool.length > 0 ? 1 : 0), artistStats };
+}
+
+function showStats() {
+  const modal = document.getElementById('statsModal');
+  const body = document.getElementById('statsBody');
   
+  const { rankings, totalSongs, uniqueArtists } = calculateRankings();
+  
+  // STATS DRÔLES ET PERTINENTES
   const top3 = rankings.slice(0, 3);
   let flop3 = [];
   if (rankings.length > 3) {
       flop3 = rankings.slice(-3).reverse(); 
   }
+  
+  // Calcul du plus productif
+  const mostProductive = rankings.reduce((prev, current) => (prev.count > current.count) ? prev : current, {name:'-', count:0});
 
-  const allLowerArtists = [
-      ...Object.keys(artistStats),
-      ...data.pool.map(s => s.artist.trim().toLowerCase())
-  ];
-  const uniqueArtists = new Set(allLowerArtists).size;
+  // Calcul Générosité (S+A / Total)
+  let topTierCount = 0;
+  let tierCountsHTML = "";
+  data.tiers.forEach(t => {
+      const isTop = t.id === "S" || t.id === "A"; // Simple heuristic
+      if(isTop) topTierCount += t.songs.length;
+      
+      const pct = totalSongs > 0 ? (t.songs.length / totalSongs * 100).toFixed(0) : 0;
+      tierCountsHTML += `
+        <div style="display:flex; align-items:center; margin-bottom:4px; font-size:11px;">
+            <div style="width:30px; font-weight:bold;">${t.name.split(' ')[0]}</div>
+            <div class="stat-bar-container" style="flex:1;">
+                <div class="stat-bar-fill" style="width:${pct}%; background:${t.color};"></div>
+            </div>
+            <div style="width:40px; text-align:right;">${t.songs.length}</div>
+        </div>
+      `;
+  });
+  
+  const generosity = totalSongs > 0 ? Math.round((topTierCount / totalSongs) * 100) : 0;
+  let generosityComment = "Équilibré.";
+  if(generosity > 60) generosityComment = "Très (trop ?) gentil !";
+  if(generosity < 20) generosityComment = "Juge impitoyable.";
 
   let html = `
     <div class="stat-row"><strong>Total Chansons :</strong> <span>${totalSongs}</span></div>
     <div class="stat-row"><strong>Artistes :</strong> <span>${uniqueArtists}</span></div>
-    <div style="font-size:11px; color:var(--text-muted); text-align:right; margin-bottom:15px;">*Classement ajusté selon la régularité des artistes</div>
+    <div class="stat-row"><strong>Générosité :</strong> <span>${generosity}% (${generosityComment})</span></div>
+    <div class="stat-row"><strong>Stakhanoviste :</strong> <span>${mostProductive.name} (${mostProductive.count} sons)</span></div>
+    
+    <div class="stat-section">
+      <div class="stat-title">📊 Répartition</div>
+      ${tierCountsHTML}
+    </div>
     
     <div class="stat-section">
       <div class="stat-title">🔥 TOP 3 - L'ÉLITE</div>
@@ -948,6 +999,34 @@ function showStats() {
   `;
   body.innerHTML = html;
   modal.style.display = 'flex';
+}
+
+function showAllArtists() {
+    const modal = document.getElementById('allArtistsModal');
+    const body = document.getElementById('allArtistsBody');
+    
+    const { rankings } = calculateRankings();
+    
+    if(rankings.length === 0) {
+        body.innerHTML = '<div style="opacity:0.5; text-align:center;">Aucune donnée de classement disponible.</div>';
+    } else {
+        let html = '';
+        rankings.forEach((r, i) => {
+            let colorClass = "";
+            if(i < 3) colorClass = "top";
+            
+            html += `
+            <div class="rank-item ${colorClass}" style="margin-bottom:5px;">
+              <span class="rank-pos" style="font-size:12px; width:30px; opacity:0.7;">#${i+1}</span>
+              <span class="rank-name">${r.name}</span>
+              <span class="rank-avg" style="background:rgba(255,255,255,0.1); color:var(--text-main);">${r.avg} ★</span>
+              <span style="font-size:11px; opacity:0.5; width:40px; text-align:right;">${r.count} 🎵</span>
+            </div>`;
+        });
+        body.innerHTML = html;
+    }
+    
+    modal.style.display = 'flex';
 }
 
 function closeModal(e) {
@@ -989,7 +1068,6 @@ function render(){
     tier.className = "tier";
     tier.id = `tier-node-${t.id}`; 
     
-    /* ONGLET FLÈCHES (AJOUT) */
     const reorderTab = document.createElement("div");
     reorderTab.className = "tier-reorder-tab";
     reorderTab.innerHTML = `
@@ -1066,7 +1144,6 @@ function render(){
   document.body.classList.toggle("hidden", !editMode);
   filterCards();
   
-  // Rétablissement visuel des sélections existantes
   selectedIds.forEach(id => {
       const el = document.getElementById(`card-${id}`);
       if(el) el.classList.add('selected');
@@ -1088,12 +1165,10 @@ function createCard(song){
   card.draggable = true;
   card.style.backgroundImage = `url(${song.cover})`;
 
-  // LOGIQUE SÉLECTION MULTIPLE OU REDIRECTION YOUTUBE
   card.onclick = (e) => { 
       if(!editMode) {
           window.open(song.youtubeUrl, '_blank'); 
       } else {
-          // Mode Édition : Sélectionner la carte
           if(selectedIds.has(song.id)) {
               selectedIds.delete(song.id);
               card.classList.remove('selected');
@@ -1105,7 +1180,6 @@ function createCard(song){
   };
 
   card.addEventListener("dragstart", (e) => {
-    // Si la carte qu'on attrape n'était pas sélectionnée, on désélectionne les autres
     if (!selectedIds.has(song.id)) {
         selectedIds.clear();
         document.querySelectorAll('.card.selected').forEach(c => c.classList.remove('selected'));
@@ -1116,7 +1190,6 @@ function createCard(song){
     draggedId = song.id;
     document.body.classList.add("is-dragging");
     
-    // Mettre l'effet drag sur TOUTES les cartes sélectionnées
     selectedIds.forEach(id => {
         const c = document.getElementById(`card-${id}`);
         if(c) setTimeout(() => c.classList.add("dragging"), 0);
@@ -1206,7 +1279,6 @@ function setupDrop(container, tierId){
     
     const after = getDragAfterElement(container, e.clientX, e.clientY);
     
-    // ANTI-LAG ABSOLU : On ne manipule le DOM QUE si la position change vraiment
     if (after !== currentDragAfter) {
         currentDragAfter = after;
         if(after == null) container.appendChild(placeholder);
@@ -1218,7 +1290,6 @@ function setupDrop(container, tierId){
     e.preventDefault();
     if(selectedIds.size === 0) return;
     
-    // Déplace TOUTES les cartes sélectionnées en une seule fois pour éviter le lag
     const fragment = document.createDocumentFragment();
     selectedIds.forEach(id => {
         const draggedElement = document.getElementById(`card-${id}`);
@@ -1237,7 +1308,6 @@ function setupDrop(container, tierId){
 
     document.body.classList.remove("is-dragging");
     
-    // Nettoyage visuel de la sélection
     selectedIds.forEach(id => {
         const c = document.getElementById(`card-${id}`);
         if(c) c.classList.remove("dragging", "selected");
@@ -1260,10 +1330,8 @@ function getDragAfterElement(container, x, y) {
   let closest = null;
   let closestDistance = Number.POSITIVE_INFINITY;
 
-  // Calcul mathématique allégé pour trouver où on est
   for (let i = 0; i < cards.length; i++) {
       const box = cards[i].getBoundingClientRect();
-      // On vérifie d'abord si on est sur la même ligne
       if (y >= box.top && y <= box.bottom) {
           const distance = x - (box.left + box.width / 2);
           if (distance < 0 && Math.abs(distance) < closestDistance) {
@@ -1365,7 +1433,6 @@ function toggleEdit(){
   editMode = !editMode;
   const btn = document.getElementById("editBtn");
   
-  // Désélectionner toutes les cartes quand on quitte le mode édition
   if (!editMode) {
       selectedIds.forEach(id => {
           const c = document.getElementById(`card-${id}`);
@@ -1439,6 +1506,15 @@ document.addEventListener("dragend", () => {
         autoScrollRAF = null;
     }
 });
+
+function doAutoScroll() {
+    if (autoScrollSpeed !== 0) {
+        window.scrollBy(0, autoScrollSpeed);
+        autoScrollRAF = requestAnimationFrame(doAutoScroll);
+    } else {
+        autoScrollRAF = null;
+    }
+}
 
 render();
 setTimeout(syncCovers, 1500); 
