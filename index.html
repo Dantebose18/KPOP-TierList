@@ -322,7 +322,7 @@ iframe.twitch-iframe {
   border: none;
 }
 
-/* --- RESPONSIVE MOBILE & TABLETTE --- */
+/* --- RESPONSIVE --- */
 @media (max-width: 1750px) {
   .twitch-sidebar, .sommaire-sidebar { display: none !important; }
 }
@@ -519,6 +519,13 @@ body.compact-active .placeholder { height: 70px; }
 .hidden .card-tools, .hidden .tier-controls { display: none !important; }
 body.edit-active .card-tools { opacity: 1; pointer-events: none; }
 body.edit-active .card-tools button { pointer-events: auto; }
+
+/* Session Stats Blocks */
+.session-card { background: rgba(128,128,128,0.05); border-radius: 8px; padding: 10px; margin-bottom: 8px; border-left: 3px solid var(--accent-primary); }
+.session-card.best { border-left-color: #10b981; }
+.session-card.worst { border-left-color: #ef4444; }
+.session-date { font-size: 11px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+.session-data { font-size: 14px; font-weight: 600; margin-top: 2px; }
 </style>
 </head>
 <body class="dark">
@@ -545,7 +552,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
     <button onclick="showFavorites()" class="icon-btn" title="Mes Favoris" style="color:var(--accent-fav)">❤</button>
     
     <button onclick="showStats()" class="icon-btn" title="Statistiques">📊</button>
-    <button onclick="showAllArtists()" class="icon-btn" title="Liste Complète des Artistes">📑 Liste Complète</button>
+    <button onclick="showAllArtists()" class="icon-btn" title="Liste Complète des Artistes">📑</button>
 
     <button onclick="toggleCompact()" id="compactBtn" class="icon-btn" title="Vue Compacte">☰</button>
     <button onclick="toggleEdit()" id="editBtn" class="icon-btn" title="Mode Édition">✏️</button>
@@ -569,7 +576,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
 <div id="allArtistsModal" class="modal-overlay" onclick="closeModal(event)">
   <div class="modal-content">
     <h2>Tous les Artistes</h2>
-    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">Classés par moyenne pondérée (qualité + quantité)</div>
+    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">Le classement est basé sur un <strong>Score Global</strong> récompensant la quantité ET la qualité des titres placés.</div>
     <div id="allArtistsBody"></div>
     <div style="margin-top: 20px; text-align: right;">
       <button onclick="document.getElementById('allArtistsModal').style.display='none'">Fermer</button>
@@ -635,6 +642,10 @@ let selectedIds = new Set();
 
 function generateUniqueId() {
     return Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9);
+}
+
+function getTodaySessionId() {
+    return new Date().toLocaleDateString('fr-FR');
 }
 
 function defaultData(){
@@ -878,73 +889,88 @@ function showFavorites() {
     modal.style.display = 'flex';
 }
 
-// Fonction utilitaire pour calculer le classement
 function calculateRankings() {
   let totalSongs = 0;
-  let totalGlobalScore = 0;
   let artistStats = {};
-  const maxScore = data.tiers.length;
+  let sessionStats = {};
+  const maxTierPoints = data.tiers.length * 10; 
   
   data.tiers.forEach((tier, index) => {
-    const score = maxScore - index; 
+    // Ex: 4 tiers -> S=40pts, A=30pts, B=20pts, C=10pts
+    const pointsForTier = maxTierPoints - (index * 10); 
+    const scoreForAverage = data.tiers.length - index; 
+
     tier.songs.forEach(song => {
       totalSongs++;
-      totalGlobalScore += score;
       
       const rawName = song.artist.trim();
       const lowerName = rawName.toLowerCase(); 
       
       if(!artistStats[lowerName]) {
-          artistStats[lowerName] = { total: 0, count: 0, displayName: rawName.toUpperCase() };
+          artistStats[lowerName] = { totalPoints: 0, sumScoreAvg: 0, count: 0, displayName: rawName.toUpperCase() };
       }
       
-      artistStats[lowerName].total += score;
+      artistStats[lowerName].totalPoints += pointsForTier;
+      artistStats[lowerName].sumScoreAvg += scoreForAverage;
       artistStats[lowerName].count++;
+      
+      // -- STATS DE SESSION --
+      if(song.sessionId) {
+          if(!sessionStats[song.sessionId]) {
+              sessionStats[song.sessionId] = { totalPoints: 0, sumScoreAvg: 0, count: 0 };
+          }
+          sessionStats[song.sessionId].totalPoints += pointsForTier;
+          sessionStats[song.sessionId].sumScoreAvg += scoreForAverage;
+          sessionStats[song.sessionId].count++;
+      }
     });
   });
-  data.pool.forEach(song => { totalSongs++; });
+  
+  data.pool.forEach(song => { 
+      totalSongs++; 
+      // Les musiques du pool ne comptent pas pour les stats car non classées
+  });
 
-  const minimumSongs = 2; 
-  const globalAverage = totalSongs > 0 ? (totalGlobalScore / totalSongs) : 0;
-
+  // Classement principal basé sur les POINTS (Régularité + Quantité)
   let rankings = Object.keys(artistStats).map(key => {
-    const trueAvg = artistStats[key].total / artistStats[key].count;
     const count = artistStats[key].count;
-    const bayesianScore = ((count / (count + minimumSongs)) * trueAvg) + ((minimumSongs / (count + minimumSongs)) * globalAverage);
-
+    const avg = artistStats[key].sumScoreAvg / count;
+    
     return {
       name: artistStats[key].displayName, 
-      avg: trueAvg.toFixed(2),
-      count: count,
-      score: bayesianScore 
+      points: artistStats[key].totalPoints,
+      avg: avg.toFixed(1),
+      count: count
     };
   });
 
-  rankings.sort((a, b) => b.score - a.score);
-  return { rankings, totalSongs, uniqueArtists: Object.keys(artistStats).length + (data.pool.length > 0 ? 1 : 0), artistStats };
+  // Tri par points puis par moyenne
+  rankings.sort((a, b) => {
+      if(b.points !== a.points) return b.points - a.points;
+      return b.avg - a.avg;
+  });
+
+  return { rankings, totalSongs, uniqueArtists: Object.keys(artistStats).length + (data.pool.length > 0 && Object.keys(artistStats).length === 0 ? 1 : 0), artistStats, sessionStats };
 }
 
 function showStats() {
   const modal = document.getElementById('statsModal');
   const body = document.getElementById('statsBody');
   
-  const { rankings, totalSongs, uniqueArtists } = calculateRankings();
+  const { rankings, totalSongs, uniqueArtists, sessionStats } = calculateRankings();
   
-  // STATS DRÔLES ET PERTINENTES
   const top3 = rankings.slice(0, 3);
   let flop3 = [];
   if (rankings.length > 3) {
       flop3 = rankings.slice(-3).reverse(); 
   }
   
-  // Calcul du plus productif
   const mostProductive = rankings.reduce((prev, current) => (prev.count > current.count) ? prev : current, {name:'-', count:0});
 
-  // Calcul Générosité (S+A / Total)
   let topTierCount = 0;
   let tierCountsHTML = "";
   data.tiers.forEach(t => {
-      const isTop = t.id === "S" || t.id === "A"; // Simple heuristic
+      const isTop = t.id === data.tiers[0]?.id || t.id === data.tiers[1]?.id; 
       if(isTop) topTierCount += t.songs.length;
       
       const pct = totalSongs > 0 ? (t.songs.length / totalSongs * 100).toFixed(0) : 0;
@@ -964,15 +990,48 @@ function showStats() {
   if(generosity > 60) generosityComment = "Très (trop ?) gentil !";
   if(generosity < 20) generosityComment = "Juge impitoyable.";
 
+  // ANALYSE DES SESSIONS
+  const todayId = getTodaySessionId();
+  let bestSess = { id: '-', avg: 0, count: 0 };
+  let worstSess = { id: '-', avg: 99, count: 0 };
+  
+  Object.keys(sessionStats).forEach(sid => {
+      const s = sessionStats[sid];
+      if(s.count >= 3) { // Minimum 3 chansons pour juger une session
+          const avg = s.sumScoreAvg / s.count;
+          if(avg > bestSess.avg) bestSess = { id: sid, avg: avg, count: s.count };
+          if(avg < worstSess.avg) worstSess = { id: sid, avg: avg, count: s.count };
+      }
+  });
+
+  const todayData = sessionStats[todayId] || { count: 0, sumScoreAvg: 0 };
+  const todayAvg = todayData.count > 0 ? (todayData.sumScoreAvg / todayData.count).toFixed(1) : '-';
+
   let html = `
     <div class="stat-row"><strong>Total Chansons :</strong> <span>${totalSongs}</span></div>
     <div class="stat-row"><strong>Artistes :</strong> <span>${uniqueArtists}</span></div>
     <div class="stat-row"><strong>Générosité :</strong> <span>${generosity}% (${generosityComment})</span></div>
-    <div class="stat-row"><strong>Stakhanoviste :</strong> <span>${mostProductive.name} (${mostProductive.count} sons)</span></div>
+    <div class="stat-row"><strong>Artiste le plus présent :</strong> <span>${mostProductive.name} (${mostProductive.count} sons)</span></div>
     
     <div class="stat-section">
-      <div class="stat-title">📊 Répartition</div>
+      <div class="stat-title">📊 Répartition par Catégorie</div>
       ${tierCountsHTML}
+    </div>
+
+    <div class="stat-section">
+      <div class="stat-title">⏱️ Statistiques de Sessions</div>
+      <div class="session-card">
+          <div class="session-date">Session du jour (${todayId})</div>
+          <div class="session-data">${todayData.count} titres classés (Moyenne : ${todayAvg} ★)</div>
+      </div>
+      <div class="session-card best">
+          <div class="session-date">Session la plus généreuse</div>
+          <div class="session-data">${bestSess.id !== '-' ? bestSess.id : 'N/A'} : ${bestSess.avg.toFixed(1)} ★ <small>(${bestSess.count} titres)</small></div>
+      </div>
+      <div class="session-card worst">
+          <div class="session-date">Session la plus sévère</div>
+          <div class="session-data">${worstSess.id !== '-' ? worstSess.id : 'N/A'} : ${worstSess.avg.toFixed(1)} ★ <small>(${worstSess.count} titres)</small></div>
+      </div>
     </div>
     
     <div class="stat-section">
@@ -981,7 +1040,7 @@ function showStats() {
         <div class="rank-item top">
           <span class="rank-pos">#${i+1}</span>
           <span class="rank-name">${r.name}</span>
-          <span class="rank-avg">${r.avg} ★ <small>(${r.count} 🎵)</small></span>
+          <span class="rank-avg">${r.points} pts <small>(${r.avg} ★)</small></span>
         </div>
       `).join('') : '<div style="opacity:0.5; font-size:13px">Pas assez de données.</div>'}
     </div>
@@ -992,7 +1051,7 @@ function showStats() {
         <div class="rank-item flop">
           <span class="rank-pos">#${i+1}</span>
           <span class="rank-name">${r.name}</span>
-          <span class="rank-avg">${r.avg} ★ <small>(${r.count} 🎵)</small></span>
+          <span class="rank-avg">${r.points} pts <small>(${r.avg} ★)</small></span>
         </div>
       `).join('') : '<div style="opacity:0.5; font-size:13px">Tout le monde est bon.</div>'}
     </div>
@@ -1019,8 +1078,8 @@ function showAllArtists() {
             <div class="rank-item ${colorClass}" style="margin-bottom:5px;">
               <span class="rank-pos" style="font-size:12px; width:30px; opacity:0.7;">#${i+1}</span>
               <span class="rank-name">${r.name}</span>
-              <span class="rank-avg" style="background:rgba(255,255,255,0.1); color:var(--text-main);">${r.avg} ★</span>
-              <span style="font-size:11px; opacity:0.5; width:40px; text-align:right;">${r.count} 🎵</span>
+              <span class="rank-avg" style="background:var(--accent-gradient); color:white;">${r.points} pts</span>
+              <span style="font-size:11px; opacity:0.6; width:50px; text-align:right;">${r.count} 🎵</span>
             </div>`;
         });
         body.innerHTML = html;
@@ -1409,7 +1468,7 @@ async function addSong(){
       youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`;
   }
 
-  const newSong = { id: generateUniqueId(), artist, title, cover, youtubeUrl, favorite: false };
+  const newSong = { id: generateUniqueId(), artist, title, cover, youtubeUrl, favorite: false, sessionId: getTodaySessionId() };
   data.pool.push(newSong);
   save(); 
   
