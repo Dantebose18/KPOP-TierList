@@ -614,7 +614,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
 <div id="allArtistsModal" class="modal-overlay" onclick="closeModal(event)">
   <div class="modal-content">
     <h2>Tous les Artistes</h2>
-    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 5px;">Moyenne pondérée bayésienne (Qualité ajustée à la Quantité). Note max : 10.</div>
+    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 5px;">Score hybride sur 100 (Moyenne Bayésienne ajustée + Bonus de qualité). Récompense la régularité.</div>
     <div class="modal-body-scroll" id="allArtistsBody"></div>
     <div style="margin-top: 15px; text-align: right;">
       <button onclick="document.getElementById('allArtistsModal').style.display='none'">Fermer</button>
@@ -938,8 +938,11 @@ function calculateRankings() {
   const maxScore = Math.max(1, data.tiers.length); 
   
   data.tiers.forEach((tier, index) => {
-    // Calcul de la note sur 10. Si 4 tiers : S=10, A=7.5, B=5, C=2.5
+    // Calcul de la note pure sur 10 
     const scoreOutOf10 = ((maxScore - index) / maxScore) * 10; 
+    
+    // NOUVEAU SYSTÈME HYBRIDE : Le Bonus de Qualité (10 => +10, 6 => +2, 5 => 0)
+    const bonus = (scoreOutOf10 - 5) * 2; 
 
     tier.songs.forEach(song => {
       totalSongs++;
@@ -950,10 +953,11 @@ function calculateRankings() {
       const lowerName = rawName.toLowerCase(); 
       
       if(!artistStats[lowerName]) {
-          artistStats[lowerName] = { sumScore: 0, count: 0, displayName: rawName.toUpperCase() };
+          artistStats[lowerName] = { sumScore: 0, count: 0, totalBonus: 0, displayName: rawName.toUpperCase() };
       }
       
       artistStats[lowerName].sumScore += scoreOutOf10;
+      artistStats[lowerName].totalBonus += bonus; // Accumulation des bonus
       artistStats[lowerName].count++;
       
       // -- STATS DE SESSION --
@@ -969,28 +973,40 @@ function calculateRankings() {
   
   data.pool.forEach(song => { totalSongs++; });
 
-  // Calcul de la moyenne globale de toutes les chansons (mu)
-  const mu = placedSongsCount > 0 ? (totalGlobalScore / placedSongsCount) : 0;
-  const k = 3; // Paramètre de sévérité
+  // Moyenne de l'univers entier des chansons (mu)
+  const mu = placedSongsCount > 0 ? (totalGlobalScore / placedSongsCount) : 5;
+  const k = 3; // Coefficient de sévérité bayésien
 
-  // Calcul Formule Bayésienne
   let rankings = Object.keys(artistStats).map(key => {
     const n = artistStats[key].count;
     const x_bar = artistStats[key].sumScore / n; // Moyenne pure de l'artiste
     
-    // Formule : Score = [n / (n+k)] * x_bar  +  [k / (n+k)] * mu
+    // 1. Calcul de la moyenne Bayésienne (sur 10)
     const bayesianScore = (n / (n + k)) * x_bar + (k / (n + k)) * mu;
+    
+    // 2. Conversion sur 100
+    const base100 = bayesianScore * 10;
+    
+    // 3. Application du système de Bonus (l'hybridation)
+    const exactScore = base100 + artistStats[key].totalBonus;
+    
+    // 4. On s'assure visuellement de ne pas dépasser 100 
+    const displayScore = Math.min(100, Math.max(0, exactScore));
 
     return {
       name: artistStats[key].displayName, 
-      points: bayesianScore.toFixed(2), // Le Score Bayésien (sur 10)
-      avg: x_bar.toFixed(2), // Moyenne réelle (indicative)
+      points: displayScore.toFixed(0), // Ce qui est affiché
+      exactScore: exactScore, // Ce qui sert à départager secrètement
+      avg: x_bar.toFixed(2), // Moyenne pure indicative
       count: n
     };
   });
 
-  // Tri par Score décroissant
-  rankings.sort((a, b) => parseFloat(b.points) - parseFloat(a.points));
+  // Tri par score exact décroissant
+  rankings.sort((a, b) => {
+      if(b.exactScore !== a.exactScore) return b.exactScore - a.exactScore;
+      return parseFloat(b.avg) - parseFloat(a.avg);
+  });
 
   return { rankings, totalSongs, uniqueArtists: Object.keys(artistStats).length + (data.pool.length > 0 && Object.keys(artistStats).length === 0 ? 1 : 0), sessionStats };
 }
@@ -1082,7 +1098,7 @@ function showStats() {
         <div class="rank-item top">
           <span class="rank-pos">#${i+1}</span>
           <span class="rank-name">${r.name}</span>
-          <span class="rank-avg">${r.points}/10</span>
+          <span class="rank-avg">${r.points} / 100</span>
         </div>
       `).join('') : '<div style="opacity:0.5; font-size:13px">Pas assez de données.</div>'}
     </div>
@@ -1093,7 +1109,7 @@ function showStats() {
         <div class="rank-item flop">
           <span class="rank-pos">#${i+1}</span>
           <span class="rank-name">${r.name}</span>
-          <span class="rank-avg">${r.points}/10</span>
+          <span class="rank-avg">${r.points} / 100</span>
         </div>
       `).join('') : '<div style="opacity:0.5; font-size:13px">Tout le monde est bon.</div>'}
     </div>
@@ -1115,6 +1131,7 @@ function showAllArtists() {
         rankings.forEach((r, i) => {
             let colorClass = "";
             if(i < 3) colorClass = "top";
+            // On met en avant les flops (les 3 derniers) si on a suffisamment d'artistes
             else if(i >= rankings.length - 3 && rankings.length > 3) colorClass = "flop"; 
             
             html += `
@@ -1124,7 +1141,7 @@ function showAllArtists() {
                 ${r.name} 
                 <span style="font-size:10px; opacity:0.5; font-weight:normal; margin-left:4px;">(Moy. pure: ${r.avg})</span>
               </span>
-              <span class="rank-avg" style="background:var(--accent-gradient); color:white;">${r.points}/10</span>
+              <span class="rank-avg" style="background:var(--accent-gradient); color:white; min-width: 65px;">${r.points} / 100</span>
               <span style="font-size:11px; opacity:0.6; width:50px; text-align:right;">${r.count} 🎵</span>
             </div>`;
         });
