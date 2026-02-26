@@ -53,6 +53,12 @@ body {
   overflow-x: hidden;
 }
 
+/* --- SCROLLBAR PERSONNALISÉE --- */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: rgba(128, 128, 128, 0.1); border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: var(--accent-primary); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-secondary); }
+
 /* --- HEADER GLASS --- */
 header {
   position: sticky;
@@ -468,7 +474,17 @@ body.compact-active .card:hover .card-overlay { top: auto; bottom: 0; background
 .btn-edit-pos { position: absolute; top: 6px; left: 6px; }
 .btn-fav-pos { position: absolute; top: 40px; left: 6px; }
 .btn-del-pos { position: absolute; top: 6px; right: 6px; }
-.card-tools button { background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: transform 0.1s, background 0.2s; }
+
+/* FIX ALIGNEMENT VERTICAL ICÔNES */
+.card-tools button { 
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2); 
+  color: white; padding: 0; width: 28px; height: 28px; 
+  display: flex; align-items: center; justify-content: center; 
+  border-radius: 50%; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); 
+  transition: transform 0.1s, background 0.2s;
+  padding-bottom: 3px; /* Remonte visuellement le texte/émoji */
+}
+
 .card-tools button:hover { background: var(--accent-secondary); transform: scale(1.1); }
 .card-tools button.active-fav { color: var(--accent-fav); background: rgba(0,0,0,0.8); border-color: var(--accent-fav); }
 
@@ -481,9 +497,6 @@ body.compact-active .placeholder { height: 70px; }
 .pool-header { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
 .pool-header::after { content:''; flex:1; height:1px; background: var(--text-muted); opacity: 0.2; }
 .pool { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; min-height: 150px; scrollbar-width: thin; scrollbar-color: var(--accent-primary) transparent; }
-.pool::-webkit-scrollbar { height: 6px; }
-.pool::-webkit-scrollbar-track { background: transparent; }
-.pool::-webkit-scrollbar-thumb { background-color: var(--text-muted); border-radius: 10px; }
 
 /* --- MODAL STATS & FAV --- */
 .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 2000; display: none; justify-content: center; align-items: center; }
@@ -538,6 +551,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
       <input type="text" id="searchBar" placeholder="🔍 Filtrer artiste/titre..." oninput="filterCards()">
       <span id="clearSearchBtn" onclick="clearSearch()">✖</span>
     </div>
+    
     <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;" class="desktop-only"></div>
     
     <button onclick="exportJson()" title="Sauvegarder">💾</button>
@@ -546,18 +560,21 @@ body.edit-active .card-tools button { pointer-events: auto; }
     
     <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;" class="desktop-only"></div>
     
+    <button onclick="toggleDark()" class="icon-btn" title="Thème Sombre/Clair">🌙</button>
+    <button onclick="toggleCompact()" id="compactBtn" class="icon-btn" title="Vue Compacte">☰</button>
     <button onclick="toggleTwitch()" class="icon-btn" title="Afficher/Cacher Tchat Twitch">🟣</button>
-    
     <button onclick="forceSync()" class="icon-btn" title="Relancer recherche d'images">🔄</button>
-    <button onclick="showFavorites()" class="icon-btn" title="Mes Favoris" style="color:var(--accent-fav)">❤</button>
     
+    <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;" class="desktop-only"></div>
+    
+    <button onclick="showFavorites()" class="icon-btn" title="Mes Favoris" style="color:var(--accent-fav)">❤</button>
     <button onclick="showStats()" class="icon-btn" title="Statistiques">📊</button>
     <button onclick="showAllArtists()" class="icon-btn" title="Liste Complète des Artistes">📑</button>
 
-    <button onclick="toggleCompact()" id="compactBtn" class="icon-btn" title="Vue Compacte">☰</button>
+    <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;" class="desktop-only"></div>
+
     <button onclick="toggleEdit()" id="editBtn" class="icon-btn" title="Mode Édition">✏️</button>
     <button onclick="addTier()" class="icon-btn">➕ Tier</button>
-    <button onclick="toggleDark()" class="icon-btn">🌙</button>
   </div>
 </header>
 
@@ -576,7 +593,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
 <div id="allArtistsModal" class="modal-overlay" onclick="closeModal(event)">
   <div class="modal-content">
     <h2>Tous les Artistes</h2>
-    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">Le classement est basé sur un <strong>Score Global</strong> récompensant la quantité ET la qualité des titres placés.</div>
+    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">Le classement privilégie la <strong>qualité moyenne</strong> tout en accordant un <strong>bonus par chanson classée</strong>.</div>
     <div id="allArtistsBody"></div>
     <div style="margin-top: 20px; text-align: right;">
       <button onclick="document.getElementById('allArtistsModal').style.display='none'">Fermer</button>
@@ -893,12 +910,12 @@ function calculateRankings() {
   let totalSongs = 0;
   let artistStats = {};
   let sessionStats = {};
-  const maxTierPoints = data.tiers.length * 10; 
+  
+  // Sécurisation de la division par 0 s'il n'y a plus de Tiers
+  const maxScore = Math.max(1, data.tiers.length); 
   
   data.tiers.forEach((tier, index) => {
-    // Ex: 4 tiers -> S=40pts, A=30pts, B=20pts, C=10pts
-    const pointsForTier = maxTierPoints - (index * 10); 
-    const scoreForAverage = data.tiers.length - index; 
+    const scoreForAverage = maxScore - index; 
 
     tier.songs.forEach(song => {
       totalSongs++;
@@ -907,19 +924,17 @@ function calculateRankings() {
       const lowerName = rawName.toLowerCase(); 
       
       if(!artistStats[lowerName]) {
-          artistStats[lowerName] = { totalPoints: 0, sumScoreAvg: 0, count: 0, displayName: rawName.toUpperCase() };
+          artistStats[lowerName] = { sumScoreAvg: 0, count: 0, displayName: rawName.toUpperCase() };
       }
       
-      artistStats[lowerName].totalPoints += pointsForTier;
       artistStats[lowerName].sumScoreAvg += scoreForAverage;
       artistStats[lowerName].count++;
       
       // -- STATS DE SESSION --
       if(song.sessionId) {
           if(!sessionStats[song.sessionId]) {
-              sessionStats[song.sessionId] = { totalPoints: 0, sumScoreAvg: 0, count: 0 };
+              sessionStats[song.sessionId] = { sumScoreAvg: 0, count: 0 };
           }
-          sessionStats[song.sessionId].totalPoints += pointsForTier;
           sessionStats[song.sessionId].sumScoreAvg += scoreForAverage;
           sessionStats[song.sessionId].count++;
       }
@@ -928,23 +943,26 @@ function calculateRankings() {
   
   data.pool.forEach(song => { 
       totalSongs++; 
-      // Les musiques du pool ne comptent pas pour les stats car non classées
   });
 
-  // Classement principal basé sur les POINTS (Régularité + Quantité)
+  // Nouveau calcul Hybride : Qualité moyenne + Bonus de volume
   let rankings = Object.keys(artistStats).map(key => {
     const count = artistStats[key].count;
     const avg = artistStats[key].sumScoreAvg / count;
     
+    const baseScore100 = (avg / maxScore) * 100;
+    const bonusQuantity = count * 2; // +2 points par chanson (ajustable)
+    const totalScore = Math.round(baseScore100 + bonusQuantity);
+
     return {
       name: artistStats[key].displayName, 
-      points: artistStats[key].totalPoints,
+      points: totalScore,
       avg: avg.toFixed(1),
       count: count
     };
   });
 
-  // Tri par points puis par moyenne
+  // Tri par score Global, puis par moyenne pure en cas d'égalité
   rankings.sort((a, b) => {
       if(b.points !== a.points) return b.points - a.points;
       return b.avg - a.avg;
@@ -1011,7 +1029,7 @@ function showStats() {
     <div class="stat-row"><strong>Total Chansons :</strong> <span>${totalSongs}</span></div>
     <div class="stat-row"><strong>Artistes :</strong> <span>${uniqueArtists}</span></div>
     <div class="stat-row"><strong>Générosité :</strong> <span>${generosity}% (${generosityComment})</span></div>
-    <div class="stat-row"><strong>Artiste le plus présent :</strong> <span>${mostProductive.name} (${mostProductive.count} sons)</span></div>
+    <div class="stat-row"><strong>Le plus présent :</strong> <span>${mostProductive.name} (${mostProductive.count} sons)</span></div>
     
     <div class="stat-section">
       <div class="stat-title">📊 Répartition par Catégorie</div>
@@ -1073,6 +1091,7 @@ function showAllArtists() {
         rankings.forEach((r, i) => {
             let colorClass = "";
             if(i < 3) colorClass = "top";
+            else if(i >= rankings.length - 3 && rankings.length > 3) colorClass = "flop"; // Mise en rouge des 3 derniers
             
             html += `
             <div class="rank-item ${colorClass}" style="margin-bottom:5px;">
