@@ -614,7 +614,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
 <div id="allArtistsModal" class="modal-overlay" onclick="closeModal(event)">
   <div class="modal-content">
     <h2>Tous les Artistes</h2>
-    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 5px;">Score hybride sur 100 (Moyenne Bayésienne ajustée + Bonus de qualité). Récompense la régularité.</div>
+    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 5px;"></div>
     <div class="modal-body-scroll" id="allArtistsBody"></div>
     <div style="margin-top: 15px; text-align: right;">
       <button onclick="document.getElementById('allArtistsModal').style.display='none'">Fermer</button>
@@ -970,7 +970,7 @@ function calculateRankings() {
 
   // Moyenne de l'univers entier des chansons (mu)
   const mu = placedSongsCount > 0 ? (totalGlobalScore / placedSongsCount) : 5;
-  const k = 3; // Coefficient de sévérité bayésien
+  const k = 4; // Coefficient de sévérité bayésien
 
   let rankings = Object.keys(artistStats).map(key => {
     const n = artistStats[key].count;
