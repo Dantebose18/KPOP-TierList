@@ -55,7 +55,7 @@ body {
 
 /* --- SCROLLBAR PERSONNALISÉE --- */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: rgba(128, 128, 128, 0.1); border-radius: 4px; }
+::-webkit-scrollbar-track { background: rgba(128, 128, 128, 0.05); border-radius: 4px; }
 ::-webkit-scrollbar-thumb { background: var(--accent-primary); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent-secondary); }
 
@@ -482,7 +482,7 @@ body.compact-active .card:hover .card-overlay { top: auto; bottom: 0; background
   display: flex; align-items: center; justify-content: center; 
   border-radius: 50%; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); 
   transition: transform 0.1s, background 0.2s;
-  padding-bottom: 3px; /* Remonte visuellement le texte/émoji */
+  padding-bottom: 2px; /* Ajustement vertical pour centrer l'émoji */
 }
 
 .card-tools button:hover { background: var(--accent-secondary); transform: scale(1.1); }
@@ -499,21 +499,42 @@ body.compact-active .placeholder { height: 70px; }
 .pool { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; min-height: 150px; scrollbar-width: thin; scrollbar-color: var(--accent-primary) transparent; }
 
 /* --- MODAL STATS & FAV --- */
-.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 2000; display: none; justify-content: center; align-items: center; }
-.modal-content { background: var(--card-bg); border: var(--card-border); width: 90%; max-width: 500px; border-radius: var(--radius-lg); padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); color: var(--text-main); max-height: 80vh; overflow-y: auto; }
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 2000; display: none; justify-content: center; align-items: center; padding: 20px; }
+.modal-content { 
+  background: var(--card-bg); border: var(--card-border); width: 100%; max-width: 500px; 
+  border-radius: var(--radius-lg); padding: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); 
+  color: var(--text-main); display: flex; flex-direction: column; max-height: 85vh; 
+}
 .modal-content h2 { margin-top: 0; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+/* ZONE SCROLLABLE INTERNE POUR NE PAS DÉPASSER LE CADRE */
+.modal-body-scroll {
+  overflow-y: auto;
+  flex: 1;
+  padding-right: 10px;
+  margin-top: 10px;
+  margin-bottom: 15px;
+}
+/* Style propre au scroll du modal */
+.modal-body-scroll::-webkit-scrollbar { width: 6px; }
+.modal-body-scroll::-webkit-scrollbar-track { background: rgba(128,128,128,0.1); border-radius: 4px; }
+.modal-body-scroll::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; }
+
 .stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; border-bottom: 1px solid rgba(128,128,128,0.1); padding-bottom: 5px; }
 .stat-row strong { font-weight: 600; }
 .stat-section { margin-top: 20px; }
 .stat-title { font-size: 12px; text-transform: uppercase; color: var(--text-muted); font-weight: 800; margin-bottom: 10px; letter-spacing: 1px; }
 
 .rank-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; background: rgba(128,128,128,0.05); padding: 8px; border-radius: 8px; }
-.rank-pos { font-weight: 800; color: var(--accent-primary); width: 25px; }
+.rank-pos { font-weight: 800; color: var(--text-muted); width: 25px; text-align: center; }
 .rank-name { flex: 1; font-weight: 600; }
-.rank-avg { font-size: 12px; padding: 2px 6px; background: var(--accent-secondary); color: white; border-radius: 4px; min-width: 60px; text-align: center;}
+.rank-avg { font-size: 12px; padding: 2px 6px; background: var(--text-muted); color: white; border-radius: 4px; min-width: 50px; text-align: center; font-weight: bold; }
+
+/* Code Couleurs Classement */
 .rank-item.top { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); }
 .rank-item.top .rank-pos { color: #10b981; }
 .rank-item.top .rank-avg { background: #10b981; }
+
 .rank-item.flop { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); }
 .rank-item.flop .rank-pos { color: #ef4444; }
 .rank-item.flop .rank-avg { background: #ef4444; }
@@ -534,7 +555,7 @@ body.edit-active .card-tools { opacity: 1; pointer-events: none; }
 body.edit-active .card-tools button { pointer-events: auto; }
 
 /* Session Stats Blocks */
-.session-card { background: rgba(128,128,128,0.05); border-radius: 8px; padding: 10px; margin-bottom: 8px; border-left: 3px solid var(--accent-primary); }
+.session-card { background: rgba(128,128,128,0.05); border-radius: 8px; padding: 10px; margin-bottom: 8px; border-left: 3px solid var(--text-muted); }
 .session-card.best { border-left-color: #10b981; }
 .session-card.worst { border-left-color: #ef4444; }
 .session-date { font-size: 11px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -583,8 +604,8 @@ body.edit-active .card-tools button { pointer-events: auto; }
 <div id="statsModal" class="modal-overlay" onclick="closeModal(event)">
   <div class="modal-content">
     <h2>Classement & Stats</h2>
-    <div id="statsBody"></div>
-    <div style="margin-top: 20px; text-align: right;">
+    <div class="modal-body-scroll" id="statsBody"></div>
+    <div style="margin-top: 15px; text-align: right;">
       <button onclick="document.getElementById('statsModal').style.display='none'">Fermer</button>
     </div>
   </div>
@@ -593,9 +614,9 @@ body.edit-active .card-tools button { pointer-events: auto; }
 <div id="allArtistsModal" class="modal-overlay" onclick="closeModal(event)">
   <div class="modal-content">
     <h2>Tous les Artistes</h2>
-    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">Le classement privilégie la <strong>qualité moyenne</strong> tout en accordant un <strong>bonus par chanson classée</strong>.</div>
-    <div id="allArtistsBody"></div>
-    <div style="margin-top: 20px; text-align: right;">
+    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 5px;">Moyenne pondérée bayésienne (Qualité ajustée à la Quantité). Note max : 10.</div>
+    <div class="modal-body-scroll" id="allArtistsBody"></div>
+    <div style="margin-top: 15px; text-align: right;">
       <button onclick="document.getElementById('allArtistsModal').style.display='none'">Fermer</button>
     </div>
   </div>
@@ -604,8 +625,8 @@ body.edit-active .card-tools button { pointer-events: auto; }
 <div id="favModal" class="modal-overlay" onclick="closeModal(event)">
   <div class="modal-content">
     <h2 style="color:var(--accent-fav); -webkit-text-fill-color: var(--accent-fav);">❤ Mes Favoris</h2>
-    <div id="favBody" style="min-height: 100px;"></div>
-    <div style="margin-top: 20px; text-align: right;">
+    <div class="modal-body-scroll" id="favBody" style="min-height: 100px;"></div>
+    <div style="margin-top: 15px; text-align: right;">
       <button onclick="document.getElementById('favModal').style.display='none'">Fermer</button>
     </div>
   </div>
@@ -908,67 +929,70 @@ function showFavorites() {
 
 function calculateRankings() {
   let totalSongs = 0;
+  let placedSongsCount = 0;
+  let totalGlobalScore = 0;
+  
   let artistStats = {};
   let sessionStats = {};
   
-  // Sécurisation de la division par 0 s'il n'y a plus de Tiers
   const maxScore = Math.max(1, data.tiers.length); 
   
   data.tiers.forEach((tier, index) => {
-    const scoreForAverage = maxScore - index; 
+    // Calcul de la note sur 10. Si 4 tiers : S=10, A=7.5, B=5, C=2.5
+    const scoreOutOf10 = ((maxScore - index) / maxScore) * 10; 
 
     tier.songs.forEach(song => {
       totalSongs++;
+      placedSongsCount++;
+      totalGlobalScore += scoreOutOf10;
       
       const rawName = song.artist.trim();
       const lowerName = rawName.toLowerCase(); 
       
       if(!artistStats[lowerName]) {
-          artistStats[lowerName] = { sumScoreAvg: 0, count: 0, displayName: rawName.toUpperCase() };
+          artistStats[lowerName] = { sumScore: 0, count: 0, displayName: rawName.toUpperCase() };
       }
       
-      artistStats[lowerName].sumScoreAvg += scoreForAverage;
+      artistStats[lowerName].sumScore += scoreOutOf10;
       artistStats[lowerName].count++;
       
       // -- STATS DE SESSION --
       if(song.sessionId) {
           if(!sessionStats[song.sessionId]) {
-              sessionStats[song.sessionId] = { sumScoreAvg: 0, count: 0 };
+              sessionStats[song.sessionId] = { sumScore: 0, count: 0 };
           }
-          sessionStats[song.sessionId].sumScoreAvg += scoreForAverage;
+          sessionStats[song.sessionId].sumScore += scoreOutOf10;
           sessionStats[song.sessionId].count++;
       }
     });
   });
   
-  data.pool.forEach(song => { 
-      totalSongs++; 
-  });
+  data.pool.forEach(song => { totalSongs++; });
 
-  // Nouveau calcul Hybride : Qualité moyenne + Bonus de volume
+  // Calcul de la moyenne globale de toutes les chansons (mu)
+  const mu = placedSongsCount > 0 ? (totalGlobalScore / placedSongsCount) : 0;
+  const k = 3; // Paramètre de sévérité
+
+  // Calcul Formule Bayésienne
   let rankings = Object.keys(artistStats).map(key => {
-    const count = artistStats[key].count;
-    const avg = artistStats[key].sumScoreAvg / count;
+    const n = artistStats[key].count;
+    const x_bar = artistStats[key].sumScore / n; // Moyenne pure de l'artiste
     
-    const baseScore100 = (avg / maxScore) * 100;
-    const bonusQuantity = count * 2; // +2 points par chanson (ajustable)
-    const totalScore = Math.round(baseScore100 + bonusQuantity);
+    // Formule : Score = [n / (n+k)] * x_bar  +  [k / (n+k)] * mu
+    const bayesianScore = (n / (n + k)) * x_bar + (k / (n + k)) * mu;
 
     return {
       name: artistStats[key].displayName, 
-      points: totalScore,
-      avg: avg.toFixed(1),
-      count: count
+      points: bayesianScore.toFixed(2), // Le Score Bayésien (sur 10)
+      avg: x_bar.toFixed(2), // Moyenne réelle (indicative)
+      count: n
     };
   });
 
-  // Tri par score Global, puis par moyenne pure en cas d'égalité
-  rankings.sort((a, b) => {
-      if(b.points !== a.points) return b.points - a.points;
-      return b.avg - a.avg;
-  });
+  // Tri par Score décroissant
+  rankings.sort((a, b) => parseFloat(b.points) - parseFloat(a.points));
 
-  return { rankings, totalSongs, uniqueArtists: Object.keys(artistStats).length + (data.pool.length > 0 && Object.keys(artistStats).length === 0 ? 1 : 0), artistStats, sessionStats };
+  return { rankings, totalSongs, uniqueArtists: Object.keys(artistStats).length + (data.pool.length > 0 && Object.keys(artistStats).length === 0 ? 1 : 0), sessionStats };
 }
 
 function showStats() {
@@ -1016,14 +1040,14 @@ function showStats() {
   Object.keys(sessionStats).forEach(sid => {
       const s = sessionStats[sid];
       if(s.count >= 3) { // Minimum 3 chansons pour juger une session
-          const avg = s.sumScoreAvg / s.count;
+          const avg = s.sumScore / s.count;
           if(avg > bestSess.avg) bestSess = { id: sid, avg: avg, count: s.count };
           if(avg < worstSess.avg) worstSess = { id: sid, avg: avg, count: s.count };
       }
   });
 
-  const todayData = sessionStats[todayId] || { count: 0, sumScoreAvg: 0 };
-  const todayAvg = todayData.count > 0 ? (todayData.sumScoreAvg / todayData.count).toFixed(1) : '-';
+  const todayData = sessionStats[todayId] || { count: 0, sumScore: 0 };
+  const todayAvg = todayData.count > 0 ? (todayData.sumScore / todayData.count).toFixed(1) : '-';
 
   let html = `
     <div class="stat-row"><strong>Total Chansons :</strong> <span>${totalSongs}</span></div>
@@ -1040,15 +1064,15 @@ function showStats() {
       <div class="stat-title">⏱️ Statistiques de Sessions</div>
       <div class="session-card">
           <div class="session-date">Session du jour (${todayId})</div>
-          <div class="session-data">${todayData.count} titres classés (Moyenne : ${todayAvg} ★)</div>
+          <div class="session-data">${todayData.count} titres classés (Moyenne : ${todayAvg} / 10)</div>
       </div>
       <div class="session-card best">
           <div class="session-date">Session la plus généreuse</div>
-          <div class="session-data">${bestSess.id !== '-' ? bestSess.id : 'N/A'} : ${bestSess.avg.toFixed(1)} ★ <small>(${bestSess.count} titres)</small></div>
+          <div class="session-data">${bestSess.id !== '-' ? bestSess.id : 'N/A'} : ${bestSess.avg.toFixed(1)} / 10 <small>(${bestSess.count} titres)</small></div>
       </div>
       <div class="session-card worst">
           <div class="session-date">Session la plus sévère</div>
-          <div class="session-data">${worstSess.id !== '-' ? worstSess.id : 'N/A'} : ${worstSess.avg.toFixed(1)} ★ <small>(${worstSess.count} titres)</small></div>
+          <div class="session-data">${worstSess.id !== '-' ? worstSess.id : 'N/A'} : ${worstSess.avg.toFixed(1)} / 10 <small>(${worstSess.count} titres)</small></div>
       </div>
     </div>
     
@@ -1058,7 +1082,7 @@ function showStats() {
         <div class="rank-item top">
           <span class="rank-pos">#${i+1}</span>
           <span class="rank-name">${r.name}</span>
-          <span class="rank-avg">${r.points} pts <small>(${r.avg} ★)</small></span>
+          <span class="rank-avg">${r.points}/10</span>
         </div>
       `).join('') : '<div style="opacity:0.5; font-size:13px">Pas assez de données.</div>'}
     </div>
@@ -1069,7 +1093,7 @@ function showStats() {
         <div class="rank-item flop">
           <span class="rank-pos">#${i+1}</span>
           <span class="rank-name">${r.name}</span>
-          <span class="rank-avg">${r.points} pts <small>(${r.avg} ★)</small></span>
+          <span class="rank-avg">${r.points}/10</span>
         </div>
       `).join('') : '<div style="opacity:0.5; font-size:13px">Tout le monde est bon.</div>'}
     </div>
@@ -1091,13 +1115,16 @@ function showAllArtists() {
         rankings.forEach((r, i) => {
             let colorClass = "";
             if(i < 3) colorClass = "top";
-            else if(i >= rankings.length - 3 && rankings.length > 3) colorClass = "flop"; // Mise en rouge des 3 derniers
+            else if(i >= rankings.length - 3 && rankings.length > 3) colorClass = "flop"; 
             
             html += `
             <div class="rank-item ${colorClass}" style="margin-bottom:5px;">
               <span class="rank-pos" style="font-size:12px; width:30px; opacity:0.7;">#${i+1}</span>
-              <span class="rank-name">${r.name}</span>
-              <span class="rank-avg" style="background:var(--accent-gradient); color:white;">${r.points} pts</span>
+              <span class="rank-name">
+                ${r.name} 
+                <span style="font-size:10px; opacity:0.5; font-weight:normal; margin-left:4px;">(Moy. pure: ${r.avg})</span>
+              </span>
+              <span class="rank-avg" style="background:var(--accent-gradient); color:white;">${r.points}/10</span>
               <span style="font-size:11px; opacity:0.6; width:50px; text-align:right;">${r.count} 🎵</span>
             </div>`;
         });
