@@ -614,7 +614,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
 <div id="allArtistsModal" class="modal-overlay" onclick="closeModal(event)">
   <div class="modal-content">
     <h2>Tous les Artistes</h2>
-    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 5px;">Score hybride sur 100 (Moyenne Bayésienne ajustée + Coefficient Exponentiel de régularité).</div>
+    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 5px;">Score hybride sur 100 (Moyenne Bayésienne + Coefficient Exponentiel de Régularité).</div>
     <div class="modal-body-scroll" id="allArtistsBody"></div>
     <div style="margin-top: 15px; text-align: right;">
       <button onclick="document.getElementById('allArtistsModal').style.display='none'">Fermer</button>
@@ -969,7 +969,7 @@ function calculateRankings() {
   
   data.pool.forEach(song => { totalSongs++; });
 
-  // Paramètres Bayésiens et de Coefficient
+  // Moyenne de l'univers entier des chansons (mu)
   const mu = placedSongsCount > 0 ? (totalGlobalScore / placedSongsCount) : 5;
   const k_bayes = 3; 
 
@@ -980,21 +980,21 @@ function calculateRankings() {
     // 1. Calcul de la moyenne Bayésienne (sur 10)
     const bayesianScore = (n / (n + k_bayes)) * x_bar + (k_bayes / (n + k_bayes)) * mu;
     
-    // 2. Conversion base 100
+    // 2. Conversion sur 100
     const base100 = bayesianScore * 10;
     
-    // 3. Calcul du Multiplicateur de Régularité Conditionnelle
+    // 3. Calcul du Multiplicateur Exponentiel Ajusté
     let M = 1;
-    const W = (n - 1) / (n + 2); // Le poids du nombre de chansons (0 si n=1)
-    
     if (x_bar >= 5) {
-        // Boost exponentiel (au carré) si la moyenne est bonne
-        const boost = 0.6 * Math.pow((x_bar - 5) / 5, 2);
-        M = 1 + (W * boost);
+        // Bonus de régularité exponentiel pour les bonnes moyennes
+        const qualityFactor = Math.pow((x_bar - 5) / 5, 2); 
+        const regularityFactor = (n - 1) / (n + 2); // Vaut 0 si n=1
+        M = 1 + (0.6 * regularityFactor * qualityFactor);
     } else {
-        // Malus linéaire si la moyenne est mauvaise (tire violemment la note vers le bas)
-        const malus = 1.0 * ((5 - x_bar) / 5);
-        M = 1 - (W * malus);
+        // Malus sévère exponentiel pour les flops (s'applique même si n=1, empire avec n)
+        const badnessFactor = Math.pow((5 - x_bar) / 5, 1.5); 
+        const volumePenalty = 1 + 0.5 * ((n - 1) / (n + 2)); 
+        M = 1 - (0.6 * badnessFactor * volumePenalty);
     }
     
     // 4. Score Exact 
