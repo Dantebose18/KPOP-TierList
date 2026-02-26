@@ -614,7 +614,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
 <div id="allArtistsModal" class="modal-overlay" onclick="closeModal(event)">
   <div class="modal-content">
     <h2>Tous les Artistes</h2>
-    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 5px;"></div>
+    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 5px;">Score hybride sur 100 (Moyenne Bayésienne ajustée + Coefficient Exponentiel de régularité).</div>
     <div class="modal-body-scroll" id="allArtistsBody"></div>
     <div style="margin-top: 15px; text-align: right;">
       <button onclick="document.getElementById('allArtistsModal').style.display='none'">Fermer</button>
@@ -969,26 +969,38 @@ function calculateRankings() {
   
   data.pool.forEach(song => { totalSongs++; });
 
-  // Moyenne de l'univers entier des chansons (mu)
+  // Paramètres Bayésiens et de Coefficient
   const mu = placedSongsCount > 0 ? (totalGlobalScore / placedSongsCount) : 5;
-  const k = 3; // Coefficient de sévérité bayésien
+  const k_bayes = 3; 
 
   let rankings = Object.keys(artistStats).map(key => {
     const n = artistStats[key].count;
     const x_bar = artistStats[key].sumScore / n; // Moyenne pure de l'artiste
     
     // 1. Calcul de la moyenne Bayésienne (sur 10)
-    const bayesianScore = (n / (n + k)) * x_bar + (k / (n + k)) * mu;
+    const bayesianScore = (n / (n + k_bayes)) * x_bar + (k_bayes / (n + k_bayes)) * mu;
     
-    // 2. Conversion sur 100
+    // 2. Conversion base 100
     const base100 = bayesianScore * 10;
     
-    // 3. Application du Bonus Hybride basé sur la moyenne pure : (Moyenne - 5) * 2
-    const boost = (x_bar - 5) * 2;
+    // 3. Calcul du Multiplicateur de Régularité Conditionnelle
+    let M = 1;
+    const W = (n - 1) / (n + 2); // Le poids du nombre de chansons (0 si n=1)
     
-    const exactScore = base100 + boost;
+    if (x_bar >= 5) {
+        // Boost exponentiel (au carré) si la moyenne est bonne
+        const boost = 0.6 * Math.pow((x_bar - 5) / 5, 2);
+        M = 1 + (W * boost);
+    } else {
+        // Malus linéaire si la moyenne est mauvaise (tire violemment la note vers le bas)
+        const malus = 1.0 * ((5 - x_bar) / 5);
+        M = 1 - (W * malus);
+    }
     
-    // 4. On s'assure visuellement de ne pas dépasser 100 ou de tomber sous 0
+    // 4. Score Exact 
+    const exactScore = base100 * M;
+    
+    // On s'assure visuellement de rester entre 0 et 100
     const displayScore = Math.min(100, Math.max(0, exactScore));
 
     return {
@@ -1000,15 +1012,15 @@ function calculateRankings() {
     };
   });
 
-  // Tri par score VISUEL décroissant, puis par NOMBRE de chansons en cas d'égalité, puis score exact
+  // Tri logique : Score visuel > Nombre de chansons > Score mathématique exact > Moyenne pure
   rankings.sort((a, b) => {
       const pointsA = parseInt(a.points);
       const pointsB = parseInt(b.points);
       
-      if (pointsB !== pointsA) return pointsB - pointsA; // 1. Le score sur 100
-      if (b.count !== a.count) return b.count - a.count; // 2. Nbr de chansons (tie-breaker : le stakhanoviste gagne)
-      if (b.exactScore !== a.exactScore) return b.exactScore - a.exactScore; // 3. Décimales précises
-      return parseFloat(b.avg) - parseFloat(a.avg); // 4. Moyenne pure
+      if (pointsB !== pointsA) return pointsB - pointsA; 
+      if (b.count !== a.count) return b.count - a.count; 
+      if (b.exactScore !== a.exactScore) return b.exactScore - a.exactScore; 
+      return parseFloat(b.avg) - parseFloat(a.avg); 
   });
 
   return { rankings, totalSongs, uniqueArtists: Object.keys(artistStats).length + (data.pool.length > 0 && Object.keys(artistStats).length === 0 ? 1 : 0), sessionStats };
