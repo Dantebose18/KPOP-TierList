@@ -482,7 +482,7 @@ body.compact-active .card:hover .card-overlay { top: auto; bottom: 0; background
   display: flex; align-items: center; justify-content: center; 
   border-radius: 50%; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); 
   transition: transform 0.1s, background 0.2s;
-  padding-bottom: 2px; /* Ajustement vertical pour centrer l'émoji */
+  padding-bottom: 2px; 
 }
 
 .card-tools button:hover { background: var(--accent-secondary); transform: scale(1.1); }
@@ -940,9 +940,6 @@ function calculateRankings() {
   data.tiers.forEach((tier, index) => {
     // Calcul de la note pure sur 10 
     const scoreOutOf10 = ((maxScore - index) / maxScore) * 10; 
-    
-    // NOUVEAU SYSTÈME HYBRIDE : Le Bonus de Qualité (10 => +10, 6 => +2, 5 => 0)
-    const bonus = (scoreOutOf10 - 5) * 2; 
 
     tier.songs.forEach(song => {
       totalSongs++;
@@ -953,14 +950,12 @@ function calculateRankings() {
       const lowerName = rawName.toLowerCase(); 
       
       if(!artistStats[lowerName]) {
-          artistStats[lowerName] = { sumScore: 0, count: 0, totalBonus: 0, displayName: rawName.toUpperCase() };
+          artistStats[lowerName] = { sumScore: 0, count: 0, displayName: rawName.toUpperCase() };
       }
       
       artistStats[lowerName].sumScore += scoreOutOf10;
-      artistStats[lowerName].totalBonus += bonus; // Accumulation des bonus
       artistStats[lowerName].count++;
       
-      // -- STATS DE SESSION --
       if(song.sessionId) {
           if(!sessionStats[song.sessionId]) {
               sessionStats[song.sessionId] = { sumScore: 0, count: 0 };
@@ -987,16 +982,18 @@ function calculateRankings() {
     // 2. Conversion sur 100
     const base100 = bayesianScore * 10;
     
-    // 3. Application du système de Bonus (l'hybridation)
-    const exactScore = base100 + artistStats[key].totalBonus;
+    // 3. Application du Bonus Hybride basé sur la moyenne pure : (Moyenne - 5) * 2
+    const boost = (x_bar - 5) * 2;
     
-    // 4. On s'assure visuellement de ne pas dépasser 100 
+    const exactScore = base100 + boost;
+    
+    // 4. On s'assure visuellement de ne pas dépasser 100 ou de tomber sous 0
     const displayScore = Math.min(100, Math.max(0, exactScore));
 
     return {
       name: artistStats[key].displayName, 
-      points: displayScore.toFixed(0), // Ce qui est affiché
-      exactScore: exactScore, // Ce qui sert à départager secrètement
+      points: displayScore.toFixed(0), 
+      exactScore: exactScore, // Sert à départager secrètement
       avg: x_bar.toFixed(2), // Moyenne pure indicative
       count: n
     };
@@ -1131,7 +1128,6 @@ function showAllArtists() {
         rankings.forEach((r, i) => {
             let colorClass = "";
             if(i < 3) colorClass = "top";
-            // On met en avant les flops (les 3 derniers) si on a suffisamment d'artistes
             else if(i >= rankings.length - 3 && rankings.length > 3) colorClass = "flop"; 
             
             html += `
