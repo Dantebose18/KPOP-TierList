@@ -956,6 +956,7 @@ function calculateRankings() {
       artistStats[lowerName].sumScore += scoreOutOf10;
       artistStats[lowerName].count++;
       
+      // -- STATS DE SESSION --
       if(song.sessionId) {
           if(!sessionStats[song.sessionId]) {
               sessionStats[song.sessionId] = { sumScore: 0, count: 0 };
@@ -970,7 +971,7 @@ function calculateRankings() {
 
   // Moyenne de l'univers entier des chansons (mu)
   const mu = placedSongsCount > 0 ? (totalGlobalScore / placedSongsCount) : 5;
-  const k = 4; // Coefficient de sévérité bayésien
+  const k = 3; // Coefficient de sévérité bayésien
 
   let rankings = Object.keys(artistStats).map(key => {
     const n = artistStats[key].count;
@@ -993,16 +994,21 @@ function calculateRankings() {
     return {
       name: artistStats[key].displayName, 
       points: displayScore.toFixed(0), 
-      exactScore: exactScore, // Sert à départager secrètement
-      avg: x_bar.toFixed(2), // Moyenne pure indicative
+      exactScore: exactScore, 
+      avg: x_bar.toFixed(2), 
       count: n
     };
   });
 
-  // Tri par score exact décroissant
+  // Tri par score VISUEL décroissant, puis par NOMBRE de chansons en cas d'égalité, puis score exact
   rankings.sort((a, b) => {
-      if(b.exactScore !== a.exactScore) return b.exactScore - a.exactScore;
-      return parseFloat(b.avg) - parseFloat(a.avg);
+      const pointsA = parseInt(a.points);
+      const pointsB = parseInt(b.points);
+      
+      if (pointsB !== pointsA) return pointsB - pointsA; // 1. Le score sur 100
+      if (b.count !== a.count) return b.count - a.count; // 2. Nbr de chansons (tie-breaker : le stakhanoviste gagne)
+      if (b.exactScore !== a.exactScore) return b.exactScore - a.exactScore; // 3. Décimales précises
+      return parseFloat(b.avg) - parseFloat(a.avg); // 4. Moyenne pure
   });
 
   return { rankings, totalSongs, uniqueArtists: Object.keys(artistStats).length + (data.pool.length > 0 && Object.keys(artistStats).length === 0 ? 1 : 0), sessionStats };
