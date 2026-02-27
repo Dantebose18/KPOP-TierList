@@ -614,7 +614,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
 <div id="allArtistsModal" class="modal-overlay" onclick="closeModal(event)">
   <div class="modal-content">
     <h2>Tous les Artistes</h2>
-    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 5px;">Score hybride sur 100 (Moyenne Bayésienne + Coefficient Exponentiel de Régularité).</div>
+    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 5px;">L'algorithme pénalise les One-Hit Wonders et punit sévèrement la répétition de mauvaises chansons.</div>
     <div class="modal-body-scroll" id="allArtistsBody"></div>
     <div style="margin-top: 15px; text-align: right;">
       <button onclick="document.getElementById('allArtistsModal').style.display='none'">Fermer</button>
@@ -927,10 +927,10 @@ function showFavorites() {
     modal.style.display = 'flex';
 }
 
+// --- ALGORITHME MATHÉMATIQUE DE CLASSEMENT ---
 function calculateRankings() {
   let totalSongs = 0;
   let placedSongsCount = 0;
-  let totalGlobalScore = 0;
   
   let artistStats = {};
   let sessionStats = {};
@@ -944,7 +944,6 @@ function calculateRankings() {
     tier.songs.forEach(song => {
       totalSongs++;
       placedSongsCount++;
-      totalGlobalScore += scoreOutOf10;
       
       const rawName = song.artist.trim();
       const lowerName = rawName.toLowerCase(); 
@@ -969,38 +968,41 @@ function calculateRankings() {
   
   data.pool.forEach(song => { totalSongs++; });
 
-  // Moyenne de l'univers entier des chansons (mu)
-  const mu = placedSongsCount > 0 ? (totalGlobalScore / placedSongsCount) : 5;
-  const k_bayes = 3; 
-
   let rankings = Object.keys(artistStats).map(key => {
     const n = artistStats[key].count;
-    const x_bar = artistStats[key].sumScore / n; // Moyenne pure de l'artiste
+    const x_bar = artistStats[key].sumScore / n; // Moyenne pure de l'artiste (sur 10)
     
-    // 1. Calcul de la moyenne Bayésienne (sur 10)
-    const bayesianScore = (n / (n + k_bayes)) * x_bar + (k_bayes / (n + k_bayes)) * mu;
-    
-    // 2. Conversion sur 100
-    const base100 = bayesianScore * 10;
-    
-    // 3. Calcul du Multiplicateur Exponentiel Ajusté
-    let M = 1;
+    let exactScore = 0;
+
     if (x_bar >= 5) {
-        // Bonus de régularité exponentiel pour les bonnes moyennes
-        const qualityFactor = Math.pow((x_bar - 5) / 5, 2); 
-        const regularityFactor = (n - 1) / (n + 2); // Vaut 0 si n=1
-        M = 1 + (0.6 * regularityFactor * qualityFactor);
+        // --- LES BONS ARTISTES ---
+        // 1. On part d'une base sévère pour pénaliser le n=1 (Bayésien modifié k=1, mu=5)
+        const baseBayes = ((n * x_bar) + (1 * 5)) / (n + 1);
+        const base100 = baseBayes * 10;
+        
+        // 2. Bonus Exponentiel (Conditionnel à la quantité et la qualité)
+        // (n-1)/(n+2) donne : n=1: 0 | n=2: 0.25 | n=3: 0.40 | n=5: 0.57
+        const volumeFactor = (n - 1) / (n + 2);
+        const qualityFactor = Math.pow((x_bar - 5) / 5, 2); // Exponentiel (un 10 donne 1, un 7.5 donne 0.25)
+        
+        const boost = volumeFactor * qualityFactor * 30; // Max +30 points bonus
+        
+        exactScore = base100 + boost;
     } else {
-        // Malus sévère exponentiel pour les flops (s'applique même si n=1, empire avec n)
-        const badnessFactor = Math.pow((5 - x_bar) / 5, 1.5); 
-        const volumePenalty = 1 + 0.5 * ((n - 1) / (n + 2)); 
-        M = 1 - (0.6 * badnessFactor * volumePenalty);
+        // --- LES FLOPS ---
+        // 1. Base pure sur 100 (Un 1/10 = 10/100. Pas de protection bayésienne vers le haut !)
+        const base100 = x_bar * 10;
+        
+        // 2. Malus de Volume (plus on a de mauvaises chansons, plus on creuse)
+        const volumeFactor = (n - 1) / (n + 2);
+        const flopFactor = Math.pow((5 - x_bar) / 5, 2); // Exponentiel dans la nullité
+        
+        const malus = volumeFactor * flopFactor * 15; // Max -15 points de sanction
+        
+        exactScore = base100 - malus;
     }
-    
-    // 4. Score Exact 
-    const exactScore = base100 * M;
-    
-    // On s'assure visuellement de rester entre 0 et 100
+
+    // On bloque visuellement le score final entre 0 et 100
     const displayScore = Math.min(100, Math.max(0, exactScore));
 
     return {
@@ -1018,7 +1020,7 @@ function calculateRankings() {
       const pointsB = parseInt(b.points);
       
       if (pointsB !== pointsA) return pointsB - pointsA; 
-      if (b.count !== a.count) return b.count - a.count; 
+      if (b.count !== a.count) return b.count - a.count; // Tie-breaker volume
       if (b.exactScore !== a.exactScore) return b.exactScore - a.exactScore; 
       return parseFloat(b.avg) - parseFloat(a.avg); 
   });
