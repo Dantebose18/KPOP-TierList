@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KPOP Tier List</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tmi.js/1.8.5/tmi.min.js"></script>
 
 <style>
 /* --- VARIABLES & THEME --- */
@@ -328,6 +329,37 @@ iframe.twitch-iframe {
   border: none;
 }
 
+/* --- OVERLAY VOTE TWITCH --- */
+#twitchVoteOverlay {
+  position: fixed;
+  top: 85px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--card-bg);
+  border: 2px solid #9146FF;
+  padding: 15px 25px;
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 20px rgba(145, 70, 255, 0.4);
+  z-index: 2000;
+  display: none;
+  backdrop-filter: blur(12px);
+  text-align: center;
+  color: var(--text-main);
+  min-width: 300px;
+}
+
+#twitchVoteOverlay button {
+  margin-top: 10px;
+  background: #9146FF;
+  color: white;
+  border: none;
+  width: 100%;
+  justify-content: center;
+}
+#twitchVoteOverlay button:hover {
+  background: #772ce8;
+}
+
 /* --- RESPONSIVE --- */
 @media (max-width: 1750px) {
   .twitch-sidebar, .sommaire-sidebar { display: none !important; }
@@ -560,21 +592,6 @@ body.edit-active .card-tools button { pointer-events: auto; }
 .session-card.worst { border-left-color: #ef4444; }
 .session-date { font-size: 11px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
 .session-data { font-size: 14px; font-weight: 600; margin-top: 2px; }
-
-/* LIVE VOTING OVERLAY */
-.live-vote-badge {
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    background: #9146FF;
-    color: white;
-    font-size: 10px;
-    font-weight: 800;
-    padding: 2px 6px;
-    border-radius: 4px;
-    z-index: 10;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-}
 </style>
 </head>
 <body class="dark">
@@ -583,7 +600,6 @@ body.edit-active .card-tools button { pointer-events: auto; }
   <div class="logo">K-TIER ✨</div>
   
   <div class="header-btns">
-    <div id="liveStatus" style="font-size: 10px; font-weight: bold; color: #9146FF; margin-right: 5px; display:none;">● LIVE CHAT</div>
     <div class="search-container">
       <input type="text" id="searchBar" placeholder="🔍 Filtrer artiste/titre..." oninput="filterCards()">
       <span id="clearSearchBtn" onclick="clearSearch()">✖</span>
@@ -614,6 +630,13 @@ body.edit-active .card-tools button { pointer-events: auto; }
     <button onclick="addTier()" class="icon-btn">➕ Tier</button>
   </div>
 </header>
+
+<div id="twitchVoteOverlay">
+  <div style="font-size:12px; color:#9146FF; font-weight:bold; letter-spacing: 1px; text-transform: uppercase;">Sondage Twitch (!note 0-10)</div>
+  <div id="twitchVoteTitle" style="font-weight:800; font-size:18px; margin-top: 5px;"></div>
+  <div id="twitchLiveResult" style="margin: 10px 0; font-size: 14px;">Moyenne: - / 10 (0 vote)</div>
+  <button onclick="stopTwitchVote()">Terminer & Sauvegarder la note</button>
+</div>
 
 <input type="file" id="fileInput" style="display:none" accept=".json" onchange="importJson(this)">
 
@@ -658,7 +681,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
 <div class="twitch-sidebar hidden" id="twitchSidebar">
   <div class="twitch-header">
     <span style="color: #bfdbfe;">🟣 Tchat Twitch</span>
-    <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
+    <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="Dantebose" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
   </div>
   <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
 </div>
@@ -690,13 +713,66 @@ let editMode = false;
 let compactMode = false; 
 let draggedId = null;
 let placeholder = null;
-let twitchVisible = false; // Par défaut caché
+let twitchVisible = false; // Caché par défaut
 let currentDragAfter = undefined; 
 let selectedIds = new Set(); 
 
-// --- LIVE VOTING STATE ---
-let lastAddedSongId = null;
-let chatSocket = null;
+// --- GESTION TWITCH TMI.JS ---
+let activeTwitchSongId = null;
+let twitchVotes = {}; // { username: note }
+
+const twitchClient = new tmi.Client({ channels: ['Dantebose'] });
+twitchClient.connect().catch(e => console.log('Erreur de connexion Twitch:', e));
+
+twitchClient.on('message', (channel, tags, message, self) => {
+    if (self || !activeTwitchSongId) return;
+    
+    // On écoute les messages du type "!note 8" ou "!note 7.5"
+    if (message.toLowerCase().startsWith('!note ')) {
+        const noteStr = message.split(' ')[1];
+        if(noteStr) {
+            const note = parseFloat(noteStr.replace(',', '.')); // Gère les virgules ou points
+            if (!isNaN(note) && note >= 0 && note <= 10) {
+                twitchVotes[tags.username] = note; // Écrase si l'utilisateur revote
+                
+                // Calcul de la moyenne en temps réel
+                let sum = 0; let count = 0;
+                for (let u in twitchVotes) { sum += twitchVotes[u]; count++; }
+                const avg = (sum / count).toFixed(1);
+                
+                const resDiv = document.getElementById("twitchLiveResult");
+                if (resDiv) {
+                    resDiv.innerHTML = `Moyenne: <strong style="color:var(--accent-primary); font-size:16px;">${avg} / 10</strong> <span style="font-size:12px; opacity:0.8;">(${count} votes)</span>`;
+                }
+            }
+        }
+    }
+});
+
+function startTwitchVote(songId, title) {
+    activeTwitchSongId = songId;
+    twitchVotes = {};
+    const ui = document.getElementById("twitchVoteOverlay");
+    document.getElementById("twitchVoteTitle").innerText = title;
+    document.getElementById("twitchLiveResult").innerHTML = "Moyenne: - / 10 (0 vote)";
+    ui.style.display = "block";
+}
+
+function stopTwitchVote() {
+    if(!activeTwitchSongId) return;
+    const song = findSong(activeTwitchSongId);
+    let sum = 0, count = 0;
+    for(let u in twitchVotes) { sum += twitchVotes[u]; count++; }
+    
+    if (song && count > 0) {
+        song.chatRating = (sum/count).toFixed(1);
+        save();
+        render(); // Met à jour la carte avec la note incrustée
+    }
+    activeTwitchSongId = null;
+    document.getElementById("twitchVoteOverlay").style.display = "none";
+}
+// -----------------------------
 
 function generateUniqueId() {
     return Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9);
@@ -704,24 +780,6 @@ function generateUniqueId() {
 
 function getTodaySessionId() {
     return new Date().toLocaleDateString('fr-FR');
-}
-
-// --- SYSTÈME DE MIGRATION RÉTROACTIVE ---
-function migrateData() {
-    let hasChanged = false;
-    const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
-    
-    allSongs.forEach(song => {
-        // AJOUTER ICI LES NOUVEAUX CHAMPS FUTURS
-        if (song.liveVotes === undefined) { song.liveVotes = []; hasChanged = true; }
-        if (song.liveAvg === undefined) { song.liveAvg = null; hasChanged = true; }
-        // Exemple futur : if (song.genre === undefined) { song.genre = "Inconnu"; hasChanged = true; }
-    });
-
-    if (hasChanged) {
-        console.log("Migration des données effectuée avec succès.");
-        save();
-    }
 }
 
 function defaultData(){
@@ -736,11 +794,23 @@ function defaultData(){
   };
 }
 
+// Fonction pour rendre le format rétroactif sans écraser les anciennes cartes
+function migrateData(loadedData) {
+    const allSongs = [...loadedData.pool, ...loadedData.tiers.flatMap(t => t.songs)];
+    allSongs.forEach(song => {
+        // Ajout des nouvelles propriétés par défaut ici si elles n'existent pas
+        if (song.favorite === undefined) song.favorite = false;
+        if (song.sessionId === undefined) song.sessionId = 'Legacy';
+        if (song.chatRating === undefined) song.chatRating = null; 
+    });
+    return loadedData;
+}
+
 function load(){
   try{
     const raw=localStorage.getItem("tierData");
     const parsed = raw ? JSON.parse(raw) : defaultData();
-    return parsed;
+    return migrateData(parsed); // Applique la migration à chaque chargement
   }catch(e){ return defaultData(); }
 }
 
@@ -780,8 +850,7 @@ function importJson(input) {
       json.pool.forEach(s => { if(!s.id.includes('-')) s.id = generateUniqueId(); });
       json.tiers.forEach(t => { t.songs.forEach(s => { if(!s.id.includes('-')) s.id = generateUniqueId(); }); });
 
-      data = json;
-      migrateData();
+      data = migrateData(json); // Sécurité lors de l'import
       save(); render(); 
       alert("Sauvegarde chargée !");
       syncCovers(); 
@@ -802,77 +871,24 @@ function toggleTwitch() {
 }
 
 function changeTwitchChannel() {
-    const channelInput = document.getElementById("twitchChannelInput");
-    const channel = channelInput.value.trim().toLowerCase();
+    const channel = document.getElementById("twitchChannelInput").value.trim();
     const iframe = document.getElementById("twitchIframe");
     
     if(!channel) {
         iframe.src = "";
-        if(chatSocket) chatSocket.close();
         return;
     }
     
+    // Met à jour la lecture des commandes du bot également
+    twitchClient.getChannels().forEach(ch => twitchClient.part(ch));
+    twitchClient.join(channel).catch(e => console.log('Erreur join:', e));
+    
     let parentDomain = window.location.hostname;
-    if (!parentDomain) parentDomain = "localhost"; 
+    if (!parentDomain) {
+        parentDomain = "localhost"; 
+    }
     
     iframe.src = `https://www.twitch.tv/embed/${channel}/chat?parent=${parentDomain}&darkpopout`;
-    
-    connectToTwitchChat(channel);
-}
-
-// --- LOGIQUE DE CONNEXION TCHAT (SANS BIBLIOTHÈQUE) ---
-function connectToTwitchChat(channel) {
-    if(chatSocket) chatSocket.close();
-    
-    chatSocket = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
-    const status = document.getElementById("liveStatus");
-
-    chatSocket.onopen = () => {
-        chatSocket.send('CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership');
-        chatSocket.send('PASS SCHMOOPIE'); // Anonyme
-        chatSocket.send('NICK justinfan' + Math.floor(Math.random() * 10000));
-        chatSocket.send('JOIN #' + channel);
-        status.style.display = "block";
-        status.innerText = "● LIVE: " + channel.toUpperCase();
-    };
-
-    chatSocket.onmessage = (event) => {
-        const msg = event.data;
-        if(msg.includes('PRIVMSG')) {
-            const messageText = msg.split('PRIVMSG')[1].split(':')[1].trim();
-            const note = parseInt(messageText);
-            
-            // Si le tchat envoie un chiffre entre 1 et 10 et qu'on vient d'ajouter un son
-            if(!isNaN(note) && note >= 1 && note <= 10 && lastAddedSongId) {
-                recordLiveVote(lastAddedSongId, note);
-            }
-        }
-    };
-
-    chatSocket.onclose = () => { status.style.display = "none"; };
-}
-
-function recordLiveVote(songId, note) {
-    const song = findSong(songId);
-    if(song) {
-        if(!song.liveVotes) song.liveVotes = [];
-        song.liveVotes.push(note);
-        
-        const sum = song.liveVotes.reduce((a, b) => a + b, 0);
-        song.liveAvg = (sum / song.liveVotes.length).toFixed(1);
-        
-        const card = document.getElementById(`card-${songId}`);
-        if(card) {
-            let badge = card.querySelector('.live-vote-badge');
-            if(!badge) {
-                badge = document.createElement('div');
-                badge.className = 'live-vote-badge';
-                card.appendChild(badge);
-            }
-            badge.innerText = `⭐ ${song.liveAvg} (${song.liveVotes.length})`;
-        }
-        save();
-    }
 }
 
 let isSyncing = false;
@@ -1024,7 +1040,6 @@ function showFavorites() {
     modal.style.display = 'flex';
 }
 
-// --- ALGORITHME MATHÉMATIQUE DE CLASSEMENT ---
 function calculateRankings() {
   let totalSongs = 0;
   let placedSongsCount = 0;
@@ -1035,6 +1050,7 @@ function calculateRankings() {
   const maxScore = Math.max(1, data.tiers.length); 
   
   data.tiers.forEach((tier, index) => {
+    // Calcul de la note pure sur 10 
     const scoreOutOf10 = ((maxScore - index) / maxScore) * 10; 
 
     tier.songs.forEach(song => {
@@ -1051,6 +1067,7 @@ function calculateRankings() {
       artistStats[lowerName].sumScore += scoreOutOf10;
       artistStats[lowerName].count++;
       
+      // -- STATS DE SESSION --
       if(song.sessionId) {
           if(!sessionStats[song.sessionId]) {
               sessionStats[song.sessionId] = { sumScore: 0, count: 0 };
@@ -1065,9 +1082,10 @@ function calculateRankings() {
 
   let rankings = Object.keys(artistStats).map(key => {
     const n = artistStats[key].count;
-    const x_bar = artistStats[key].sumScore / n; 
+    const x_bar = artistStats[key].sumScore / n; // Moyenne pure de l'artiste (sur 10)
     
     let exactScore = 0;
+
     if (x_bar >= 5) {
         const baseBayes = ((n * x_bar) + (1 * 5)) / (n + 1);
         const base100 = baseBayes * 10;
@@ -1082,7 +1100,9 @@ function calculateRankings() {
         const malus = volumeFactor * flopFactor * 15; 
         exactScore = base100 - malus;
     }
+
     const displayScore = Math.min(100, Math.max(0, exactScore));
+
     return {
       name: artistStats[key].displayName, 
       points: displayScore.toFixed(0), 
@@ -1095,8 +1115,9 @@ function calculateRankings() {
   rankings.sort((a, b) => {
       const pointsA = parseInt(a.points);
       const pointsB = parseInt(b.points);
+      
       if (pointsB !== pointsA) return pointsB - pointsA; 
-      if (b.count !== a.count) return b.count - a.count;
+      if (b.count !== a.count) return b.count - a.count; 
       if (b.exactScore !== a.exactScore) return b.exactScore - a.exactScore; 
       return parseFloat(b.avg) - parseFloat(a.avg); 
   });
@@ -1112,15 +1133,26 @@ function showStats() {
   
   const top3 = rankings.slice(0, 3);
   let flop3 = [];
-  if (rankings.length > 3) flop3 = rankings.slice(-3).reverse(); 
+  if (rankings.length > 3) {
+      flop3 = rankings.slice(-3).reverse(); 
+  }
   
   const mostProductive = rankings.reduce((prev, current) => (prev.count > current.count) ? prev : current, {name:'-', count:0});
 
-  let sumAllAverages = 0;
+  let topTierCount = 0;
   let tierCountsHTML = "";
+  
+  let sumGlobal = 0;
+  let countGlobal = 0;
+
   data.tiers.forEach((t, index) => {
-      const score = (data.tiers.length - index);
-      sumAllAverages += (t.songs.length * score);
+      const maxScore = Math.max(1, data.tiers.length);
+      const score = ((maxScore - index) / maxScore) * 10;
+      sumGlobal += score * t.songs.length;
+      countGlobal += t.songs.length;
+      
+      const isTop = t.id === data.tiers[0]?.id || t.id === data.tiers[1]?.id; 
+      if(isTop) topTierCount += t.songs.length;
       
       const pct = totalSongs > 0 ? (t.songs.length / totalSongs * 100).toFixed(0) : 0;
       tierCountsHTML += `
@@ -1134,20 +1166,16 @@ function showStats() {
       `;
   });
   
-  // NOUVEL INDICE DE SATISFACTION (Clair et pertinent)
-  const satisfactionIndex = totalSongs > 0 ? ((sumAllAverages / (totalSongs * data.tiers.length)) * 100).toFixed(0) : 0;
-  let satisfactionText = "Neutre";
-  if(satisfactionIndex > 80) satisfactionText = "Coup de coeur global";
-  else if(satisfactionIndex > 60) satisfactionText = "Très positif";
-  else if(satisfactionIndex < 40) satisfactionText = "Globalement déçu";
+  const globalAvg = countGlobal > 0 ? (sumGlobal / countGlobal).toFixed(1) : '-';
 
+  // ANALYSE DES SESSIONS
   const todayId = getTodaySessionId();
   let bestSess = { id: '-', avg: 0, count: 0 };
   let worstSess = { id: '-', avg: 99, count: 0 };
   
   Object.keys(sessionStats).forEach(sid => {
       const s = sessionStats[sid];
-      if(s.count >= 3) {
+      if(s.count >= 3) { 
           const avg = s.sumScore / s.count;
           if(avg > bestSess.avg) bestSess = { id: sid, avg: avg, count: s.count };
           if(avg < worstSess.avg) worstSess = { id: sid, avg: avg, count: s.count };
@@ -1160,7 +1188,7 @@ function showStats() {
   let html = `
     <div class="stat-row"><strong>Total Chansons :</strong> <span>${totalSongs}</span></div>
     <div class="stat-row"><strong>Artistes :</strong> <span>${uniqueArtists}</span></div>
-    <div class="stat-row"><strong>Indice de Satisfaction :</strong> <span>${satisfactionIndex}% (${satisfactionText})</span></div>
+    <div class="stat-row"><strong>Moyenne Globale :</strong> <span>${globalAvg} / 10</span></div>
     <div class="stat-row"><strong>Le plus présent :</strong> <span>${mostProductive.name} (${mostProductive.count} sons)</span></div>
     
     <div class="stat-section">
@@ -1213,6 +1241,7 @@ function showStats() {
 function showAllArtists() {
     const modal = document.getElementById('allArtistsModal');
     const body = document.getElementById('allArtistsBody');
+    
     const { rankings } = calculateRankings();
     
     if(rankings.length === 0) {
@@ -1237,6 +1266,7 @@ function showAllArtists() {
         });
         body.innerHTML = html;
     }
+    
     modal.style.display = 'flex';
 }
 
@@ -1267,6 +1297,7 @@ function moveTierDown(id) {
 function render(){
   const tiersDiv = document.getElementById("tiers");
   tiersDiv.innerHTML = "";
+  
   const sommaireList = document.getElementById("sommaireList");
   if(sommaireList) sommaireList.innerHTML = "";
   
@@ -1289,6 +1320,7 @@ function render(){
     const header = document.createElement("div");
     header.className = "tier-header";
     header.style.background = `linear-gradient(90deg, ${t.color}, ${adjustColor(t.color, -40)})`;
+    
     header.innerHTML = `<span>${t.name}</span>`;
 
     const controls = document.createElement("div");
@@ -1307,6 +1339,7 @@ function render(){
     colorInput.type = "color";
     colorInput.value = t.color;
     colorInput.onchange = e => { t.color = e.target.value; save(); render(); };
+    
     colorWrapper.appendChild(colorInput);
 
     const renameBtn = document.createElement("button");
@@ -1334,6 +1367,7 @@ function render(){
         somItem.setAttribute("data-tier-id", t.id);
         somItem.style.borderLeftColor = t.color;
         somItem.innerHTML = `<span>${t.name}</span><span class="sommaire-count">${t.songs.length}</span>`;
+        
         somItem.onclick = () => {
             const target = document.getElementById(`tier-node-${t.id}`);
             const y = target.getBoundingClientRect().top + window.pageYOffset - 80;
@@ -1350,6 +1384,7 @@ function render(){
 
   document.body.classList.toggle("hidden", !editMode);
   filterCards();
+  
   selectedIds.forEach(id => {
       const el = document.getElementById(`card-${id}`);
       if(el) el.classList.add('selected');
@@ -1364,8 +1399,10 @@ function createCard(song){
   const card = document.createElement("div");
   card.className = "card";
   card.id = `card-${song.id}`;
+  
   if(song.favorite) card.classList.add("is-favorite"); 
   if(selectedIds.has(song.id)) card.classList.add("selected");
+  
   card.draggable = true;
   card.style.backgroundImage = `url(${song.cover})`;
 
@@ -1390,8 +1427,10 @@ function createCard(song){
         selectedIds.add(song.id);
         card.classList.add('selected');
     }
+
     draggedId = song.id;
     document.body.classList.add("is-dragging");
+    
     selectedIds.forEach(id => {
         const c = document.getElementById(`card-${id}`);
         if(c) setTimeout(() => c.classList.add("dragging"), 0);
@@ -1402,30 +1441,33 @@ function createCard(song){
     document.body.classList.remove("is-dragging");
     selectedIds.forEach(id => {
         const c = document.getElementById(`card-${id}`);
-        if(c) c.classList.remove("dragging", "selected");
+        if(c) {
+            c.classList.remove("dragging", "selected");
+        }
     });
     selectedIds.clear();
+    
     if(placeholder) placeholder.remove();
     draggedId = null;
     currentDragAfter = undefined;
   });
 
-  let liveHTML = (song.liveAvg) ? `<div class="live-vote-badge">⭐ ${song.liveAvg} (${song.liveVotes.length})</div>` : "";
-
   card.innerHTML = `
-    ${liveHTML}
     <div class="fav-badge">❤</div>
     <div class="card-overlay">
       <strong>${song.artist}</strong>
       <span>${song.title}</span>
+      ${song.chatRating ? `<span style="color:#bfdbfe; font-size:11px; margin-top:2px;">Chat: ${song.chatRating}/10</span>` : ''}
     </div>
     <div class="card-tools">
       <button class="btn-edit-pos" onclick="event.stopPropagation(); editSong('${song.id}')" title="Éditer">✎</button>
+      
       <button class="btn-fav-pos ${song.favorite ? 'active-fav' : ''}" 
               onclick="event.stopPropagation(); toggleFavorite('${song.id}')" 
               title="Favoris">
           ${song.favorite ? '❤' : '♡'}
       </button>
+
       <button class="btn-del-pos" 
               onclick="event.stopPropagation(); removeSong('${song.id}'); document.getElementById('card-${song.id}').remove(); updateCounters(); save();" 
               title="Supprimer" 
@@ -1440,6 +1482,7 @@ function createCard(song){
 function rebuildDataFromDOM() {
   const allSongsMap = {};
   [...data.pool, ...data.tiers.flatMap(t => t.songs)].forEach(s => { allSongsMap[s.id] = s; });
+
   data.tiers.forEach(t => {
       const tierContainer = document.querySelector(`#tier-node-${t.id} .cards`);
       if (tierContainer) {
@@ -1447,6 +1490,7 @@ function rebuildDataFromDOM() {
           t.songs = cardIds.map(id => allSongsMap[id]).filter(Boolean);
       }
   });
+
   const poolContainer = document.getElementById('pool');
   if (poolContainer) {
       const poolCardIds = Array.from(poolContainer.querySelectorAll('.card:not(.placeholder)')).map(c => c.id.replace('card-', ''));
@@ -1458,6 +1502,7 @@ function updateCounters() {
   data.tiers.forEach(t => {
       const countSpan = document.querySelector(`#tier-node-${t.id} .tier-controls span`);
       if(countSpan) countSpan.innerText = `(${t.songs.length})`;
+      
       const somCount = document.querySelector(`.sommaire-item[data-tier-id="${t.id}"] .sommaire-count`);
       if(somCount) somCount.innerText = t.songs.length;
   });
@@ -1468,8 +1513,14 @@ function setupDrop(container, tierId){
     e.preventDefault();
     if(selectedIds.size === 0 && !draggedId) return;
     if(e.target.classList.contains('placeholder') || e.target.classList.contains('dragging')) return;
-    if(!placeholder) { placeholder = document.createElement("div"); placeholder.className = "placeholder"; }
+
+    if(!placeholder) { 
+        placeholder = document.createElement("div"); 
+        placeholder.className = "placeholder"; 
+    }
+    
     const after = getDragAfterElement(container, e.clientX, e.clientY);
+    
     if (after !== currentDragAfter) {
         currentDragAfter = after;
         if(after == null) container.appendChild(placeholder);
@@ -1480,11 +1531,15 @@ function setupDrop(container, tierId){
   container.addEventListener("drop", e => {
     e.preventDefault();
     if(selectedIds.size === 0) return;
+    
     const fragment = document.createDocumentFragment();
     selectedIds.forEach(id => {
         const draggedElement = document.getElementById(`card-${id}`);
-        if(draggedElement) fragment.appendChild(draggedElement);
+        if(draggedElement) {
+            fragment.appendChild(draggedElement);
+        }
     });
+
     if(placeholder && placeholder.parentNode === container) {
         container.insertBefore(fragment, placeholder);
         placeholder.remove();
@@ -1492,15 +1547,23 @@ function setupDrop(container, tierId){
     } else {
         container.appendChild(fragment);
     }
+
     document.body.classList.remove("is-dragging");
+    
     selectedIds.forEach(id => {
         const c = document.getElementById(`card-${id}`);
         if(c) c.classList.remove("dragging", "selected");
     });
     selectedIds.clear();
+    
     draggedId = null;
     currentDragAfter = undefined;
-    setTimeout(() => { rebuildDataFromDOM(); save(); updateCounters(); }, 10);
+    
+    setTimeout(() => {
+        rebuildDataFromDOM();
+        save(); 
+        updateCounters();
+    }, 10);
   });
 }
 
@@ -1508,6 +1571,7 @@ function getDragAfterElement(container, x, y) {
   const cards = container.querySelectorAll('.card:not(.dragging)');
   let closest = null;
   let closestDistance = Number.POSITIVE_INFINITY;
+
   for (let i = 0; i < cards.length; i++) {
       const box = cards[i].getBoundingClientRect();
       if (y >= box.top && y <= box.bottom) {
@@ -1538,6 +1602,7 @@ function editSong(id){
     s.artist = a; s.title = t; 
     s.youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(a + ' ' + t + ' official mv')}`;
     save(); 
+    
     const card = document.getElementById(`card-${id}`);
     if (card) {
         const strong = card.querySelector('.card-overlay strong');
@@ -1564,7 +1629,10 @@ async function addSong(){
     const json = await res.json();
     cover = json.results[0]?.artworkUrl100?.replace("100x100", "300x300") || "";
   } catch(e) {}
-  if(!cover) cover = `https://ui-avatars.com/api/?name=${encodeURIComponent(artist)}&background=random&color=fff&size=300&font-size=0.33`;
+
+  if(!cover) {
+      cover = `https://ui-avatars.com/api/?name=${encodeURIComponent(artist)}&background=random&color=fff&size=300&font-size=0.33`;
+  }
 
   let youtubeUrl = "";
   if(YOUTUBE_API_KEY) {
@@ -1576,32 +1644,29 @@ async function addSong(){
               const videoId = ytJson.items[0].id.videoId;
               youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
           } else { throw new Error("No video"); }
-      } catch(e) { youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`; }
-  } else { youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`; }
+      } catch(e) {
+          youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`;
+      }
+  } else {
+      youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`;
+  }
 
-  const newSong = { 
-    id: generateUniqueId(), 
-    artist, 
-    title, 
-    cover, 
-    youtubeUrl, 
-    favorite: false, 
-    sessionId: getTodaySessionId(),
-    liveVotes: [],
-    liveAvg: null
-  };
-  
+  const newSong = { id: generateUniqueId(), artist, title, cover, youtubeUrl, favorite: false, sessionId: getTodaySessionId(), chatRating: null };
   data.pool.push(newSong);
-  lastAddedSongId = newSong.id; // Prêt pour le vote Twitch
   save(); 
   
   const poolEl = document.getElementById("pool");
-  if(poolEl) poolEl.appendChild(createCard(newSong));
+  if(poolEl) {
+      poolEl.appendChild(createCard(newSong));
+  }
   
   document.getElementById("artistInput").value = "";
   document.getElementById("titleInput").value = "";
   btn.innerText = originalText;
   filterCards();
+
+  // Lancement automatique du sondage Twitch lors de l'ajout
+  startTwitchVote(newSong.id, `${artist} - ${title}`);
 }
 
 function addTier(){
@@ -1612,6 +1677,7 @@ function addTier(){
 function toggleEdit(){
   editMode = !editMode;
   const btn = document.getElementById("editBtn");
+  
   if (!editMode) {
       selectedIds.forEach(id => {
           const c = document.getElementById(`card-${id}`);
@@ -1619,6 +1685,7 @@ function toggleEdit(){
       });
       selectedIds.clear();
   }
+  
   if(editMode) {
       btn.innerHTML = "✅";
       btn.style.background = "var(--accent-secondary)";
@@ -1642,40 +1709,58 @@ function toggleCompact(){
 
 function toggleDark(){ document.body.classList.toggle("dark"); }
 
-function handleEnter(e) { if(e.key === "Enter") addSong(); }
+function handleEnter(e) {
+    if(e.key === "Enter") {
+        addSong();
+    }
+}
 document.getElementById("artistInput").addEventListener("keypress", handleEnter);
 document.getElementById("titleInput").addEventListener("keypress", handleEnter);
 
 window.addEventListener('scroll', () => {
     const btn = document.getElementById("scrollTopBtn");
-    if (window.scrollY > 300) btn.classList.add("visible");
-    else btn.classList.remove("visible");
+    if (window.scrollY > 300) {
+        btn.classList.add("visible");
+    } else {
+        btn.classList.remove("visible");
+    }
 });
 
 let autoScrollSpeed = 0;
 let autoScrollRAF = null;
+
 document.addEventListener("dragover", (e) => {
     const edge = 80; 
-    if (e.clientY < edge) autoScrollSpeed = -15; 
-    else if (e.clientY > window.innerHeight - edge) autoScrollSpeed = 15;  
-    else autoScrollSpeed = 0;   
-    if (autoScrollSpeed !== 0 && !autoScrollRAF) autoScrollRAF = requestAnimationFrame(doAutoScroll);
+    if (e.clientY < edge) {
+        autoScrollSpeed = -15; 
+    } else if (e.clientY > window.innerHeight - edge) {
+        autoScrollSpeed = 15;  
+    } else {
+        autoScrollSpeed = 0;   
+    }
+
+    if (autoScrollSpeed !== 0 && !autoScrollRAF) {
+        autoScrollRAF = requestAnimationFrame(doAutoScroll);
+    }
 });
 
 document.addEventListener("dragend", () => {
     autoScrollSpeed = 0;
-    if (autoScrollRAF) { cancelAnimationFrame(autoScrollRAF); autoScrollRAF = null; }
+    if (autoScrollRAF) {
+        cancelAnimationFrame(autoScrollRAF);
+        autoScrollRAF = null;
+    }
 });
 
 function doAutoScroll() {
     if (autoScrollSpeed !== 0) {
         window.scrollBy(0, autoScrollSpeed);
         autoScrollRAF = requestAnimationFrame(doAutoScroll);
-    } else autoScrollRAF = null;
+    } else {
+        autoScrollRAF = null;
+    }
 }
 
-// INIT
-migrateData();
 render();
 setTimeout(syncCovers, 1500); 
 changeTwitchChannel(); 
