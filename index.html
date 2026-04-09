@@ -205,19 +205,30 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 .scroll-top-btn.visible { opacity: 1; visibility: visible; }
 .scroll-top-btn:hover { transform: translateY(-5px); background: var(--accent-secondary); }
 
-/* --- MAIN LAYOUT --- */
+/* --- NOUVELLE MISE EN PAGE FLEX POUR L'ALIGNEMENT DES SIDEBARS --- */
 .main {
-  max-width: 1320px; 
+  max-width: 1700px; 
   margin: auto; 
   padding: 0 20px 240px 20px;
 }
 
-/* --- SOMMAIRE (FLOTTANT À GAUCHE) --- */
+.tierlist-wrapper {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start; /* Aligne tout en haut */
+}
+
+#tiers {
+  flex: 1;
+  min-width: 0;
+}
+
+/* --- SOMMAIRE (ALIGNE EN HAUT DU TIERLIST-WRAPPER) --- */
 .sommaire-sidebar {
-  position: fixed;
-  top: 195px; 
-  left: max(20px, calc(25vw - 460px)); 
+  position: sticky;
+  top: 90px; /* Aligné juste sous le header collant */
   width: 250px;
+  flex-shrink: 0;
   background: var(--card-bg);
   border: var(--card-border);
   border-radius: var(--radius-md);
@@ -226,7 +237,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  max-height: 70vh;
+  max-height: calc(100vh - 120px);
   z-index: 100;
 }
 
@@ -269,14 +280,13 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   font-size: 11px;
 }
 
-/* --- TWITCH SIDEBAR (FLOTTANT À DROITE) --- */
+/* --- TWITCH SIDEBAR (ALIGNE EN HAUT DU TIERLIST-WRAPPER) --- */
 .twitch-sidebar {
-  position: fixed;
-  top: 195px; 
-  right: max(20px, calc(25vw - 490px)); 
+  position: sticky;
+  top: 90px;
   width: 320px;
-  height: 80vh; 
-  max-height: 900px;
+  flex-shrink: 0;
+  height: calc(100vh - 120px);
   background: var(--card-bg);
   border: var(--card-border);
   border-radius: var(--radius-md);
@@ -290,9 +300,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 }
 
 .twitch-sidebar.hidden {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
+  display: none !important;
 }
 
 .twitch-header {
@@ -361,7 +369,7 @@ iframe.twitch-iframe {
 }
 
 /* --- RESPONSIVE --- */
-@media (max-width: 1750px) {
+@media (max-width: 1450px) {
   .twitch-sidebar, .sommaire-sidebar { display: none !important; }
 }
 
@@ -398,26 +406,6 @@ iframe.twitch-iframe {
   scroll-margin-top: 90px; 
   position: relative; 
 }
-
-/* ONGLET FLÈCHES (MODE ÉDITION) */
-.tier-reorder-tab {
-  position: absolute;
-  right: -38px;
-  top: 20px;
-  display: none;
-  flex-direction: column;
-  gap: 8px;
-  background: var(--card-bg);
-  border: var(--card-border);
-  border-left: none;
-  padding: 10px 6px;
-  border-radius: 0 12px 12px 0;
-  box-shadow: 5px 0 15px rgba(0,0,0,0.1);
-  z-index: 30;
-  backdrop-filter: blur(8px);
-}
-body.edit-active .tier-reorder-tab { display: flex; }
-.tier-reorder-tab button { width: 28px; height: 28px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; border-radius: 6px; }
 
 .tier-header {
   padding: 15px 25px;
@@ -616,6 +604,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
     <button onclick="toggleDark()" class="icon-btn" title="Thème Sombre/Clair">🌙</button>
     <button onclick="toggleCompact()" id="compactBtn" class="icon-btn" title="Vue Compacte">☰</button>
     <button onclick="toggleTwitch()" class="icon-btn" title="Afficher/Cacher Tchat Twitch">🟣</button>
+    <button onclick="togglePolls()" id="pollToggleBtn" class="icon-btn" title="Activer/Désactiver Sondages Twitch">🗳️ OFF</button>
     <button onclick="forceSync()" class="icon-btn" title="Relancer recherche d'images">🔄</button>
     
     <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;" class="desktop-only"></div>
@@ -653,7 +642,6 @@ body.edit-active .card-tools button { pointer-events: auto; }
 <div id="allArtistsModal" class="modal-overlay" onclick="closeModal(event)">
   <div class="modal-content">
     <h2>Tous les Artistes</h2>
-    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 5px;">L'algorithme pénalise les One-Hit Wonders et punit sévèrement la répétition de mauvaises chansons.</div>
     <div class="modal-body-scroll" id="allArtistsBody"></div>
     <div style="margin-top: 15px; text-align: right;">
       <button onclick="document.getElementById('allArtistsModal').style.display='none'">Fermer</button>
@@ -673,18 +661,6 @@ body.edit-active .card-tools button { pointer-events: auto; }
 
 <button id="scrollTopBtn" class="scroll-top-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Remonter tout en haut">⬆️</button>
 
-<div class="sommaire-sidebar" id="sommaireSidebar">
-  <div class="sommaire-header">📑 Sommaire</div>
-  <div id="sommaireList" class="sommaire-list"></div>
-</div>
-
-<div class="twitch-sidebar hidden" id="twitchSidebar">
-  <div class="twitch-header">
-    <span style="color: #bfdbfe;">🟣 Tchat Twitch</span>
-    <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="Dantebose" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
-  </div>
-  <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
-</div>
 
 <div class="main">
   <div class="input-section">
@@ -693,7 +669,23 @@ body.edit-active .card-tools button { pointer-events: auto; }
     <input type="text" id="titleInput" placeholder="Titre (ex: Dash)">
     <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
   </div>
-  <div id="tiers"></div>
+  
+  <div class="tierlist-wrapper">
+    <div class="sommaire-sidebar" id="sommaireSidebar">
+      <div class="sommaire-header">📑 Sommaire</div>
+      <div id="sommaireList" class="sommaire-list"></div>
+    </div>
+    
+    <div id="tiers"></div>
+    
+    <div class="twitch-sidebar hidden" id="twitchSidebar">
+      <div class="twitch-header">
+        <span style="color: #bfdbfe;">🟣 Tchat Twitch</span>
+        <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="Dantebose" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
+      </div>
+      <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
+    </div>
+  </div>
 </div>
 
 <div class="pool-container">
@@ -714,42 +706,53 @@ let compactMode = false;
 let draggedId = null;
 let placeholder = null;
 let twitchVisible = false; // Caché par défaut
+let pollsEnabled = false;  // Sondages désactivés par défaut
 let currentDragAfter = undefined; 
 let selectedIds = new Set(); 
 
-// --- GESTION TWITCH TMI.JS ---
+// --- GESTION TWITCH TMI.JS AVEC SECURITE ANTI-PLANTAGE ---
 let activeTwitchSongId = null;
 let twitchVotes = {}; // { username: note }
+let twitchClient = null;
 
-const twitchClient = new tmi.Client({ channels: ['Dantebose'] });
-twitchClient.connect().catch(e => console.log('Erreur de connexion Twitch:', e));
+try {
+    if (typeof tmi !== 'undefined') {
+        twitchClient = new tmi.Client({ channels: ['Dantebose'] });
+        twitchClient.connect().catch(e => console.log('Erreur de connexion Twitch:', e));
 
-twitchClient.on('message', (channel, tags, message, self) => {
-    if (self || !activeTwitchSongId) return;
-    
-    // On écoute les messages du type "!note 8" ou "!note 7.5"
-    if (message.toLowerCase().startsWith('!note ')) {
-        const noteStr = message.split(' ')[1];
-        if(noteStr) {
-            const note = parseFloat(noteStr.replace(',', '.')); // Gère les virgules ou points
-            if (!isNaN(note) && note >= 0 && note <= 10) {
-                twitchVotes[tags.username] = note; // Écrase si l'utilisateur revote
-                
-                // Calcul de la moyenne en temps réel
-                let sum = 0; let count = 0;
-                for (let u in twitchVotes) { sum += twitchVotes[u]; count++; }
-                const avg = (sum / count).toFixed(1);
-                
-                const resDiv = document.getElementById("twitchLiveResult");
-                if (resDiv) {
-                    resDiv.innerHTML = `Moyenne: <strong style="color:var(--accent-primary); font-size:16px;">${avg} / 10</strong> <span style="font-size:12px; opacity:0.8;">(${count} votes)</span>`;
+        twitchClient.on('message', (channel, tags, message, self) => {
+            if (self || !activeTwitchSongId) return;
+            
+            // On écoute les messages du type "!note 8" ou "!note 7.5"
+            if (message.toLowerCase().startsWith('!note ')) {
+                const noteStr = message.split(' ')[1];
+                if(noteStr) {
+                    const note = parseFloat(noteStr.replace(',', '.'));
+                    if (!isNaN(note) && note >= 0 && note <= 10) {
+                        twitchVotes[tags.username] = note; 
+                        
+                        // Calcul de la moyenne
+                        let sum = 0; let count = 0;
+                        for (let u in twitchVotes) { sum += twitchVotes[u]; count++; }
+                        const avg = (sum / count).toFixed(1);
+                        
+                        const resDiv = document.getElementById("twitchLiveResult");
+                        if (resDiv) {
+                            resDiv.innerHTML = `Moyenne: <strong style="color:var(--accent-primary); font-size:16px;">${avg} / 10</strong> <span style="font-size:12px; opacity:0.8;">(${count} votes)</span>`;
+                        }
+                    }
                 }
             }
-        }
+        });
+    } else {
+        console.warn("tmi.js n'a pas pu être chargé (bloqué par un anti-pub ou mode hors ligne). Le script fonctionnera normalement sans Twitch.");
     }
-});
+} catch (e) {
+    console.warn("Erreur d'initialisation Twitch:", e);
+}
 
 function startTwitchVote(songId, title) {
+    if(!twitchClient) return;
     activeTwitchSongId = songId;
     twitchVotes = {};
     const ui = document.getElementById("twitchVoteOverlay");
@@ -771,6 +774,20 @@ function stopTwitchVote() {
     }
     activeTwitchSongId = null;
     document.getElementById("twitchVoteOverlay").style.display = "none";
+}
+
+function togglePolls() {
+    pollsEnabled = !pollsEnabled;
+    const btn = document.getElementById("pollToggleBtn");
+    if(pollsEnabled) {
+        btn.innerHTML = "🗳️ ON";
+        btn.style.color = "white";
+        btn.style.background = "var(--accent-secondary)";
+    } else {
+        btn.innerHTML = "🗳️ OFF";
+        btn.style.color = "";
+        btn.style.background = "";
+    }
 }
 // -----------------------------
 
@@ -794,11 +811,10 @@ function defaultData(){
   };
 }
 
-// Fonction pour rendre le format rétroactif sans écraser les anciennes cartes
+// Fonction pour rendre le format rétroactif
 function migrateData(loadedData) {
     const allSongs = [...loadedData.pool, ...loadedData.tiers.flatMap(t => t.songs)];
     allSongs.forEach(song => {
-        // Ajout des nouvelles propriétés par défaut ici si elles n'existent pas
         if (song.favorite === undefined) song.favorite = false;
         if (song.sessionId === undefined) song.sessionId = 'Legacy';
         if (song.chatRating === undefined) song.chatRating = null; 
@@ -810,7 +826,7 @@ function load(){
   try{
     const raw=localStorage.getItem("tierData");
     const parsed = raw ? JSON.parse(raw) : defaultData();
-    return migrateData(parsed); // Applique la migration à chaque chargement
+    return migrateData(parsed);
   }catch(e){ return defaultData(); }
 }
 
@@ -850,7 +866,7 @@ function importJson(input) {
       json.pool.forEach(s => { if(!s.id.includes('-')) s.id = generateUniqueId(); });
       json.tiers.forEach(t => { t.songs.forEach(s => { if(!s.id.includes('-')) s.id = generateUniqueId(); }); });
 
-      data = migrateData(json); // Sécurité lors de l'import
+      data = migrateData(json); 
       save(); render(); 
       alert("Sauvegarde chargée !");
       syncCovers(); 
@@ -879,9 +895,10 @@ function changeTwitchChannel() {
         return;
     }
     
-    // Met à jour la lecture des commandes du bot également
-    twitchClient.getChannels().forEach(ch => twitchClient.part(ch));
-    twitchClient.join(channel).catch(e => console.log('Erreur join:', e));
+    if(twitchClient) {
+        twitchClient.getChannels().forEach(ch => twitchClient.part(ch));
+        twitchClient.join(channel).catch(e => console.log('Erreur join:', e));
+    }
     
     let parentDomain = window.location.hostname;
     if (!parentDomain) {
@@ -1050,7 +1067,6 @@ function calculateRankings() {
   const maxScore = Math.max(1, data.tiers.length); 
   
   data.tiers.forEach((tier, index) => {
-    // Calcul de la note pure sur 10 
     const scoreOutOf10 = ((maxScore - index) / maxScore) * 10; 
 
     tier.songs.forEach(song => {
@@ -1067,7 +1083,6 @@ function calculateRankings() {
       artistStats[lowerName].sumScore += scoreOutOf10;
       artistStats[lowerName].count++;
       
-      // -- STATS DE SESSION --
       if(song.sessionId) {
           if(!sessionStats[song.sessionId]) {
               sessionStats[song.sessionId] = { sumScore: 0, count: 0 };
@@ -1082,7 +1097,7 @@ function calculateRankings() {
 
   let rankings = Object.keys(artistStats).map(key => {
     const n = artistStats[key].count;
-    const x_bar = artistStats[key].sumScore / n; // Moyenne pure de l'artiste (sur 10)
+    const x_bar = artistStats[key].sumScore / n; 
     
     let exactScore = 0;
 
@@ -1168,7 +1183,6 @@ function showStats() {
   
   const globalAvg = countGlobal > 0 ? (sumGlobal / countGlobal).toFixed(1) : '-';
 
-  // ANALYSE DES SESSIONS
   const todayId = getTodaySessionId();
   let bestSess = { id: '-', avg: 0, count: 0 };
   let worstSess = { id: '-', avg: 99, count: 0 };
@@ -1308,14 +1322,6 @@ function render(){
     const tier = document.createElement("div");
     tier.className = "tier";
     tier.id = `tier-node-${t.id}`; 
-    
-    const reorderTab = document.createElement("div");
-    reorderTab.className = "tier-reorder-tab";
-    reorderTab.innerHTML = `
-        <button onclick="moveTierUp('${t.id}')" title="Monter">▲</button>
-        <button onclick="moveTierDown('${t.id}')" title="Descendre">▼</button>
-    `;
-    tier.appendChild(reorderTab);
 
     const header = document.createElement("div");
     header.className = "tier-header";
@@ -1351,6 +1357,22 @@ function render(){
     delBtn.onclick = () => { if(confirm("Supprimer ce Tier ?")){ data.pool.push(...t.songs); data.tiers=data.tiers.filter(x=>x.id!==t.id); save(); render(); }};
 
     controls.append(colorWrapper, renameBtn, delBtn);
+
+    // Ajout des flèches directement dans l'en-tête (seulement si le mode édition est actif)
+    if (editMode) {
+      const upBtn = document.createElement("button");
+      upBtn.innerHTML = "▲";
+      upBtn.title = "Monter";
+      upBtn.onclick = () => moveTierUp(t.id);
+
+      const downBtn = document.createElement("button");
+      downBtn.innerHTML = "▼";
+      downBtn.title = "Descendre";
+      downBtn.onclick = () => moveTierDown(t.id);
+
+      controls.append(upBtn, downBtn);
+    }
+
     header.append(controls);
     tier.append(header);
 
@@ -1665,8 +1687,10 @@ async function addSong(){
   btn.innerText = originalText;
   filterCards();
 
-  // Lancement automatique du sondage Twitch lors de l'ajout
-  startTwitchVote(newSong.id, `${artist} - ${title}`);
+  // Ne lance le sondage que si le bouton est sur ON
+  if(pollsEnabled) {
+      startTwitchVote(newSong.id, `${artist} - ${title}`);
+  }
 }
 
 function addTier(){
@@ -1709,6 +1733,7 @@ function toggleCompact(){
 
 function toggleDark(){ document.body.classList.toggle("dark"); }
 
+// L'événement Touche Entrée fonctionne désormais correctement
 function handleEnter(e) {
     if(e.key === "Enter") {
         addSong();
@@ -1751,15 +1776,6 @@ document.addEventListener("dragend", () => {
         autoScrollRAF = null;
     }
 });
-
-function doAutoScroll() {
-    if (autoScrollSpeed !== 0) {
-        window.scrollBy(0, autoScrollSpeed);
-        autoScrollRAF = requestAnimationFrame(doAutoScroll);
-    } else {
-        autoScrollRAF = null;
-    }
-}
 
 render();
 setTimeout(syncCovers, 1500); 
