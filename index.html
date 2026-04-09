@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KPOP Tier List</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tmi.js/1.8.5/tmi.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tmi.js@1.8.5/dist/tmi.min.js"></script>
 
 <style>
 /* --- VARIABLES & THEME --- */
@@ -205,30 +205,20 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 .scroll-top-btn.visible { opacity: 1; visibility: visible; }
 .scroll-top-btn:hover { transform: translateY(-5px); background: var(--accent-secondary); }
 
-/* --- NOUVELLE MISE EN PAGE FLEX POUR L'ALIGNEMENT DES SIDEBARS --- */
+/* --- MAIN LAYOUT --- */
 .main {
-  max-width: 1700px; 
+  max-width: 1320px; 
   margin: auto; 
   padding: 0 20px 240px 20px;
 }
 
-.tierlist-wrapper {
-  display: flex;
-  gap: 20px;
-  align-items: flex-start; /* Aligne tout en haut */
-}
-
-#tiers {
-  flex: 1;
-  min-width: 0;
-}
-
-/* --- SOMMAIRE (ALIGNE EN HAUT DU TIERLIST-WRAPPER) --- */
+/* --- SOMMAIRE (FLOTTANT À GAUCHE) --- */
 .sommaire-sidebar {
-  position: sticky;
-  top: 90px; /* Aligné juste sous le header collant */
+  position: fixed;
+  /* Aligné précisément avec le haut du premier Tier (~225px) */
+  top: 225px; 
+  left: max(20px, calc(25vw - 460px)); 
   width: 250px;
-  flex-shrink: 0;
   background: var(--card-bg);
   border: var(--card-border);
   border-radius: var(--radius-md);
@@ -237,7 +227,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 120px);
+  max-height: calc(100vh - 250px);
   z-index: 100;
 }
 
@@ -280,19 +270,21 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   font-size: 11px;
 }
 
-/* --- TWITCH SIDEBAR (ALIGNE EN HAUT DU TIERLIST-WRAPPER) --- */
+/* --- TWITCH SIDEBAR (FLOTTANT À DROITE) --- */
 .twitch-sidebar {
-  position: sticky;
-  top: 90px;
+  position: fixed;
+  /* Aligné précisément avec le haut du premier Tier (~225px) */
+  top: 225px; 
+  right: max(20px, calc(25vw - 490px)); 
   width: 320px;
-  flex-shrink: 0;
-  height: calc(100vh - 120px);
+  height: calc(100vh - 250px);
   background: var(--card-bg);
   border: var(--card-border);
   border-radius: var(--radius-md);
   box-shadow: var(--glass-shadow);
-  backdrop-filter: blur(8px);
-  overflow: hidden;
+  
+  /* IMPORTANT: Retrait du backdrop-filter et overflow:hidden pour que Twitch autorise le tchat */
+  
   display: flex;
   flex-direction: column;
   z-index: 100;
@@ -300,12 +292,16 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 }
 
 .twitch-sidebar.hidden {
-  display: none !important;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .twitch-header {
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
   padding: 12px 15px;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.3);
   border-bottom: var(--card-border);
   font-weight: 600;
   display: flex;
@@ -335,6 +331,9 @@ iframe.twitch-iframe {
   flex: 1;
   width: 100%;
   border: none;
+  border-bottom-left-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+  background: transparent;
 }
 
 /* --- OVERLAY VOTE TWITCH --- */
@@ -369,7 +368,7 @@ iframe.twitch-iframe {
 }
 
 /* --- RESPONSIVE --- */
-@media (max-width: 1450px) {
+@media (max-width: 1750px) {
   .twitch-sidebar, .sommaire-sidebar { display: none !important; }
 }
 
@@ -661,6 +660,18 @@ body.edit-active .card-tools button { pointer-events: auto; }
 
 <button id="scrollTopBtn" class="scroll-top-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Remonter tout en haut">⬆️</button>
 
+<div class="sommaire-sidebar" id="sommaireSidebar">
+  <div class="sommaire-header">📑 Sommaire</div>
+  <div id="sommaireList" class="sommaire-list"></div>
+</div>
+
+<div class="twitch-sidebar hidden" id="twitchSidebar">
+  <div class="twitch-header">
+    <span style="color: #bfdbfe;">🟣 Tchat Twitch</span>
+    <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="Dantebose" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
+  </div>
+  <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
+</div>
 
 <div class="main">
   <div class="input-section">
@@ -669,23 +680,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
     <input type="text" id="titleInput" placeholder="Titre (ex: Dash)">
     <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
   </div>
-  
-  <div class="tierlist-wrapper">
-    <div class="sommaire-sidebar" id="sommaireSidebar">
-      <div class="sommaire-header">📑 Sommaire</div>
-      <div id="sommaireList" class="sommaire-list"></div>
-    </div>
-    
-    <div id="tiers"></div>
-    
-    <div class="twitch-sidebar hidden" id="twitchSidebar">
-      <div class="twitch-header">
-        <span style="color: #bfdbfe;">🟣 Tchat Twitch</span>
-        <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="Dantebose" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
-      </div>
-      <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
-    </div>
-  </div>
+  <div id="tiers"></div>
 </div>
 
 <div class="pool-container">
@@ -710,7 +705,7 @@ let pollsEnabled = false;  // Sondages désactivés par défaut
 let currentDragAfter = undefined; 
 let selectedIds = new Set(); 
 
-// --- GESTION TWITCH TMI.JS AVEC SECURITE ANTI-PLANTAGE ---
+// --- GESTION TWITCH TMI.JS ---
 let activeTwitchSongId = null;
 let twitchVotes = {}; // { username: note }
 let twitchClient = null;
@@ -723,7 +718,6 @@ try {
         twitchClient.on('message', (channel, tags, message, self) => {
             if (self || !activeTwitchSongId) return;
             
-            // On écoute les messages du type "!note 8" ou "!note 7.5"
             if (message.toLowerCase().startsWith('!note ')) {
                 const noteStr = message.split(' ')[1];
                 if(noteStr) {
@@ -731,7 +725,6 @@ try {
                     if (!isNaN(note) && note >= 0 && note <= 10) {
                         twitchVotes[tags.username] = note; 
                         
-                        // Calcul de la moyenne
                         let sum = 0; let count = 0;
                         for (let u in twitchVotes) { sum += twitchVotes[u]; count++; }
                         const avg = (sum / count).toFixed(1);
@@ -745,19 +738,25 @@ try {
             }
         });
     } else {
-        console.warn("tmi.js n'a pas pu être chargé (bloqué par un anti-pub ou mode hors ligne). Le script fonctionnera normalement sans Twitch.");
+        console.warn("tmi.js bloqué. Le bot Twitch est inactif.");
     }
 } catch (e) {
     console.warn("Erreur d'initialisation Twitch:", e);
 }
 
 function startTwitchVote(songId, title) {
-    if(!twitchClient) return;
     activeTwitchSongId = songId;
     twitchVotes = {};
     const ui = document.getElementById("twitchVoteOverlay");
     document.getElementById("twitchVoteTitle").innerText = title;
-    document.getElementById("twitchLiveResult").innerHTML = "Moyenne: - / 10 (0 vote)";
+    
+    // Si le bloqueur de pub empêche le chargement de tmi.js, on l'affiche
+    if (!twitchClient) {
+        document.getElementById("twitchLiveResult").innerHTML = "Moyenne: - / 10 (0 vote)<br><span style='color:#ef4444; font-size:10px; display:block; margin-top:5px;'>⚠ Bloqueur de pub actif. Désactive-le pour le tchat.</span>";
+    } else {
+        document.getElementById("twitchLiveResult").innerHTML = "Moyenne: - / 10 (0 vote)";
+    }
+    
     ui.style.display = "block";
 }
 
@@ -770,7 +769,7 @@ function stopTwitchVote() {
     if (song && count > 0) {
         song.chatRating = (sum/count).toFixed(1);
         save();
-        render(); // Met à jour la carte avec la note incrustée
+        render();
     }
     activeTwitchSongId = null;
     document.getElementById("twitchVoteOverlay").style.display = "none";
@@ -789,6 +788,7 @@ function togglePolls() {
         btn.style.background = "";
     }
 }
+
 // -----------------------------
 
 function generateUniqueId() {
@@ -811,7 +811,6 @@ function defaultData(){
   };
 }
 
-// Fonction pour rendre le format rétroactif
 function migrateData(loadedData) {
     const allSongs = [...loadedData.pool, ...loadedData.tiers.flatMap(t => t.songs)];
     allSongs.forEach(song => {
@@ -1358,7 +1357,6 @@ function render(){
 
     controls.append(colorWrapper, renameBtn, delBtn);
 
-    // Ajout des flèches directement dans l'en-tête (seulement si le mode édition est actif)
     if (editMode) {
       const upBtn = document.createElement("button");
       upBtn.innerHTML = "▲";
@@ -1687,7 +1685,6 @@ async function addSong(){
   btn.innerText = originalText;
   filterCards();
 
-  // Ne lance le sondage que si le bouton est sur ON
   if(pollsEnabled) {
       startTwitchVote(newSong.id, `${artist} - ${title}`);
   }
@@ -1733,7 +1730,6 @@ function toggleCompact(){
 
 function toggleDark(){ document.body.classList.toggle("dark"); }
 
-// L'événement Touche Entrée fonctionne désormais correctement
 function handleEnter(e) {
     if(e.key === "Enter") {
         addSong();
