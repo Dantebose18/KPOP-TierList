@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KPOP Tier List</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tmi.js/1.8.5/tmi.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <style>
@@ -206,30 +208,29 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 .scroll-top-btn.visible { opacity: 1; visibility: visible; }
 .scroll-top-btn:hover { transform: translateY(-5px); background: var(--accent-secondary); }
 
-/* --- NOUVELLE MISE EN PAGE FLEX --- */
+/* --- NOUVELLE MISE EN PAGE FLEX POUR L'ALIGNEMENT DES SIDEBARS --- */
 .main {
   max-width: 1700px; 
   margin: auto; 
   padding: 0 20px 240px 20px;
-  transition: all 0.3s ease;
 }
 
 .tierlist-wrapper {
   display: flex;
   gap: 20px;
-  align-items: flex-start;
+  align-items: flex-start; /* Aligne tout en haut */
 }
 
 #tiers {
   flex: 1;
   min-width: 0;
-  border-radius: var(--radius-lg); /* Pour l'export image propre */
+  background: transparent; /* Pour éviter les bugs html2canvas */
 }
 
-/* --- SOMMAIRE --- */
+/* --- SOMMAIRE (ALIGNE EN HAUT DU TIERLIST-WRAPPER) --- */
 .sommaire-sidebar {
   position: sticky;
-  top: 90px;
+  top: 90px; 
   width: 250px;
   flex-shrink: 0;
   background: var(--card-bg);
@@ -283,7 +284,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   font-size: 11px;
 }
 
-/* --- TWITCH SIDEBAR --- */
+/* --- TWITCH SIDEBAR (ALIGNE EN HAUT DU TIERLIST-WRAPPER) --- */
 .twitch-sidebar {
   position: sticky;
   top: 90px;
@@ -451,7 +452,7 @@ input[type="color"] { position: absolute; top: -50%; left: -50%; width: 200%; he
 /* --- CARDS & SÉLECTION --- */
 .card {
   width: 140px; height: 140px; border-radius: var(--radius-md); background-size: cover; background-position: center; position: relative; cursor: grab;
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, height 0.2s ease, background-image 0.5s ease-in, filter 0.3s;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, height 0.2s ease, background-image 0.5s ease-in;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; border: 2px solid rgba(255,255,255,0.1); background-color: var(--card-bg);
 }
 
@@ -478,26 +479,6 @@ body.is-dragging .card { transition: none !important; }
 #tiers .card:hover { transform: scale(1.15) translateY(-5px); z-index: 50; box-shadow: 0 20px 30px rgba(0,0,0,0.25); border-color: var(--accent-secondary); }
 .card.is-favorite:hover { border-color: var(--accent-fav); }
 .card.selected:hover { border-color: var(--accent-primary); }
-
-/* ✨ EFFETS S-TIER ET F-TIER SUR LES CARTES ✨ */
-.tier[id="tier-node-S"] .card {
-    border: 2px solid rgba(255, 215, 0, 0.8);
-    box-shadow: 0 0 15px rgba(236, 72, 153, 0.4), inset 0 0 10px rgba(255, 215, 0, 0.3);
-    animation: float-s-tier 3s ease-in-out infinite;
-}
-@keyframes float-s-tier {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-4px); box-shadow: 0 5px 20px rgba(236, 72, 153, 0.6), inset 0 0 10px rgba(255, 215, 0, 0.5); }
-}
-
-.tier[id="tier-node-F"] .card {
-    filter: grayscale(0.8) sepia(0.2) hue-rotate(-50deg);
-    opacity: 0.8;
-    border-color: rgba(100,100,100,0.5);
-    box-shadow: none;
-    transform: rotate(-2deg);
-}
-.tier[id="tier-node-F"] .card:hover { filter: grayscale(0); opacity: 1; transform: rotate(0) scale(1.15) translateY(-5px); box-shadow: 0 20px 30px rgba(0,0,0,0.25); border-color: #ef4444; }
 
 .card-overlay { position: absolute; bottom: 0; width: 100%; padding: 40px 10px 10px 10px; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%); color: white; font-size: 12px; line-height: 1.3; text-align: center; pointer-events: none; transition: all 0.2s; display: flex; flex-direction: column; justify-content: flex-end; }
 .card-overlay strong { display: block; font-size: 13px; margin-bottom: 2px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
@@ -530,12 +511,11 @@ body.compact-active .card:hover .card-overlay { top: auto; bottom: 0; background
 .card-tools button:hover { background: var(--accent-secondary); transform: scale(1.1); }
 .card-tools button.active-fav { color: var(--accent-fav); background: rgba(0,0,0,0.8); border-color: var(--accent-fav); }
 
-.placeholder { width: 140px; height: 140px; border-radius: var(--radius-md); border: 2px dashed var(--text-muted); background: rgba(100,100,100,0.05); opacity: 0.5; animation: pulse 1.5s infinite; transition: none; pointer-events: none; }
+.placeholder { width: 140px; height: 140px; border-radius: var(--radius-md); border: 2px dashed var(--text-muted); background: rgba(100,100,100,0.05); opacity: 0.5; transition: none; pointer-events: none; }
 body.compact-active .placeholder { height: 70px; }
-@keyframes pulse { 0%{opacity:0.3} 50%{opacity:0.6} 100%{opacity:0.3} }
 
 /* --- POOL --- */
-.pool-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 1200px; background: var(--card-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 20px; border: var(--card-border); border-radius: var(--radius-lg); box-shadow: 0 -10px 40px rgba(0,0,0,0.1); z-index: 100; transition: transform 0.3s; }
+.pool-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 1200px; background: var(--card-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 20px; border: var(--card-border); border-radius: var(--radius-lg); box-shadow: 0 -10px 40px rgba(0,0,0,0.1); z-index: 100; }
 .pool-header { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
 .pool-header::after { content:''; flex:1; height:1px; background: var(--text-muted); opacity: 0.2; }
 .pool { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; min-height: 150px; scrollbar-width: thin; scrollbar-color: var(--accent-primary) transparent; }
@@ -549,7 +529,14 @@ body.compact-active .placeholder { height: 70px; }
 }
 .modal-content h2 { margin-top: 0; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-.modal-body-scroll { overflow-y: auto; flex: 1; padding-right: 10px; margin-top: 10px; margin-bottom: 15px; }
+/* ZONE SCROLLABLE INTERNE */
+.modal-body-scroll {
+  overflow-y: auto;
+  flex: 1;
+  padding-right: 10px;
+  margin-top: 10px;
+  margin-bottom: 15px;
+}
 .modal-body-scroll::-webkit-scrollbar { width: 6px; }
 .modal-body-scroll::-webkit-scrollbar-track { background: rgba(128,128,128,0.1); border-radius: 4px; }
 .modal-body-scroll::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; }
@@ -564,6 +551,7 @@ body.compact-active .placeholder { height: 70px; }
 .rank-name { flex: 1; font-weight: 600; }
 .rank-avg { font-size: 12px; padding: 2px 6px; background: var(--text-muted); color: white; border-radius: 4px; min-width: 50px; text-align: center; font-weight: bold; }
 
+/* Code Couleurs Classement */
 .rank-item.top { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); }
 .rank-item.top .rank-pos { color: #10b981; }
 .rank-item.top .rank-avg { background: #10b981; }
@@ -592,73 +580,106 @@ body.edit-active .card-tools button { pointer-events: auto; }
 .session-date { font-size: 11px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
 .session-data { font-size: 14px; font-weight: 600; margin-top: 2px; }
 
-/* ========================================================
-   ✨ NOUVELLES ANIMATIONS ET MODE CINÉMATIQUE ✨
-   ======================================================== */
+/* ========================================= */
+/* NOUVEAUTÉS : ANIMATIONS ET EFFETS SPÉCIAUX */
+/* ========================================= */
 
-/* Flash Général */
-#bg-flash { position: fixed; inset: 0; pointer-events: none; z-index: -1; opacity: 0; transition: opacity 0.5s, background 0s; }
-.flash-active { animation: flash-fade 0.8s ease-out; }
-@keyframes flash-fade { 0% { opacity: 0.5; transform: scale(1); } 100% { opacity: 0; transform: scale(1.05); } }
-
-/* Particules S-Tier */
-.s-particle { position: fixed; top: -20px; width: 10px; height: 10px; border-radius: 50%; pointer-events: none; z-index: 9999; animation: fall linear forwards; box-shadow: 0 0 10px currentColor; }
-@keyframes fall { to { transform: translateY(110vh) rotate(360deg); opacity: 0; } }
-
-/* Tremblement et Vignette F-Tier */
-#vignette-flash { position: fixed; inset: 0; box-shadow: inset 0 0 200px rgba(220, 38, 38, 0.9); pointer-events: none; opacity: 0; z-index: 1000; }
-.vignette-active { animation: fade-vignette 0.8s ease-out; }
-@keyframes fade-vignette { 0% { opacity: 1; } 100% { opacity: 0; } }
-
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
-  20%, 40%, 60%, 80% { transform: translateX(8px); }
+/* Voile de couleur lors du Drop */
+#flashOverlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    pointer-events: none; z-index: 9998; opacity: 0;
+    transition: opacity 0.4s ease-out;
+    mix-blend-mode: overlay;
 }
-.shake-active { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; overflow: hidden; }
 
-/* Mode Cinématique */
-body.cinematic-mode header,
-body.cinematic-mode .input-section,
-body.cinematic-mode .sommaire-sidebar,
-body.cinematic-mode .twitch-sidebar,
-body.cinematic-mode .pool-container,
-body.cinematic-mode .scroll-top-btn {
+/* Effet Tremblement pour le Tier F */
+@keyframes shake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    70% { transform: translate(3px, 1px) rotate(-1deg); }
+    80% { transform: translate(-1px, -1px) rotate(1deg); }
+    90% { transform: translate(1px, 2px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+body.shake-active {
+    animation: shake 0.4s;
+    overflow: hidden; 
+}
+
+/* Effet permanent sur les cartes du Tier S (Top) */
+.card.s-tier-card {
+    border-color: rgba(236, 72, 153, 0.8) !important;
+    box-shadow: 0 0 15px rgba(236, 72, 153, 0.4), inset 0 0 8px rgba(255,255,255,0.3) !important;
+    overflow: hidden; 
+}
+.card.s-tier-card::after {
+    content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.4), transparent);
+    transform: skewX(-25deg);
+    animation: s-tier-shine 3s infinite;
+    z-index: 1; pointer-events: none;
+}
+@keyframes s-tier-shine { 
+    0% { left: -100%; } 
+    20% { left: 200%; } 
+    100% { left: 200%; } 
+}
+
+/* Effet permanent sur les cartes du Tier F (Flop) */
+.card.f-tier-card {
+    filter: grayscale(70%) sepia(20%) hue-rotate(-50deg) brightness(85%);
+    border-color: rgba(220, 38, 38, 0.5) !important;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.8) !important;
+}
+.card.f-tier-card .card-overlay {
+    background: linear-gradient(to top, rgba(80,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
+}
+
+/* --- MODE CINÉMATIQUE --- */
+body.cinematic-active header,
+body.cinematic-active .input-section,
+body.cinematic-active .pool-container,
+body.cinematic-active .sommaire-sidebar,
+body.cinematic-active .twitch-sidebar,
+body.cinematic-active .scroll-top-btn {
     display: none !important;
 }
 
-body.cinematic-mode .main {
-    padding-top: 20px;
-    max-width: 1320px;
-    margin: 0 auto;
+body.cinematic-active .tierlist-wrapper {
+    justify-content: center;
 }
 
-#exit-cinematic-btn {
+#exitCinematicBtn {
     position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 9999;
-    background: var(--accent-primary);
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent-gradient);
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 20px;
-    font-weight: bold;
+    padding: 12px 30px;
+    border-radius: 30px;
+    font-weight: 800;
+    font-size: 15px;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    z-index: 10000;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     display: none;
     transition: transform 0.2s;
 }
-#exit-cinematic-btn:hover { transform: scale(1.05); }
-body.cinematic-mode #exit-cinematic-btn { display: block; }
+#exitCinematicBtn:hover { transform: translateX(-50%) scale(1.05); }
+body.cinematic-active #exitCinematicBtn { display: block; }
+
 </style>
 </head>
 <body class="dark">
 
-<div id="bg-flash"></div>
-<div id="vignette-flash"></div>
-
-<button id="exit-cinematic-btn" onclick="toggleCinematic()">✖ Quitter (Échap)</button>
+<div id="flashOverlay"></div>
 
 <header>
   <div class="logo">K-TIER ✨</div>
@@ -671,19 +692,14 @@ body.cinematic-mode #exit-cinematic-btn { display: block; }
     
     <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;" class="desktop-only"></div>
     
-    <button onclick="exportJson()" title="Sauvegarder Données">💾</button>
-    <button onclick="document.getElementById('fileInput').click()" title="Charger Données">📂</button>
-    <button id="exportImageBtn" onclick="exportToImage()" title="Exporter en Image (PNG)" style="color:var(--accent-primary)">📸</button>
+    <button onclick="exportJson()" title="Sauvegarder Projet">💾</button>
+    <button onclick="document.getElementById('fileInput').click()" title="Charger Projet">📂</button>
     <button onclick="resetData()" class="btn-danger" title="Tout effacer">🗑️</button>
     
     <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;" class="desktop-only"></div>
     
     <button onclick="toggleDark()" class="icon-btn" title="Thème Sombre/Clair">🌙</button>
     <button onclick="toggleCompact()" id="compactBtn" class="icon-btn" title="Vue Compacte">☰</button>
-    <button onclick="toggleCinematic()" class="icon-btn" title="Mode Cinématique">🎬</button>
-    
-    <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;" class="desktop-only"></div>
-
     <button onclick="toggleTwitch()" class="icon-btn" title="Afficher/Cacher Tchat Twitch">🟣</button>
     <button onclick="togglePolls()" id="pollToggleBtn" class="icon-btn" title="Activer/Désactiver Sondages Twitch">🗳️ OFF</button>
     <button onclick="forceSync()" class="icon-btn" title="Relancer recherche d'images">🔄</button>
@@ -695,11 +711,16 @@ body.cinematic-mode #exit-cinematic-btn { display: block; }
     <button onclick="showAllArtists()" class="icon-btn" title="Liste Complète des Artistes">📑</button>
 
     <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;" class="desktop-only"></div>
-
+    
+    <button onclick="toggleCinematic()" class="icon-btn" title="Mode Cinématique (Cacher l'interface)">🎬</button>
+    <button onclick="exportImage()" id="exportBtn" class="icon-btn" title="Exporter Tier List en Image PNG">📸</button>
+    
     <button onclick="toggleEdit()" id="editBtn" class="icon-btn" title="Mode Édition">✏️</button>
     <button onclick="addTier()" class="icon-btn">➕ Tier</button>
   </div>
 </header>
+
+<button id="exitCinematicBtn" onclick="toggleCinematic()">Sortir du Mode Cinématique (Echap) ✖</button>
 
 <div id="twitchVoteOverlay">
   <div style="font-size:12px; color:#9146FF; font-weight:bold; letter-spacing: 1px; text-transform: uppercase;">Sondage Twitch (!note 0-10)</div>
@@ -786,8 +807,8 @@ let compactMode = false;
 let cinematicMode = false;
 let draggedId = null;
 let placeholder = null;
-let twitchVisible = false;
-let pollsEnabled = false; 
+let twitchVisible = false; 
+let pollsEnabled = false;  
 let currentDragAfter = undefined; 
 let selectedIds = new Set(); 
 
@@ -874,92 +895,92 @@ function togglePolls() {
     }
 }
 
-// ========================================================
-// ✨ NOUVELLES FONCTIONNALITÉS (CINÉMATIQUE, EXPORT, ANIMATIONS) ✨
-// ========================================================
+// -----------------------------
+// --- NOUVEAUTÉS FONCTIONNELLES ---
+// -----------------------------
 
-function toggleCinematic() {
-    cinematicMode = !cinematicMode;
-    if (cinematicMode) {
-        document.body.classList.add("cinematic-mode");
-    } else {
-        document.body.classList.remove("cinematic-mode");
-    }
+// Fonction Export Image (Capture du bloc Tier List uniquement)
+async function exportImage() {
+  const tiersDiv = document.getElementById('tiers');
+  const wasEdit = editMode;
+  if(wasEdit) toggleEdit(); // Retire les boutons de suppression/couleur pour la photo
+  
+  const btn = document.getElementById("exportBtn");
+  const originalText = btn.innerHTML;
+  btn.innerHTML = "⏳";
+  
+  try {
+      // html2canvas capture le contenu div et le transforme en image
+      const canvas = await html2canvas(tiersDiv, {
+          backgroundColor: document.body.classList.contains('dark') ? '#0f172a' : '#f3f4f6',
+          scale: 1.5,
+          useCORS: true, 
+          logging: false
+      });
+      const link = document.createElement('a');
+      link.download = 'Kpop_TierList.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+  } catch (e) {
+      console.error(e);
+      alert("Erreur lors de l'exportation. Votre navigateur bloque peut-être la capture d'images externes (CORS).");
+  }
+  
+  btn.innerHTML = originalText;
+  if(wasEdit) toggleEdit(); // Remet le mode édition s'il était actif
 }
 
+// Fonction Mode Cinématique
+function toggleCinematic() {
+    cinematicMode = !cinematicMode;
+    document.body.classList.toggle('cinematic-active', cinematicMode);
+    // On remonte tout en haut pour que l'image soit bien centrée
+    if(cinematicMode) window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// Quitter le mode cinématique avec la touche Echap
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && document.body.classList.contains('cinematic-mode')) {
+    if (e.key === "Escape" && cinematicMode) {
         toggleCinematic();
     }
 });
 
-function exportToImage() {
-    const btn = document.getElementById("exportImageBtn");
-    const originalText = btn.innerHTML;
-    btn.innerHTML = "⏳...";
+// Fonction d'Animation Visuelle lors du Drop
+function triggerDropAnimation(tierId) {
+    if (!tierId) return; 
+    const tier = data.tiers.find(t => t.id === tierId);
+    if (!tier) return;
     
-    // Désactiver le mode édition temporairement si actif (pour cacher les boutons)
-    const wasEdit = editMode;
-    if (editMode) toggleEdit();
-
-    // S'assurer d'être tout en haut pour ne pas avoir de bug de rendu
-    window.scrollTo(0, 0);
-
-    setTimeout(() => {
-        html2canvas(document.getElementById("tiers"), {
-            useCORS: true,
-            backgroundColor: document.body.classList.contains("dark") ? "#0f172a" : "#f3f4f6",
-            scale: 2 // Haute résolution
-        }).then(canvas => {
-            const link = document.createElement("a");
-            link.download = "kpop_tierlist.png";
-            link.href = canvas.toDataURL("image/png");
-            link.click();
-            
-            btn.innerHTML = originalText;
-            if (wasEdit) toggleEdit(); // Remettre le mode édition
-        }).catch(err => {
-            console.error(err);
-            alert("Erreur lors de l'export. Vérifie que les images ne bloquent pas le script.");
-            btn.innerHTML = originalText;
-            if (wasEdit) toggleEdit();
-        });
-    }, 100);
-}
-
-function flashBackground(color) {
-    const bg = document.getElementById('bg-flash');
-    bg.style.background = `radial-gradient(circle at 50% 50%, ${color} 0%, transparent 70%)`;
-    bg.classList.remove('flash-active');
-    void bg.offsetWidth; 
-    bg.classList.add('flash-active');
-}
-
-function celebrateSTier() {
-    flashBackground('#ec4899'); 
-    for(let i=0; i<60; i++) {
-        const p = document.createElement('div');
-        p.className = 's-particle';
-        p.style.left = Math.random() * 100 + 'vw';
-        const colors = ['#ec4899', '#fcd34d', '#ffffff', '#8b5cf6'];
-        p.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
-        p.style.color = p.style.backgroundColor; 
-        p.style.animationDuration = (Math.random() * 1.5 + 0.8) + 's';
-        document.body.appendChild(p);
-        setTimeout(() => p.remove(), 2500);
+    const overlay = document.getElementById('flashOverlay');
+    const isSTier = tierId === data.tiers[0].id;
+    const isFTier = tierId === data.tiers[data.tiers.length - 1].id;
+    
+    if (isSTier) {
+        // Animation S-Tier : Flash blanc clair + Confettis
+        overlay.style.backgroundColor = "rgba(255, 255, 255, 0.6)";
+        overlay.style.opacity = "1";
+        if(typeof confetti !== 'undefined') {
+            confetti({ particleCount: 150, spread: 80, origin: { y: 0.5 }, colors: ['#ec4899', '#fbcfe8', '#fbbf24', '#ffffff'], zIndex: 10000 });
+        }
+        setTimeout(() => overlay.style.opacity = "0", 150);
+    } else if (isFTier) {
+        // Animation F-Tier : Tremblement de l'écran + Flash rouge sombre
+        overlay.style.backgroundColor = "rgba(220, 38, 38, 0.4)";
+        overlay.style.opacity = "1";
+        document.body.classList.add('shake-active');
+        setTimeout(() => {
+            overlay.style.opacity = "0";
+            document.body.classList.remove('shake-active');
+        }, 400);
+    } else {
+        // Animation Générale : Léger flash de la couleur de la catégorie
+        const rgbMatch = tier.color.match(/\d+/g);
+        if (rgbMatch) {
+            overlay.style.backgroundColor = `rgba(${rgbMatch[0]}, ${rgbMatch[1]}, ${rgbMatch[2]}, 0.25)`;
+            overlay.style.opacity = "1";
+            setTimeout(() => overlay.style.opacity = "0", 300);
+        }
     }
-}
-
-function punishFTier() {
-    document.body.classList.add('shake-active');
-    const v = document.getElementById('vignette-flash');
-    v.classList.remove('vignette-active');
-    void v.offsetWidth;
-    v.classList.add('vignette-active');
-    
-    setTimeout(() => {
-        document.body.classList.remove('shake-active');
-    }, 500);
 }
 
 // -----------------------------
@@ -972,6 +993,7 @@ function getTodaySessionId() {
     return new Date().toLocaleDateString('fr-FR');
 }
 
+// NOUVELLES COULEURS PAR DEFAUT
 function defaultData(){
   return {
     tiers:[
@@ -984,7 +1006,7 @@ function defaultData(){
       {id:"Cm", name:"C-", color:"rgb(234, 179, 8)",  songs:[]},
       {id:"D",  name:"D",  color:"rgb(245, 158, 11)", songs:[]},
       {id:"E",  name:"E",  color:"rgb(249, 115, 22)", songs:[]},
-      {id:"F",  name:"F",  color:"rgb(220, 38, 38)",  songs:[]}
+      {id:"F",  name:"F",  color:"rgb(220, 38, 38)", songs:[]}
     ],
     pool:[]
   };
@@ -1556,7 +1578,8 @@ function render(){
     const container = document.createElement("div");
     container.className = "cards";
     setupDrop(container, t.id);
-    t.songs.forEach(s => container.appendChild(createCard(s)));
+    // On passe le tier.id pour que la carte reçoive les effets S ou F
+    t.songs.forEach(s => container.appendChild(createCard(s, t.id)));
     tier.append(container);
     tiersDiv.appendChild(tier);
     
@@ -1579,7 +1602,7 @@ function render(){
   const pool = document.getElementById("pool");
   pool.innerHTML = "";
   setupDrop(pool, null);
-  data.pool.forEach(s => pool.appendChild(createCard(s)));
+  data.pool.forEach(s => pool.appendChild(createCard(s, null)));
 
   document.body.classList.toggle("hidden", !editMode);
   filterCards();
@@ -1594,11 +1617,18 @@ function adjustColor(color, amount) {
     return '#' + color.replace(/^#/, '').replace(/../g, color => ('0'+Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2));
 }
 
-function createCard(song){
+// Fonction createCard mise à jour pour appliquer les styles S-tier et F-tier
+function createCard(song, tierId){
   const card = document.createElement("div");
   card.className = "card";
   card.id = `card-${song.id}`;
   
+  // Application des classes permanentes pour les extrêmes
+  if (tierId) {
+      if (tierId === data.tiers[0].id) card.classList.add("s-tier-card");
+      if (tierId === data.tiers[data.tiers.length - 1].id) card.classList.add("f-tier-card");
+  }
+
   if(song.favorite) card.classList.add("is-favorite"); 
   if(selectedIds.has(song.id)) card.classList.add("selected");
   
@@ -1758,22 +1788,14 @@ function setupDrop(container, tierId){
     draggedId = null;
     currentDragAfter = undefined;
     
-    // ✨ GESTION DES ANIMATIONS DE DROP ✨
-    if (tierId) {
-        if (tierId === "S") {
-            celebrateSTier();
-        } else if (tierId === "F") {
-            punishFTier();
-        } else {
-            const tierObj = data.tiers.find(t => t.id === tierId);
-            if (tierObj) flashBackground(tierObj.color);
-        }
-    }
-
     setTimeout(() => {
         rebuildDataFromDOM();
         save(); 
         updateCounters();
+        // Déclenche l'animation visuelle après le drop
+        triggerDropAnimation(tierId);
+        // Force un render pour que les effets S-Tier et F-Tier s'appliquent immédiatement sur la carte
+        render();
     }, 10);
   });
 }
@@ -1868,7 +1890,7 @@ async function addSong(){
   
   const poolEl = document.getElementById("pool");
   if(poolEl) {
-      poolEl.appendChild(createCard(newSong));
+      poolEl.appendChild(createCard(newSong, null));
   }
   
   document.getElementById("artistInput").value = "";
