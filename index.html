@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KPOP Tier List</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-
+<script src="https://unpkg.com/tmi.js@1.8.5/dist/tmi.min.js"></script>
+  
 <style>
 /* --- VARIABLES & THEME --- */
 :root {
@@ -214,7 +215,8 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 /* --- SOMMAIRE (FLOTTANT À GAUCHE) --- */
 .sommaire-sidebar {
   position: fixed;
-  top: 195px; 
+  /* Aligné précisément avec le haut du premier Tier (~225px) */
+  top: 225px; 
   left: max(20px, calc(25vw - 460px)); 
   width: 250px;
   background: var(--card-bg);
@@ -225,7 +227,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  max-height: 70vh;
+  max-height: calc(100vh - 250px);
   z-index: 100;
 }
 
@@ -271,17 +273,18 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 /* --- TWITCH SIDEBAR (FLOTTANT À DROITE) --- */
 .twitch-sidebar {
   position: fixed;
-  top: 195px; 
+  /* Aligné précisément avec le haut du premier Tier (~225px) */
+  top: 225px; 
   right: max(20px, calc(25vw - 490px)); 
   width: 320px;
-  height: 80vh; 
-  max-height: 900px;
+  height: calc(100vh - 250px);
   background: var(--card-bg);
   border: var(--card-border);
   border-radius: var(--radius-md);
   box-shadow: var(--glass-shadow);
-  backdrop-filter: blur(8px);
-  overflow: hidden;
+  
+  /* IMPORTANT: Retrait du backdrop-filter et overflow:hidden pour que Twitch autorise le tchat */
+  
   display: flex;
   flex-direction: column;
   z-index: 100;
@@ -295,8 +298,10 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 }
 
 .twitch-header {
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
   padding: 12px 15px;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.3);
   border-bottom: var(--card-border);
   font-weight: 600;
   display: flex;
@@ -326,6 +331,40 @@ iframe.twitch-iframe {
   flex: 1;
   width: 100%;
   border: none;
+  border-bottom-left-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+  background: transparent;
+}
+
+/* --- OVERLAY VOTE TWITCH --- */
+#twitchVoteOverlay {
+  position: fixed;
+  top: 85px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--card-bg);
+  border: 2px solid #9146FF;
+  padding: 15px 25px;
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 20px rgba(145, 70, 255, 0.4);
+  z-index: 2000;
+  display: none;
+  backdrop-filter: blur(12px);
+  text-align: center;
+  color: var(--text-main);
+  min-width: 300px;
+}
+
+#twitchVoteOverlay button {
+  margin-top: 10px;
+  background: #9146FF;
+  color: white;
+  border: none;
+  width: 100%;
+  justify-content: center;
+}
+#twitchVoteOverlay button:hover {
+  background: #772ce8;
 }
 
 /* --- RESPONSIVE --- */
@@ -366,26 +405,6 @@ iframe.twitch-iframe {
   scroll-margin-top: 90px; 
   position: relative; 
 }
-
-/* ONGLET FLÈCHES (MODE ÉDITION) */
-.tier-reorder-tab {
-  position: absolute;
-  right: -38px;
-  top: 20px;
-  display: none;
-  flex-direction: column;
-  gap: 8px;
-  background: var(--card-bg);
-  border: var(--card-border);
-  border-left: none;
-  padding: 10px 6px;
-  border-radius: 0 12px 12px 0;
-  box-shadow: 5px 0 15px rgba(0,0,0,0.1);
-  z-index: 30;
-  backdrop-filter: blur(8px);
-}
-body.edit-active .tier-reorder-tab { display: flex; }
-.tier-reorder-tab button { width: 28px; height: 28px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; border-radius: 6px; }
 
 .tier-header {
   padding: 15px 25px;
@@ -488,65 +507,6 @@ body.compact-active .card:hover .card-overlay { top: auto; bottom: 0; background
 .card-tools button:hover { background: var(--accent-secondary); transform: scale(1.1); }
 .card-tools button.active-fav { color: var(--accent-fav); background: rgba(0,0,0,0.8); border-color: var(--accent-fav); }
 
-/* --- BOUTON PLAY AUDIO --- */
-.play-btn {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0.8);
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  border: 2px solid rgba(255, 255, 255, 0.8);
-  color: white;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  opacity: 0;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  z-index: 25;
-  padding-left: 4px; /* Centrage visuel du triangle */
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
-.play-btn.playing {
-  opacity: 1;
-  background: var(--accent-primary);
-  border-color: var(--accent-primary);
-  padding-left: 0; /* Réinitialiser pour l'icône pause */
-  transform: translate(-50%, -50%) scale(1);
-  box-shadow: 0 0 15px var(--accent-primary);
-}
-.card:hover .play-btn {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
-}
-.play-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: white;
-  transform: translate(-50%, -50%) scale(1.1) !important;
-}
-.play-btn.playing:hover {
-  background: var(--accent-secondary);
-  border-color: var(--accent-secondary);
-  box-shadow: 0 0 15px var(--accent-secondary);
-}
-body.is-dragging .play-btn {
-  display: none !important;
-}
-body.compact-active .play-btn {
-  width: 32px;
-  height: 32px;
-  font-size: 14px;
-  padding-left: 3px;
-}
-body.compact-active .play-btn.playing {
-  padding-left: 0;
-}
-
 .placeholder { width: 140px; height: 140px; border-radius: var(--radius-md); border: 2px dashed var(--text-muted); background: rgba(100,100,100,0.05); opacity: 0.5; animation: pulse 1.5s infinite; transition: none; pointer-events: none; }
 body.compact-active .placeholder { height: 70px; }
 @keyframes pulse { 0%{opacity:0.3} 50%{opacity:0.6} 100%{opacity:0.3} }
@@ -643,6 +603,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
     <button onclick="toggleDark()" class="icon-btn" title="Thème Sombre/Clair">🌙</button>
     <button onclick="toggleCompact()" id="compactBtn" class="icon-btn" title="Vue Compacte">☰</button>
     <button onclick="toggleTwitch()" class="icon-btn" title="Afficher/Cacher Tchat Twitch">🟣</button>
+    <button onclick="togglePolls()" id="pollToggleBtn" class="icon-btn" title="Activer/Désactiver Sondages Twitch">🗳️ OFF</button>
     <button onclick="forceSync()" class="icon-btn" title="Relancer recherche d'images">🔄</button>
     
     <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;" class="desktop-only"></div>
@@ -657,6 +618,13 @@ body.edit-active .card-tools button { pointer-events: auto; }
     <button onclick="addTier()" class="icon-btn">➕ Tier</button>
   </div>
 </header>
+
+<div id="twitchVoteOverlay">
+  <div style="font-size:12px; color:#9146FF; font-weight:bold; letter-spacing: 1px; text-transform: uppercase;">Sondage Twitch (!note 0-10)</div>
+  <div id="twitchVoteTitle" style="font-weight:800; font-size:18px; margin-top: 5px;"></div>
+  <div id="twitchLiveResult" style="margin: 10px 0; font-size: 14px;">Moyenne: - / 10 (0 vote)</div>
+  <button onclick="stopTwitchVote()">Terminer & Sauvegarder la note</button>
+</div>
 
 <input type="file" id="fileInput" style="display:none" accept=".json" onchange="importJson(this)">
 
@@ -673,7 +641,6 @@ body.edit-active .card-tools button { pointer-events: auto; }
 <div id="allArtistsModal" class="modal-overlay" onclick="closeModal(event)">
   <div class="modal-content">
     <h2>Tous les Artistes</h2>
-    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 5px;">L'algorithme pénalise les One-Hit Wonders et punit sévèrement la répétition de mauvaises chansons.</div>
     <div class="modal-body-scroll" id="allArtistsBody"></div>
     <div style="margin-top: 15px; text-align: right;">
       <button onclick="document.getElementById('allArtistsModal').style.display='none'">Fermer</button>
@@ -698,10 +665,10 @@ body.edit-active .card-tools button { pointer-events: auto; }
   <div id="sommaireList" class="sommaire-list"></div>
 </div>
 
-<div class="twitch-sidebar" id="twitchSidebar">
+<div class="twitch-sidebar hidden" id="twitchSidebar">
   <div class="twitch-header">
     <span style="color: #bfdbfe;">🟣 Tchat Twitch</span>
-    <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
+    <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="Dantebose" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
   </div>
   <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
 </div>
@@ -733,83 +700,96 @@ let editMode = false;
 let compactMode = false; 
 let draggedId = null;
 let placeholder = null;
-let twitchVisible = true;
+let twitchVisible = false; // Caché par défaut
+let pollsEnabled = false;  // Sondages désactivés par défaut
 let currentDragAfter = undefined; 
 let selectedIds = new Set(); 
 
-// --- GESTION AUDIO ---
-let currentAudio = null;
-let playingAudioId = null;
+// --- GESTION TWITCH TMI.JS ---
+let activeTwitchSongId = null;
+let twitchVotes = {}; // { username: note }
+let twitchClient = null;
 
-async function toggleAudio(event, url, id) {
-    event.stopPropagation(); // Évite de cliquer sur la carte et d'ouvrir YouTube/sélectionner en édition
+try {
+    if (typeof tmi !== 'undefined') {
+        twitchClient = new tmi.Client({ channels: ['Dantebose'] });
+        twitchClient.connect().catch(e => console.log('Erreur de connexion Twitch:', e));
 
-    const btn = document.getElementById(`play-btn-${id}`);
-    const song = findSong(id);
-
-    // Si on clique sur celui qui est déjà en lecture : on met en pause
-    if (playingAudioId === id) {
-        if(currentAudio) currentAudio.pause();
-        btn.innerHTML = "▶";
-        btn.classList.remove("playing");
-        btn.style.paddingLeft = "4px";
-        playingAudioId = null;
-        return;
-    }
-
-    // Si un autre jouait avant, on l'arrête
-    if (currentAudio) {
-        currentAudio.pause();
-        const prevBtn = document.getElementById(`play-btn-${playingAudioId}`);
-        if (prevBtn) {
-            prevBtn.innerHTML = "▶";
-            prevBtn.classList.remove("playing");
-            prevBtn.style.paddingLeft = "4px";
-        }
-    }
-
-    let audioUrl = url || song.previewUrl;
-    
-    // Fallback : si c'est une vieille sauvegarde sans previewUrl, on va la chercher à la volée !
-    if (!audioUrl) {
-        btn.innerHTML = "⏳";
-        btn.style.paddingLeft = "0";
-        try {
-            const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(song.artist + " " + song.title)}&entity=song&limit=1`);
-            const json = await res.json();
-            audioUrl = json.results[0]?.previewUrl;
-            if(audioUrl) {
-                song.previewUrl = audioUrl;
-                save();
+        twitchClient.on('message', (channel, tags, message, self) => {
+            if (self || !activeTwitchSongId) return;
+            
+            if (message.toLowerCase().startsWith('!note ')) {
+                const noteStr = message.split(' ')[1];
+                if(noteStr) {
+                    const note = parseFloat(noteStr.replace(',', '.'));
+                    if (!isNaN(note) && note >= 0 && note <= 10) {
+                        twitchVotes[tags.username] = note; 
+                        
+                        let sum = 0; let count = 0;
+                        for (let u in twitchVotes) { sum += twitchVotes[u]; count++; }
+                        const avg = (sum / count).toFixed(1);
+                        
+                        const resDiv = document.getElementById("twitchLiveResult");
+                        if (resDiv) {
+                            resDiv.innerHTML = `Moyenne: <strong style="color:var(--accent-primary); font-size:16px;">${avg} / 10</strong> <span style="font-size:12px; opacity:0.8;">(${count} votes)</span>`;
+                        }
+                    }
+                }
             }
-        } catch(e) {}
+        });
+    } else {
+        console.warn("tmi.js bloqué. Le bot Twitch est inactif.");
     }
-
-    if (!audioUrl) {
-        alert("Aucun extrait audio disponible sur Apple Music pour ce titre.");
-        btn.innerHTML = "▶";
-        btn.style.paddingLeft = "4px";
-        return;
-    }
-
-    // Lancer la lecture
-    currentAudio = new Audio(audioUrl);
-    currentAudio.volume = 0.5; // Pas trop fort
-    currentAudio.play();
-    playingAudioId = id;
-    
-    btn.innerHTML = "⏸";
-    btn.classList.add("playing");
-    btn.style.paddingLeft = "0px";
-
-    // Quand l'extrait est fini, on remet le bouton à zéro
-    currentAudio.onended = () => {
-        btn.innerHTML = "▶";
-        btn.classList.remove("playing");
-        btn.style.paddingLeft = "4px";
-        playingAudioId = null;
-    };
+} catch (e) {
+    console.warn("Erreur d'initialisation Twitch:", e);
 }
+
+function startTwitchVote(songId, title) {
+    activeTwitchSongId = songId;
+    twitchVotes = {};
+    const ui = document.getElementById("twitchVoteOverlay");
+    document.getElementById("twitchVoteTitle").innerText = title;
+    
+    // Si le bloqueur de pub empêche le chargement de tmi.js, on l'affiche
+    if (!twitchClient) {
+        document.getElementById("twitchLiveResult").innerHTML = "Moyenne: - / 10 (0 vote)<br><span style='color:#ef4444; font-size:10px; display:block; margin-top:5px;'>⚠ Bloqueur de pub actif. Désactive-le pour le tchat.</span>";
+    } else {
+        document.getElementById("twitchLiveResult").innerHTML = "Moyenne: - / 10 (0 vote)";
+    }
+    
+    ui.style.display = "block";
+}
+
+function stopTwitchVote() {
+    if(!activeTwitchSongId) return;
+    const song = findSong(activeTwitchSongId);
+    let sum = 0, count = 0;
+    for(let u in twitchVotes) { sum += twitchVotes[u]; count++; }
+    
+    if (song && count > 0) {
+        song.chatRating = (sum/count).toFixed(1);
+        save();
+        render();
+    }
+    activeTwitchSongId = null;
+    document.getElementById("twitchVoteOverlay").style.display = "none";
+}
+
+function togglePolls() {
+    pollsEnabled = !pollsEnabled;
+    const btn = document.getElementById("pollToggleBtn");
+    if(pollsEnabled) {
+        btn.innerHTML = "🗳️ ON";
+        btn.style.color = "white";
+        btn.style.background = "var(--accent-secondary)";
+    } else {
+        btn.innerHTML = "🗳️ OFF";
+        btn.style.color = "";
+        btn.style.background = "";
+    }
+}
+
+// -----------------------------
 
 function generateUniqueId() {
     return Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9);
@@ -831,10 +811,21 @@ function defaultData(){
   };
 }
 
+function migrateData(loadedData) {
+    const allSongs = [...loadedData.pool, ...loadedData.tiers.flatMap(t => t.songs)];
+    allSongs.forEach(song => {
+        if (song.favorite === undefined) song.favorite = false;
+        if (song.sessionId === undefined) song.sessionId = 'Legacy';
+        if (song.chatRating === undefined) song.chatRating = null; 
+    });
+    return loadedData;
+}
+
 function load(){
   try{
     const raw=localStorage.getItem("tierData");
-    return raw ? JSON.parse(raw) : defaultData();
+    const parsed = raw ? JSON.parse(raw) : defaultData();
+    return migrateData(parsed);
   }catch(e){ return defaultData(); }
 }
 
@@ -874,7 +865,7 @@ function importJson(input) {
       json.pool.forEach(s => { if(!s.id.includes('-')) s.id = generateUniqueId(); });
       json.tiers.forEach(t => { t.songs.forEach(s => { if(!s.id.includes('-')) s.id = generateUniqueId(); }); });
 
-      data = json;
+      data = migrateData(json); 
       save(); render(); 
       alert("Sauvegarde chargée !");
       syncCovers(); 
@@ -901,6 +892,11 @@ function changeTwitchChannel() {
     if(!channel) {
         iframe.src = "";
         return;
+    }
+    
+    if(twitchClient) {
+        twitchClient.getChannels().forEach(ch => twitchClient.part(ch));
+        twitchClient.join(channel).catch(e => console.log('Erreur join:', e));
     }
     
     let parentDomain = window.location.hostname;
@@ -963,7 +959,6 @@ async function syncCovers() {
       
       if(json.results && json.results.length > 0) {
         song.cover = json.results[0].artworkUrl100.replace("100x100", "300x300");
-        song.previewUrl = json.results[0].previewUrl || "";
         const cardEl = document.getElementById(`card-${song.id}`);
         if(cardEl) cardEl.style.backgroundImage = `url(${song.cover})`;
       } else {
@@ -1061,7 +1056,6 @@ function showFavorites() {
     modal.style.display = 'flex';
 }
 
-// --- ALGORITHME MATHÉMATIQUE DE CLASSEMENT ---
 function calculateRankings() {
   let totalSongs = 0;
   let placedSongsCount = 0;
@@ -1072,7 +1066,6 @@ function calculateRankings() {
   const maxScore = Math.max(1, data.tiers.length); 
   
   data.tiers.forEach((tier, index) => {
-    // Calcul de la note pure sur 10 
     const scoreOutOf10 = ((maxScore - index) / maxScore) * 10; 
 
     tier.songs.forEach(song => {
@@ -1089,7 +1082,6 @@ function calculateRankings() {
       artistStats[lowerName].sumScore += scoreOutOf10;
       artistStats[lowerName].count++;
       
-      // -- STATS DE SESSION --
       if(song.sessionId) {
           if(!sessionStats[song.sessionId]) {
               sessionStats[song.sessionId] = { sumScore: 0, count: 0 };
@@ -1104,39 +1096,25 @@ function calculateRankings() {
 
   let rankings = Object.keys(artistStats).map(key => {
     const n = artistStats[key].count;
-    const x_bar = artistStats[key].sumScore / n; // Moyenne pure de l'artiste (sur 10)
+    const x_bar = artistStats[key].sumScore / n; 
     
     let exactScore = 0;
 
     if (x_bar >= 5) {
-        // --- LES BONS ARTISTES ---
-        // 1. On part d'une base sévère pour pénaliser le n=1 (Bayésien modifié k=1, mu=5)
         const baseBayes = ((n * x_bar) + (1 * 5)) / (n + 1);
         const base100 = baseBayes * 10;
-        
-        // 2. Bonus Exponentiel (Conditionnel à la quantité et la qualité)
-        // (n-1)/(n+2) donne : n=1: 0 | n=2: 0.25 | n=3: 0.40 | n=5: 0.57
         const volumeFactor = (n - 1) / (n + 2);
-        const qualityFactor = Math.pow((x_bar - 5) / 5, 2); // Exponentiel (un 10 donne 1, un 7.5 donne 0.25)
-        
-        const boost = volumeFactor * qualityFactor * 30; // Max +30 points bonus
-        
+        const qualityFactor = Math.pow((x_bar - 5) / 5, 2); 
+        const boost = volumeFactor * qualityFactor * 30; 
         exactScore = base100 + boost;
     } else {
-        // --- LES FLOPS ---
-        // 1. Base pure sur 100 (Un 1/10 = 10/100. Pas de protection bayésienne vers le haut !)
         const base100 = x_bar * 10;
-        
-        // 2. Malus de Volume (plus on a de mauvaises chansons, plus on creuse)
         const volumeFactor = (n - 1) / (n + 2);
-        const flopFactor = Math.pow((5 - x_bar) / 5, 2); // Exponentiel dans la nullité
-        
-        const malus = volumeFactor * flopFactor * 15; // Max -15 points de sanction
-        
+        const flopFactor = Math.pow((5 - x_bar) / 5, 2); 
+        const malus = volumeFactor * flopFactor * 15; 
         exactScore = base100 - malus;
     }
 
-    // On bloque visuellement le score final entre 0 et 100
     const displayScore = Math.min(100, Math.max(0, exactScore));
 
     return {
@@ -1148,13 +1126,12 @@ function calculateRankings() {
     };
   });
 
-  // Tri logique : Score visuel > Nombre de chansons > Score mathématique exact > Moyenne pure
   rankings.sort((a, b) => {
       const pointsA = parseInt(a.points);
       const pointsB = parseInt(b.points);
       
       if (pointsB !== pointsA) return pointsB - pointsA; 
-      if (b.count !== a.count) return b.count - a.count; // Tie-breaker volume
+      if (b.count !== a.count) return b.count - a.count; 
       if (b.exactScore !== a.exactScore) return b.exactScore - a.exactScore; 
       return parseFloat(b.avg) - parseFloat(a.avg); 
   });
@@ -1178,7 +1155,16 @@ function showStats() {
 
   let topTierCount = 0;
   let tierCountsHTML = "";
-  data.tiers.forEach(t => {
+  
+  let sumGlobal = 0;
+  let countGlobal = 0;
+
+  data.tiers.forEach((t, index) => {
+      const maxScore = Math.max(1, data.tiers.length);
+      const score = ((maxScore - index) / maxScore) * 10;
+      sumGlobal += score * t.songs.length;
+      countGlobal += t.songs.length;
+      
       const isTop = t.id === data.tiers[0]?.id || t.id === data.tiers[1]?.id; 
       if(isTop) topTierCount += t.songs.length;
       
@@ -1194,19 +1180,15 @@ function showStats() {
       `;
   });
   
-  const generosity = totalSongs > 0 ? Math.round((topTierCount / totalSongs) * 100) : 0;
-  let generosityComment = "Équilibré.";
-  if(generosity > 60) generosityComment = "Très (trop ?) gentil !";
-  if(generosity < 20) generosityComment = "Juge impitoyable.";
+  const globalAvg = countGlobal > 0 ? (sumGlobal / countGlobal).toFixed(1) : '-';
 
-  // ANALYSE DES SESSIONS
   const todayId = getTodaySessionId();
   let bestSess = { id: '-', avg: 0, count: 0 };
   let worstSess = { id: '-', avg: 99, count: 0 };
   
   Object.keys(sessionStats).forEach(sid => {
       const s = sessionStats[sid];
-      if(s.count >= 3) { // Minimum 3 chansons pour juger une session
+      if(s.count >= 3) { 
           const avg = s.sumScore / s.count;
           if(avg > bestSess.avg) bestSess = { id: sid, avg: avg, count: s.count };
           if(avg < worstSess.avg) worstSess = { id: sid, avg: avg, count: s.count };
@@ -1219,7 +1201,7 @@ function showStats() {
   let html = `
     <div class="stat-row"><strong>Total Chansons :</strong> <span>${totalSongs}</span></div>
     <div class="stat-row"><strong>Artistes :</strong> <span>${uniqueArtists}</span></div>
-    <div class="stat-row"><strong>Générosité :</strong> <span>${generosity}% (${generosityComment})</span></div>
+    <div class="stat-row"><strong>Moyenne Globale :</strong> <span>${globalAvg} / 10</span></div>
     <div class="stat-row"><strong>Le plus présent :</strong> <span>${mostProductive.name} (${mostProductive.count} sons)</span></div>
     
     <div class="stat-section">
@@ -1339,14 +1321,6 @@ function render(){
     const tier = document.createElement("div");
     tier.className = "tier";
     tier.id = `tier-node-${t.id}`; 
-    
-    const reorderTab = document.createElement("div");
-    reorderTab.className = "tier-reorder-tab";
-    reorderTab.innerHTML = `
-        <button onclick="moveTierUp('${t.id}')" title="Monter">▲</button>
-        <button onclick="moveTierDown('${t.id}')" title="Descendre">▼</button>
-    `;
-    tier.appendChild(reorderTab);
 
     const header = document.createElement("div");
     header.className = "tier-header";
@@ -1382,6 +1356,21 @@ function render(){
     delBtn.onclick = () => { if(confirm("Supprimer ce Tier ?")){ data.pool.push(...t.songs); data.tiers=data.tiers.filter(x=>x.id!==t.id); save(); render(); }};
 
     controls.append(colorWrapper, renameBtn, delBtn);
+
+    if (editMode) {
+      const upBtn = document.createElement("button");
+      upBtn.innerHTML = "▲";
+      upBtn.title = "Monter";
+      upBtn.onclick = () => moveTierUp(t.id);
+
+      const downBtn = document.createElement("button");
+      downBtn.innerHTML = "▼";
+      downBtn.title = "Descendre";
+      downBtn.onclick = () => moveTierDown(t.id);
+
+      controls.append(upBtn, downBtn);
+    }
+
     header.append(controls);
     tier.append(header);
 
@@ -1483,15 +1472,12 @@ function createCard(song){
     currentDragAfter = undefined;
   });
 
-  // Injection du bouton de lecture audio
   card.innerHTML = `
     <div class="fav-badge">❤</div>
-    <div class="play-btn ${playingAudioId === song.id ? 'playing' : ''}" id="play-btn-${song.id}" onclick="toggleAudio(event, '${song.previewUrl || ''}', '${song.id}')" title="Écouter un extrait Apple Music">
-      ${playingAudioId === song.id ? '⏸' : '▶'}
-    </div>
     <div class="card-overlay">
       <strong>${song.artist}</strong>
       <span>${song.title}</span>
+      ${song.chatRating ? `<span style="color:#bfdbfe; font-size:11px; margin-top:2px;">Chat: ${song.chatRating}/10</span>` : ''}
     </div>
     <div class="card-tools">
       <button class="btn-edit-pos" onclick="event.stopPropagation(); editSong('${song.id}')" title="Éditer">✎</button>
@@ -1658,12 +1644,10 @@ async function addSong(){
   btn.innerText = "Recherche...";
 
   let cover = "";
-  let previewUrl = "";
   try {
     const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + " " + title)}&entity=song&limit=1`);
     const json = await res.json();
     cover = json.results[0]?.artworkUrl100?.replace("100x100", "300x300") || "";
-    previewUrl = json.results[0]?.previewUrl || "";
   } catch(e) {}
 
   if(!cover) {
@@ -1687,7 +1671,7 @@ async function addSong(){
       youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`;
   }
 
-  const newSong = { id: generateUniqueId(), artist, title, cover, previewUrl, youtubeUrl, favorite: false, sessionId: getTodaySessionId() };
+  const newSong = { id: generateUniqueId(), artist, title, cover, youtubeUrl, favorite: false, sessionId: getTodaySessionId(), chatRating: null };
   data.pool.push(newSong);
   save(); 
   
@@ -1700,6 +1684,10 @@ async function addSong(){
   document.getElementById("titleInput").value = "";
   btn.innerText = originalText;
   filterCards();
+
+  if(pollsEnabled) {
+      startTwitchVote(newSong.id, `${artist} - ${title}`);
+  }
 }
 
 function addTier(){
@@ -1784,15 +1772,6 @@ document.addEventListener("dragend", () => {
         autoScrollRAF = null;
     }
 });
-
-function doAutoScroll() {
-    if (autoScrollSpeed !== 0) {
-        window.scrollBy(0, autoScrollSpeed);
-        autoScrollRAF = requestAnimationFrame(doAutoScroll);
-    } else {
-        autoScrollRAF = null;
-    }
-}
 
 render();
 setTimeout(syncCovers, 1500); 
