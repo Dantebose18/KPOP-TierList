@@ -220,7 +220,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   padding: 0 20px 240px 20px;
 }
 
-/* --- SOMMAIRE (FLOTTANT À GAUCHE) --- */
+/* --- SOMMAIRE --- */
 .sommaire-sidebar {
   position: fixed;
   top: 225px; 
@@ -277,7 +277,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   font-size: 11px;
 }
 
-/* --- TWITCH SIDEBAR (FLOTTANT À DROITE) --- */
+/* --- TWITCH SIDEBAR --- */
 .twitch-sidebar {
   position: fixed;
   top: 225px; 
@@ -482,7 +482,7 @@ body.is-dragging .card { transition: none !important; }
 .card-overlay { position: absolute; bottom: 0; width: 100%; padding: 40px 10px 10px 10px; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%); color: white; font-size: 12px; line-height: 1.3; text-align: center; pointer-events: none; transition: all 0.2s; display: flex; flex-direction: column; justify-content: flex-end; }
 .card-overlay strong { display: block; font-size: 13px; margin-bottom: 2px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
 
-/* --- PLAY AUDIO BTN --- */
+/* --- PLAY AUDIO BTN FIX --- */
 .btn-play-preview {
     position: absolute;
     top: 50%; left: 50%;
@@ -491,7 +491,7 @@ body.is-dragging .card { transition: none !important; }
     backdrop-filter: blur(4px);
     border-radius: 50%;
     color: white;
-    font-size: 20px;
+    font-size: 18px;
     width: 45px; height: 45px;
     display: none;
     align-items: center; justify-content: center;
@@ -500,6 +500,10 @@ body.is-dragging .card { transition: none !important; }
     cursor: pointer;
     transition: transform 0.2s, background 0.2s;
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    /* Correctifs centrage emoji */
+    padding: 0;
+    line-height: 0;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
 }
 .btn-play-preview:hover {
     transform: translate(-50%, -50%) scale(1.1);
@@ -674,7 +678,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
 
 <div id="statsModal" class="modal-overlay" onclick="closeModal(event)">
   <div class="modal-content">
-    <h2>Classement & Stats</h2>
+    <h2 id="statsModalTitle">Classement & Stats</h2>
     <div class="modal-body-scroll" id="statsBody"></div>
     <div style="margin-top: 15px; text-align: right;">
       <button onclick="document.getElementById('statsModal').style.display='none'">Fermer</button>
@@ -761,14 +765,14 @@ function updateGlobalVolume(val) {
 
 globalAudio.addEventListener('ended', () => {
     if(currentPlayingBtn) {
-        currentPlayingBtn.innerHTML = '▶';
+        currentPlayingBtn.innerHTML = '<span style="padding-left:3px;">▶</span>';
         currentPlayingBtn = null;
     }
     currentPlayingId = null;
 });
 
 function togglePlay(e, id, url) {
-    e.stopPropagation(); // Évite le clic sur la carte (qui ouvre YouTube)
+    e.stopPropagation(); 
     
     if(!url || url === 'undefined' || url === 'null') {
         alert("Extrait audio non disponible pour cette chanson.");
@@ -780,20 +784,20 @@ function togglePlay(e, id, url) {
     // Si on reclique sur la même chanson en cours
     if(currentPlayingId === id && !globalAudio.paused) {
         globalAudio.pause();
-        btn.innerHTML = '▶';
+        btn.innerHTML = '<span style="padding-left:3px;">▶</span>';
         return;
     }
     
     // Réinitialise le bouton précédent si on change de chanson
     if(currentPlayingBtn && currentPlayingBtn !== btn) {
-        currentPlayingBtn.innerHTML = '▶';
+        currentPlayingBtn.innerHTML = '<span style="padding-left:3px;">▶</span>';
     }
     
     globalAudio.src = url;
     globalAudio.play();
     currentPlayingId = id;
     currentPlayingBtn = btn;
-    btn.innerHTML = '⏸';
+    btn.innerHTML = '<span>⏸</span>';
 }
 
 // --- GESTION DES SESSIONS ---
@@ -821,27 +825,32 @@ function showSessionManager() {
     document.getElementById('activeSessionInput').value = activeSessionName;
 
     const list = document.getElementById('sessionHistoryList');
-    const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
     
-    const sessionsMap = {};
-    allSongs.forEach(s => {
-        const sid = s.sessionId || "Inconnue";
-        sessionsMap[sid] = (sessionsMap[sid] || 0) + 1;
-    });
+    // On réutilise la fonction de calcul pour avoir les moyennes par session
+    const { sessionStats } = calculateRankings();
 
     let html = '';
-    for(let sid in sessionsMap) {
+    for(let sid in sessionStats) {
+        const stats = sessionStats[sid];
+        const avg = stats.count > 0 ? (stats.sumScore / stats.count).toFixed(2) : "0";
+        
         html += `
         <div class="stat-row" style="align-items: center; padding: 10px; background: rgba(128,128,128,0.05); border-radius: 6px;">
-            <div><strong style="color:var(--accent-primary)">${sid}</strong> <br><span style="font-size:12px; opacity:0.7;">${sessionsMap[sid]} titres</span></div>
-            <div style="display: flex; gap: 5px; flex-direction: column;">
-                <button onclick="renameSessionPrompt('${sid.replace(/'/g, "\\'")}')" style="font-size:11px; padding: 4px 8px;">Renommer</button>
-                <button onclick="mergeSessionPrompt('${sid.replace(/'/g, "\\'")}')" style="font-size:11px; padding: 4px 8px; border-color: var(--accent-secondary); color: var(--accent-secondary);">Fusionner vers...</button>
+            <div style="flex: 1;">
+                <strong style="color:var(--accent-primary)">${sid}</strong> <br>
+                <span style="font-size:12px; opacity:0.7;">${stats.count} titres • Moyenne: <strong>${avg}/10</strong></span>
+            </div>
+            <div style="display: flex; gap: 5px; flex-direction: column; text-align: right;">
+                <button onclick="showStats('${sid.replace(/'/g, "\\'")}')" style="font-size:11px; padding: 4px 8px; background:var(--accent-primary); color:white; border:none;">📊 Stats</button>
+                <div style="display:flex; gap:5px; justify-content: flex-end;">
+                    <button onclick="renameSessionPrompt('${sid.replace(/'/g, "\\'")}')" style="font-size:11px; padding: 4px 8px;">Renommer</button>
+                    <button onclick="mergeSessionPrompt('${sid.replace(/'/g, "\\'")}')" style="font-size:11px; padding: 4px 8px; border-color: var(--accent-secondary); color: var(--accent-secondary);">Fusionner vers...</button>
+                </div>
             </div>
         </div>`;
     }
     
-    if(Object.keys(sessionsMap).length === 0) {
+    if(Object.keys(sessionStats).length === 0) {
         html = "<div style='opacity:0.6; text-align: center; padding: 20px;'>Aucune session enregistrée.</div>";
     }
     
@@ -1073,7 +1082,6 @@ let isSyncing = false;
 function forceSync() {
     const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
     allSongs.forEach(s => {
-        // Force relance si cover générique OU s'il n'y a pas d'audio récupéré
         if((s.cover && (s.cover.includes('via.placeholder.com') || s.cover.includes('ui-avatars.com'))) || !s.previewUrl) {
             s.coverSearched = false;
         }
@@ -1110,13 +1118,17 @@ async function syncCovers() {
       const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(song.artist + " " + song.title)}&entity=song&limit=1`);
       
       if(!res.ok) {
-          syncBadge.innerText = "⏸️ API Apple en pause";
+          // Gestion du Rate Limit : On attend 10 secondes puis on réessaye la même chanson
+          syncBadge.innerText = "⏳ Apple API limite atteinte, pause 10s...";
           syncBadge.style.background = "#f59e0b"; 
-          isSyncing = false;
-          setTimeout(() => syncBadge.remove(), 5000);
-          return; 
+          await new Promise(resolve => setTimeout(resolve, 10000));
+          i--; // On recule l'index pour réessayer cette chanson au prochain tour
+          continue; 
       }
 
+      // Si tout va bien, on remet la couleur normale
+      syncBadge.style.background = "var(--accent-secondary)";
+      
       const json = await res.json();
       
       if(json.results && json.results.length > 0) {
@@ -1127,7 +1139,7 @@ async function syncCovers() {
         if(cardEl) {
             cardEl.style.backgroundImage = `url(${song.cover})`;
             const playBtn = cardEl.querySelector('.btn-play-preview');
-            if(playBtn && song.previewUrl) playBtn.innerHTML = '▶';
+            if(playBtn && song.previewUrl) playBtn.innerHTML = '<span style="padding-left:3px;">▶</span>';
         }
       } else {
         song.cover = `https://ui-avatars.com/api/?name=${encodeURIComponent(song.artist)}&background=random&color=fff&size=300&font-size=0.33`;
@@ -1141,13 +1153,14 @@ async function syncCovers() {
     song.coverSearched = true; 
     save(); 
     
-    await new Promise(resolve => setTimeout(resolve, 1000)); 
+    // Délai plus long pour éviter le spam API Apple (2.5s au lieu de 1s)
+    await new Promise(resolve => setTimeout(resolve, 2500)); 
   }
 
   syncBadge.innerText = "✅ Images & Audios récupérés !";
   syncBadge.style.background = "#10b981"; 
   syncBadge.style.boxShadow = "0 2px 10px rgba(16, 185, 129, 0.4)";
-  render(); // Update play buttons
+  render(); 
   
   setTimeout(() => {
       syncBadge.remove();
@@ -1225,7 +1238,7 @@ function showFavorites() {
     modal.style.display = 'flex';
 }
 
-function calculateRankings() {
+function calculateRankings(sessionFilter = null) {
   let totalSongs = 0;
   
   let artistStats = {};
@@ -1233,11 +1246,27 @@ function calculateRankings() {
   
   const maxScore = Math.max(1, data.tiers.length); 
   
+  // Tableau contenant le bon nombre de sons par tier (filtré ou non)
+  let tierCounts = data.tiers.map(t => ({ id: t.id, name: t.name, color: t.color, count: 0 }));
+  
   data.tiers.forEach((tier, index) => {
     const scoreOutOf10 = ((maxScore - index) / maxScore) * 10; 
 
     tier.songs.forEach(song => {
+      // Construction des stats de base des sessions (toujours globale pour le menu session)
+      if(song.sessionId) {
+          if(!sessionStats[song.sessionId]) {
+              sessionStats[song.sessionId] = { sumScore: 0, count: 0 };
+          }
+          sessionStats[song.sessionId].sumScore += scoreOutOf10;
+          sessionStats[song.sessionId].count++;
+      }
+
+      // Si un filtre est actif, on ignore ce qui n'est pas dans la session pour la suite
+      if (sessionFilter && song.sessionId !== sessionFilter) return;
+
       totalSongs++;
+      tierCounts[index].count++;
       
       const rawName = song.artist.trim();
       const lowerName = rawName.toLowerCase(); 
@@ -1248,18 +1277,14 @@ function calculateRankings() {
       
       artistStats[lowerName].sumScore += scoreOutOf10;
       artistStats[lowerName].count++;
-      
-      if(song.sessionId) {
-          if(!sessionStats[song.sessionId]) {
-              sessionStats[song.sessionId] = { sumScore: 0, count: 0 };
-          }
-          sessionStats[song.sessionId].sumScore += scoreOutOf10;
-          sessionStats[song.sessionId].count++;
-      }
     });
   });
   
-  data.pool.forEach(song => { totalSongs++; });
+  data.pool.forEach(song => { 
+      if (!sessionFilter || song.sessionId === sessionFilter) {
+          totalSongs++; 
+      }
+  });
 
   let rankings = Object.keys(artistStats).map(key => {
     const n = artistStats[key].count;
@@ -1303,14 +1328,23 @@ function calculateRankings() {
       return parseFloat(b.avg) - parseFloat(a.avg); 
   });
 
-  return { rankings, totalSongs, uniqueArtists: Object.keys(artistStats).length + (data.pool.length > 0 && Object.keys(artistStats).length === 0 ? 1 : 0), sessionStats };
+  let uniqueArtists = Object.keys(artistStats).length;
+  if(totalSongs > 0 && uniqueArtists === 0) uniqueArtists = 1; // pool only
+
+  return { rankings, totalSongs, uniqueArtists, sessionStats, tierCounts };
 }
 
-function showStats() {
+function showStats(sessionFilter = null) {
+  // Ferme le modal de session s'il est ouvert par dessus
+  document.getElementById('sessionModal').style.display = 'none';
+
   const modal = document.getElementById('statsModal');
   const body = document.getElementById('statsBody');
+  const title = document.getElementById('statsModalTitle');
   
-  const { rankings, totalSongs, uniqueArtists, sessionStats } = calculateRankings();
+  title.innerText = sessionFilter ? `📊 Stats : ${sessionFilter}` : `Classement & Stats`;
+
+  const { rankings, totalSongs, uniqueArtists, sessionStats, tierCounts } = calculateRankings(sessionFilter);
   
   const top3 = rankings.slice(0, 3);
   let flop3 = [];
@@ -1320,50 +1354,66 @@ function showStats() {
   
   const mostProductive = rankings.reduce((prev, current) => (prev.count > current.count) ? prev : current, {name:'-', count:0});
 
-  let topTierCount = 0;
   let tierCountsHTML = "";
-  
   let sumGlobal = 0;
   let countGlobal = 0;
 
-  data.tiers.forEach((t, index) => {
+  tierCounts.forEach((t, index) => {
       const maxScore = Math.max(1, data.tiers.length);
       const score = ((maxScore - index) / maxScore) * 10;
-      sumGlobal += score * t.songs.length;
-      countGlobal += t.songs.length;
+      sumGlobal += score * t.count;
+      countGlobal += t.count;
       
-      const isTop = t.id === data.tiers[0]?.id || t.id === data.tiers[1]?.id; 
-      if(isTop) topTierCount += t.songs.length;
-      
-      const pct = totalSongs > 0 ? (t.songs.length / totalSongs * 100).toFixed(0) : 0;
+      const pct = totalSongs > 0 ? (t.count / totalSongs * 100).toFixed(0) : 0;
       tierCountsHTML += `
         <div style="display:flex; align-items:center; margin-bottom:4px; font-size:11px;">
             <div style="width:30px; font-weight:bold;">${t.name.split(' ')[0]}</div>
             <div class="stat-bar-container" style="flex:1;">
                 <div class="stat-bar-fill" style="width:${pct}%; background:${t.color};"></div>
             </div>
-            <div style="width:40px; text-align:right;">${t.songs.length}</div>
+            <div style="width:40px; text-align:right;">${t.count}</div>
         </div>
       `;
   });
   
   const globalAvg = countGlobal > 0 ? (sumGlobal / countGlobal).toFixed(1) : '-';
 
-  const todayId = activeSessionName;
-  let bestSess = { id: '-', avg: 0, count: 0 };
-  let worstSess = { id: '-', avg: 99, count: 0 };
-  
-  Object.keys(sessionStats).forEach(sid => {
-      const s = sessionStats[sid];
-      if(s.count >= 3) { 
-          const avg = s.sumScore / s.count;
-          if(avg > bestSess.avg) bestSess = { id: sid, avg: avg, count: s.count };
-          if(avg < worstSess.avg) worstSess = { id: sid, avg: avg, count: s.count };
-      }
-  });
+  // Section historique des sessions (affichée uniquement en vue globale)
+  let sessionHistoryHTML = '';
+  if (!sessionFilter) {
+      const todayId = activeSessionName;
+      let bestSess = { id: '-', avg: 0, count: 0 };
+      let worstSess = { id: '-', avg: 99, count: 0 };
+      
+      Object.keys(sessionStats).forEach(sid => {
+          const s = sessionStats[sid];
+          if(s.count >= 3) { 
+              const avg = s.sumScore / s.count;
+              if(avg > bestSess.avg) bestSess = { id: sid, avg: avg, count: s.count };
+              if(avg < worstSess.avg) worstSess = { id: sid, avg: avg, count: s.count };
+          }
+      });
 
-  const todayData = sessionStats[todayId] || { count: 0, sumScore: 0 };
-  const todayAvg = todayData.count > 0 ? (todayData.sumScore / todayData.count).toFixed(1) : '-';
+      const todayData = sessionStats[todayId] || { count: 0, sumScore: 0 };
+      const todayAvg = todayData.count > 0 ? (todayData.sumScore / todayData.count).toFixed(1) : '-';
+
+      sessionHistoryHTML = `
+      <div class="stat-section">
+        <div class="stat-title">⏱️ Statistiques de Sessions</div>
+        <div class="session-card">
+            <div class="session-date">Session active (${todayId})</div>
+            <div class="session-data">${todayData.count} titres classés (Moyenne : ${todayAvg} / 10)</div>
+        </div>
+        <div class="session-card best">
+            <div class="session-date">Session la plus généreuse</div>
+            <div class="session-data">${bestSess.id !== '-' ? bestSess.id : 'N/A'} : ${bestSess.avg.toFixed(1)} / 10 <small>(${bestSess.count} titres)</small></div>
+        </div>
+        <div class="session-card worst">
+            <div class="session-date">Session la plus sévère</div>
+            <div class="session-data">${worstSess.id !== '-' ? worstSess.id : 'N/A'} : ${worstSess.avg.toFixed(1)} / 10 <small>(${worstSess.count} titres)</small></div>
+        </div>
+      </div>`;
+  }
 
   let html = `
     <div class="stat-row"><strong>Total Chansons :</strong> <span>${totalSongs}</span></div>
@@ -1376,21 +1426,7 @@ function showStats() {
       ${tierCountsHTML}
     </div>
 
-    <div class="stat-section">
-      <div class="stat-title">⏱️ Statistiques de Sessions</div>
-      <div class="session-card">
-          <div class="session-date">Session active (${todayId})</div>
-          <div class="session-data">${todayData.count} titres classés (Moyenne : ${todayAvg} / 10)</div>
-      </div>
-      <div class="session-card best">
-          <div class="session-date">Session la plus généreuse</div>
-          <div class="session-data">${bestSess.id !== '-' ? bestSess.id : 'N/A'} : ${bestSess.avg.toFixed(1)} / 10 <small>(${bestSess.count} titres)</small></div>
-      </div>
-      <div class="session-card worst">
-          <div class="session-date">Session la plus sévère</div>
-          <div class="session-data">${worstSess.id !== '-' ? worstSess.id : 'N/A'} : ${worstSess.avg.toFixed(1)} / 10 <small>(${worstSess.count} titres)</small></div>
-      </div>
-    </div>
+    ${sessionHistoryHTML}
     
     <div class="stat-section">
       <div class="stat-title">🔥 TOP 3 - L'ÉLITE</div>
@@ -1641,7 +1677,7 @@ function createCard(song){
 
   // Bouton de preview audio
   const isPlaying = (currentPlayingId === song.id && !globalAudio.paused);
-  const audioIcon = !song.previewUrl ? '🔇' : (isPlaying ? '⏸' : '▶');
+  const audioIcon = !song.previewUrl ? '<span>🔇</span>' : (isPlaying ? '<span>⏸</span>' : '<span style="padding-left:3px;">▶</span>');
 
   card.innerHTML = `
     <div class="fav-badge">❤</div>
@@ -1716,7 +1752,7 @@ function setupDrop(container, tierId){
         placeholder.className = "placeholder"; 
     }
     
-    // NOUVEAU CALCUL 2D POUR ÉVITER LE CLIGNOTEMENT EN BOUT DE LIGNE
+    // NOUVEAU CALCUL ABSOLU (Pythagore)
     const after = getDragAfterElement(container, e.clientX, e.clientY);
     
     if (after !== currentDragAfter) {
@@ -1766,22 +1802,39 @@ function setupDrop(container, tierId){
 }
 
 function getDragAfterElement(container, x, y) {
-  const cards = container.querySelectorAll('.card:not(.dragging)');
-  
+  const cards = [...container.querySelectorAll('.card:not(.dragging)')];
+  let closest = null;
+  let minDistance = Infinity;
+  let insertBefore = true;
+
+  // Calcul mathématique précis (trouve la carte la plus proche du pointeur)
   for (let card of cards) {
       const box = card.getBoundingClientRect();
+      const centerX = box.left + box.width / 2;
+      const centerY = box.top + box.height / 2;
       
-      // Si on est grossièrement sur la même ligne (verticalement)
-      if (y >= box.top && y <= box.bottom) {
-          // Si la souris est dans la moitié gauche de la carte, on insère AVANT
-          if (x < box.left + box.width / 2) return card;
-      } 
-      // Si la souris est carrément au dessus de cette ligne, on insère AVANT le premier de cette ligne
-      else if (y < box.top) {
-          return card;
+      // Distance absolue
+      const dist = Math.hypot(x - centerX, y - centerY);
+
+      if (dist < minDistance) {
+          minDistance = dist;
+          closest = card;
+          insertBefore = x < centerX; // Si on est à gauche du centre, on insère avant
       }
   }
-  return null; // Sinon on va tout à la fin
+
+  if (!closest) return null;
+
+  if (insertBefore) {
+      return closest;
+  } else {
+      // Si on insère APRES la carte la plus proche, on cherche le prochain VRAI noeud (pas un placeholder fantôme)
+      let next = closest.nextElementSibling;
+      while(next && (next.classList.contains('placeholder') || next.classList.contains('dragging'))) {
+          next = next.nextElementSibling;
+      }
+      return next; // S'il n'y a plus rien après, ça renvoie null et ça ira tout à la fin proprement.
+  }
 }
 
 function removeSong(id){
