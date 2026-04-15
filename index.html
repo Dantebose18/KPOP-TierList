@@ -6,7 +6,7 @@
 <title>KPOP Tier List</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/tmi.js@1.8.5/dist/tmi.min.js"></script>
-  
+
 <style>
 /* --- VARIABLES & THEME --- */
 :root {
@@ -14,16 +14,13 @@
   --bg-gradient: radial-gradient(circle at 10% 20%, rgba(239, 246, 255, 0.8) 0%, rgba(243, 244, 246, 0) 90%);
   --text-main: #1e293b;
   --text-muted: #64748b;
-  
   --card-bg: rgba(255, 255, 255, 0.85);
   --card-border: 1px solid rgba(255, 255, 255, 0.6);
   --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
-  
   --accent-primary: #6366f1;
   --accent-secondary: #ec4899;
-  --accent-fav: #ec4899; 
+  --accent-fav: #ec4899;
   --accent-gradient: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
-  
   --radius-sm: 8px;
   --radius-md: 16px;
   --radius-lg: 24px;
@@ -34,7 +31,6 @@ body.dark {
   --bg-gradient: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0f172a 70%);
   --text-main: #f1f5f9;
   --text-muted: #94a3b8;
-  
   --card-bg: rgba(30, 41, 59, 0.7);
   --card-border: 1px solid rgba(255, 255, 255, 0.08);
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
@@ -54,13 +50,11 @@ body {
   overflow-x: hidden;
 }
 
-/* --- SCROLLBAR PERSONNALISÉE --- */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: rgba(128, 128, 128, 0.05); border-radius: 4px; }
 ::-webkit-scrollbar-thumb { background: var(--accent-primary); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent-secondary); }
 
-/* --- HEADER GLASS --- */
 header {
   position: sticky;
   top: 0;
@@ -69,7 +63,7 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap; 
+  flex-wrap: wrap;
   gap: 15px;
   background: var(--card-bg);
   backdrop-filter: blur(12px);
@@ -90,7 +84,6 @@ header {
 .header-btns { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 .search-container { position: relative; display: flex; align-items: center; }
 
-/* STYLE BARRE DE RECHERCHE */
 #searchBar {
   background: rgba(128,128,128,0.1);
   border: var(--card-border);
@@ -101,15 +94,10 @@ header {
   transition: all 0.3s ease;
   font-size: 13px;
 }
-#searchBar:focus {
-  width: 240px;
-  background: rgba(255,255,255,0.15);
-  box-shadow: 0 0 0 2px var(--accent-primary);
-}
+#searchBar:focus { width: 240px; background: rgba(255,255,255,0.15); box-shadow: 0 0 0 2px var(--accent-primary); }
 #searchBar::placeholder { color: var(--text-muted); opacity: 0.7; }
 #clearSearchBtn { position: absolute; right: 10px; cursor: pointer; display: none; color: var(--text-muted); font-size: 14px; }
 
-/* --- BOUTONS --- */
 button {
   padding: 8px 14px;
   border-radius: var(--radius-sm);
@@ -127,11 +115,7 @@ button {
   gap: 6px;
 }
 
-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  background: rgba(255,255,255,0.1);
-}
+button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); background: rgba(255,255,255,0.1); }
 
 .btn-primary {
   background: var(--accent-gradient);
@@ -141,25 +125,11 @@ button:hover {
   padding: 10px 18px;
   font-size: 14px;
 }
-
-.btn-primary:hover {
-  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
-  background: linear-gradient(135deg, #4f46e5 0%, #db2777 100%);
-}
-
+.btn-primary:hover { box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4); background: linear-gradient(135deg, #4f46e5 0%, #db2777 100%); }
 .btn-danger { color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
 .btn-danger:hover { background: rgba(239, 68, 68, 0.1); }
 .icon-btn { padding: 8px 12px; font-size: 16px; }
 
-/* --- CONTROLE VOLUME --- */
-.volume-control {
-  display: flex; align-items: center; gap: 5px; margin-right: 5px;
-}
-.volume-control input {
-  width: 60px; cursor: pointer; accent-color: var(--accent-primary);
-}
-
-/* --- INPUT SECTION --- */
 .input-section {
   max-width: 700px;
   margin: 40px auto;
@@ -184,15 +154,13 @@ input[type="text"] {
   border-radius: var(--radius-sm);
   transition: background 0.2s;
 }
-
 input[type="text"]:focus { background: rgba(100,100,100,0.05); }
 input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 
-/* --- BOUTON SCROLL TO TOP --- */
 .scroll-top-btn {
   position: fixed;
   bottom: 30px;
-  right: 30px; 
+  right: 30px;
   width: 45px;
   height: 45px;
   border-radius: 50%;
@@ -213,18 +181,13 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 .scroll-top-btn.visible { opacity: 1; visibility: visible; }
 .scroll-top-btn:hover { transform: translateY(-5px); background: var(--accent-secondary); }
 
-/* --- MAIN LAYOUT --- */
-.main {
-  max-width: 1320px; 
-  margin: auto; 
-  padding: 0 20px 240px 20px;
-}
+.main { max-width: 1320px; margin: auto; padding: 0 20px 240px 20px; }
 
 /* --- SOMMAIRE --- */
 .sommaire-sidebar {
   position: fixed;
-  top: 225px; 
-  left: max(20px, calc(25vw - 460px)); 
+  top: 225px;
+  left: max(20px, calc(25vw - 460px));
   width: 250px;
   background: var(--card-bg);
   border: var(--card-border);
@@ -237,51 +200,22 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   max-height: calc(100vh - 250px);
   z-index: 100;
 }
-
-.sommaire-header {
-  padding: 12px 15px;
-  background: rgba(0, 0, 0, 0.1);
-  border-bottom: var(--card-border);
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.sommaire-list {
-  padding: 10px;
-  overflow-y: auto;
-}
-
+.sommaire-header { padding: 12px 15px; background: rgba(0, 0, 0, 0.1); border-bottom: var(--card-border); font-weight: 600; font-size: 14px; }
+.sommaire-list { padding: 10px; overflow-y: auto; }
 .sommaire-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  color: var(--text-main);
-  text-decoration: none;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 6px;
-  margin-bottom: 5px;
-  transition: all 0.2s;
-  cursor: pointer;
-  border-left: 4px solid transparent; 
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 12px; color: var(--text-main); text-decoration: none;
+  font-size: 13px; font-weight: 600; border-radius: 6px; margin-bottom: 5px;
+  transition: all 0.2s; cursor: pointer; border-left: 4px solid transparent;
 }
-.sommaire-item:hover {
-  background: rgba(255,255,255,0.1);
-  transform: translateX(5px);
-}
-.sommaire-count {
-  background: rgba(128, 128, 128, 0.2);
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 11px;
-}
+.sommaire-item:hover { background: rgba(255,255,255,0.1); transform: translateX(5px); }
+.sommaire-count { background: rgba(128, 128, 128, 0.2); padding: 2px 8px; border-radius: 12px; font-size: 11px; }
 
 /* --- TWITCH SIDEBAR --- */
 .twitch-sidebar {
   position: fixed;
-  top: 225px; 
-  right: max(20px, calc(25vw - 490px)); 
+  top: 225px;
+  right: max(20px, calc(25vw - 490px));
   width: 320px;
   height: calc(100vh - 250px);
   background: var(--card-bg);
@@ -293,13 +227,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   z-index: 100;
   transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
 }
-
-.twitch-sidebar.hidden {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
+.twitch-sidebar.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 .twitch-header {
   border-top-left-radius: var(--radius-md);
   border-top-right-radius: var(--radius-md);
@@ -312,87 +240,46 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   align-items: center;
   font-size: 14px;
 }
-
 .twitch-header input {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: var(--text-main);
   padding: 4px 8px;
   border-radius: 6px;
-  width: 100px; 
-  margin-left: 10px; 
+  width: 100px;
+  margin-left: 10px;
   font-size: 12px;
   transition: all 0.2s;
 }
-.twitch-header input:focus {
-    width: 140px;
-    background: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 0 0 2px #9146FF;
-}
+.twitch-header input:focus { width: 140px; background: rgba(255, 255, 255, 0.2); box-shadow: 0 0 0 2px #9146FF; }
+iframe.twitch-iframe { flex: 1; width: 100%; border: none; border-bottom-left-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md); background: transparent; }
 
-iframe.twitch-iframe {
-  flex: 1;
-  width: 100%;
-  border: none;
-  border-bottom-left-radius: var(--radius-md);
-  border-bottom-right-radius: var(--radius-md);
-  background: transparent;
-}
-
-/* --- OVERLAY VOTE TWITCH --- */
 #twitchVoteOverlay {
-  position: fixed;
-  top: 85px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--card-bg);
-  border: 2px solid #9146FF;
-  padding: 15px 25px;
-  border-radius: var(--radius-md);
+  position: fixed; top: 85px; left: 50%; transform: translateX(-50%);
+  background: var(--card-bg); border: 2px solid #9146FF;
+  padding: 15px 25px; border-radius: var(--radius-md);
   box-shadow: 0 4px 20px rgba(145, 70, 255, 0.4);
-  z-index: 2000;
-  display: none;
-  backdrop-filter: blur(12px);
-  text-align: center;
-  color: var(--text-main);
-  min-width: 300px;
+  z-index: 2000; display: none; backdrop-filter: blur(12px);
+  text-align: center; color: var(--text-main); min-width: 300px;
 }
+#twitchVoteOverlay button { margin-top: 10px; background: #9146FF; color: white; border: none; width: 100%; justify-content: center; }
+#twitchVoteOverlay button:hover { background: #772ce8; }
 
-#twitchVoteOverlay button {
-  margin-top: 10px;
-  background: #9146FF;
-  color: white;
-  border: none;
-  width: 100%;
-  justify-content: center;
-}
-#twitchVoteOverlay button:hover {
-  background: #772ce8;
-}
-
-/* --- RESPONSIVE --- */
-@media (max-width: 1750px) {
-  .twitch-sidebar, .sommaire-sidebar { display: none !important; }
-}
-
+@media (max-width: 1750px) { .twitch-sidebar, .sommaire-sidebar { display: none !important; } }
 @media (max-width: 768px) {
   header { flex-direction: column; padding: 10px 15px; align-items: stretch; }
   .logo { text-align: center; margin-bottom: 5px; }
   .header-btns { justify-content: center; }
-  
   .search-container { width: 100%; margin-bottom: 10px; }
   #searchBar { width: 100% !important; }
-  .desktop-only { display: none; } 
-
+  .desktop-only { display: none; }
   .input-section { flex-direction: column; margin: 20px auto; }
-  .input-section > div { display: none; } 
+  .input-section > div { display: none; }
   .main { padding: 0 10px 240px 10px; }
-  
   .cards { justify-content: flex-start; gap: 10px; padding: 15px; }
-  
   .tier-header { font-size: 18px; padding: 12px 15px; flex-direction: column; gap: 10px; align-items: flex-start; }
   .pool-container { width: 95%; padding: 10px; bottom: 10px; }
-  .scroll-top-btn { bottom: 110px; right: 15px; } 
+  .scroll-top-btn { bottom: 110px; right: 15px; }
 }
 
 /* --- TIERS --- */
@@ -402,11 +289,11 @@ iframe.twitch-iframe {
   border-radius: var(--radius-md);
   margin-bottom: 25px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-  overflow: visible; 
+  overflow: visible;
   display: flex;
   flex-direction: column;
-  scroll-margin-top: 90px; 
-  position: relative; 
+  scroll-margin-top: 90px;
+  position: relative;
 }
 
 .tier-header {
@@ -420,42 +307,38 @@ iframe.twitch-iframe {
   text-shadow: 0 2px 4px rgba(0,0,0,0.2);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   position: sticky;
-  top: 60px; 
-  z-index: 40; 
-  overflow: hidden; 
+  top: 60px;
+  z-index: 40;
+  overflow: hidden;
 }
-
 .tier-header::after {
   content: ''; position: absolute; top:0; left:0; right:0; bottom:0;
   background: linear-gradient(90deg, rgba(255,255,255,0.1), transparent);
-  pointer-events: none;
-  border-radius: inherit;
+  pointer-events: none; border-radius: inherit;
 }
 
 .tier-controls { display: flex; gap: 8px; align-items: center; z-index: 2; }
-.tier-controls button {
-  background: rgba(0,0,0,0.2); border: none; color: white;
-  padding: 6px 10px; font-size: 12px; border-radius: 6px; backdrop-filter: blur(4px);
-}
+.tier-controls button { background: rgba(0,0,0,0.2); border: none; color: white; padding: 6px 10px; font-size: 12px; border-radius: 6px; backdrop-filter: blur(4px); }
 .tier-controls button:hover { background: rgba(0,0,0,0.4); }
 
-.color-picker-wrapper {
-  width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.8);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2); overflow: hidden; position: relative; cursor: pointer; transition: transform 0.2s;
-}
+.color-picker-wrapper { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 5px rgba(0,0,0,0.2); overflow: hidden; position: relative; cursor: pointer; transition: transform 0.2s; }
 .color-picker-wrapper:hover { transform: scale(1.1); }
 input[type="color"] { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; cursor: pointer; padding: 0; margin: 0; border: none; }
 
 .cards { display: flex; gap: 16px; padding: 20px; flex-wrap: wrap; min-height: 160px; align-content: flex-start; }
 
-/* --- CARDS & SÉLECTION --- */
+/* --- CARDS --- */
 .card {
-  width: 140px; height: 140px; border-radius: var(--radius-md); background-size: cover; background-position: center; position: relative; cursor: grab;
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, height 0.2s ease, background-image 0.5s ease-in;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; border: 2px solid rgba(255,255,255,0.1); background-color: var(--card-bg);
+  width: 140px; height: 140px; border-radius: var(--radius-md);
+  background-size: cover; background-position: center;
+  position: relative; cursor: grab;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, height 0.2s ease;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden;
+  border: 2px solid rgba(255,255,255,0.1); background-color: var(--card-bg);
+  flex-shrink: 0;
 }
 
-body.edit-active .card { cursor: pointer; } 
+body.edit-active .card { cursor: pointer; }
 
 .card.selected {
   border-color: var(--accent-primary) !important;
@@ -473,51 +356,58 @@ body.edit-active .fav-badge { display: none !important; }
   100% { box-shadow: 0 0 25px var(--accent-fav), inset 0 0 15px rgba(236, 72, 153, 0.6); border-color: var(--accent-fav); }
 }
 
-body.is-dragging .card { transition: none !important; }
-.card.dragging { opacity: 0.4; transform: scale(0.95); filter: grayscale(100%); pointer-events: none; }
-#tiers .card:hover { transform: scale(1.15) translateY(-5px); z-index: 50; box-shadow: 0 20px 30px rgba(0,0,0,0.25); border-color: var(--accent-secondary); }
-.card.is-favorite:hover { border-color: var(--accent-fav); }
-.card.selected:hover { border-color: var(--accent-primary); }
+/* Pendant le drag : on désactive les transitions sur toutes les cartes pour éviter le clignotement */
+body.is-dragging .card { transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s !important; }
+body.is-dragging .cards { transition: none !important; }
+.card.dragging { opacity: 0.35; transform: scale(0.93); pointer-events: none; }
 
-.card-overlay { position: absolute; bottom: 0; width: 100%; padding: 40px 10px 10px 10px; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%); color: white; font-size: 12px; line-height: 1.3; text-align: center; pointer-events: none; transition: all 0.2s; display: flex; flex-direction: column; justify-content: flex-end; }
+#tiers .card:hover:not(.dragging) { transform: scale(1.15) translateY(-5px); z-index: 50; box-shadow: 0 20px 30px rgba(0,0,0,0.25); border-color: var(--accent-secondary); }
+.card.is-favorite:hover:not(.dragging) { border-color: var(--accent-fav); }
+.card.selected:hover:not(.dragging) { border-color: var(--accent-primary); }
+
+.card-overlay {
+  position: absolute; bottom: 0; width: 100%; padding: 40px 10px 10px 10px;
+  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
+  color: white; font-size: 12px; line-height: 1.3; text-align: center;
+  pointer-events: none; transition: all 0.2s;
+  display: flex; flex-direction: column; justify-content: flex-end;
+}
 .card-overlay strong { display: block; font-size: 13px; margin-bottom: 2px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
 
-/* --- PLAY AUDIO BTN FIX --- */
-.btn-play-preview {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(4px);
-    border-radius: 50%;
-    color: white;
-    font-size: 18px;
-    width: 45px; height: 45px;
-    display: none;
-    align-items: center; justify-content: center;
-    border: 2px solid rgba(255,255,255,0.8);
-    z-index: 15;
-    cursor: pointer;
-    transition: transform 0.2s, background 0.2s;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    /* Correctifs centrage emoji */
-    padding: 0;
-    line-height: 0;
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+/* --- PLAY BUTTON ON HOVER --- */
+.card-play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.7);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.75);
+  border: 2px solid rgba(255,255,255,0.8);
+  color: white;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 25;
+  cursor: pointer;
+  pointer-events: none;
+  padding-left: 3px; /* optical centering for play icon */
 }
-.btn-play-preview:hover {
-    transform: translate(-50%, -50%) scale(1.1);
-    background: var(--accent-primary);
-}
-.card:hover .btn-play-preview { display: flex; }
-body.edit-active .btn-play-preview { display: none !important; }
+.card:hover .card-play-btn { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
+body.is-dragging .card .card-play-btn { opacity: 0 !important; pointer-events: none !important; }
+body.edit-active .card-play-btn { display: none; }
+.card-play-btn.playing { background: var(--accent-secondary); border-color: var(--accent-secondary); padding-left: 0; }
 
 /* --- MODE COMPACT --- */
 body.compact-active .card { height: 70px; }
 body.compact-active .card-overlay { top: 0; padding: 5px; background: rgba(0,0,0,0.7); justify-content: center; gap: 2px; }
 body.compact-active .card-overlay strong { font-size: 12px; margin: 0; white-space: normal; line-height: 1.1; }
 body.compact-active .card-overlay span { font-size: 11px; opacity: 0.9; line-height: 1.1; }
-body.compact-active .card:hover { height: 140px; transform: scale(1.15) translateY(-5px); z-index: 100; background-blend-mode: normal; }
+body.compact-active .card:hover { height: 140px; transform: scale(1.15) translateY(-5px); z-index: 100; }
 body.compact-active .card:hover .card-overlay { top: auto; bottom: 0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%); padding: 40px 10px 10px 10px; justify-content: flex-end; }
 
 /* --- CARD TOOLS --- */
@@ -527,20 +417,24 @@ body.compact-active .card:hover .card-overlay { top: auto; bottom: 0; background
 .btn-fav-pos { position: absolute; top: 40px; left: 6px; }
 .btn-del-pos { position: absolute; top: 6px; right: 6px; }
 
-.card-tools button { 
-  background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2); 
-  color: white; padding: 0; width: 28px; height: 28px; 
-  display: flex; align-items: center; justify-content: center; 
-  border-radius: 50%; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); 
-  transition: transform 0.1s, background 0.2s;
-  padding-bottom: 2px; 
+.card-tools button {
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2);
+  color: white; padding: 0; width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  transition: transform 0.1s, background 0.2s; padding-bottom: 2px;
 }
-
 .card-tools button:hover { background: var(--accent-secondary); transform: scale(1.1); }
 .card-tools button.active-fav { color: var(--accent-fav); background: rgba(0,0,0,0.8); border-color: var(--accent-fav); }
 
-.placeholder { width: 140px; height: 140px; border-radius: var(--radius-md); border: 2px dashed var(--text-muted); background: rgba(100,100,100,0.05); opacity: 0.5; transition: none; pointer-events: none; }
+.placeholder {
+  width: 140px; height: 140px; border-radius: var(--radius-md);
+  border: 2px dashed var(--accent-primary); background: rgba(99, 102, 241, 0.08);
+  opacity: 0.7; animation: pulse 1.5s infinite; transition: none; pointer-events: none;
+  flex-shrink: 0;
+}
 body.compact-active .placeholder { height: 70px; }
+@keyframes pulse { 0%{opacity:0.3} 50%{opacity:0.7} 100%{opacity:0.3} }
 
 /* --- POOL --- */
 .pool-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 1200px; background: var(--card-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 20px; border: var(--card-border); border-radius: var(--radius-lg); box-shadow: 0 -10px 40px rgba(0,0,0,0.1); z-index: 100; }
@@ -548,25 +442,91 @@ body.compact-active .placeholder { height: 70px; }
 .pool-header::after { content:''; flex:1; height:1px; background: var(--text-muted); opacity: 0.2; }
 .pool { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; min-height: 150px; scrollbar-width: thin; scrollbar-color: var(--accent-primary) transparent; }
 
-/* --- MODALS --- */
+/* --- MINI PLAYER (APPLE MUSIC PREVIEW) --- */
+#miniPlayer {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  width: 380px;
+  max-width: 95vw;
+  background: var(--card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: var(--card-border);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: 0 -8px 40px rgba(0,0,0,0.2);
+  z-index: 3000;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 16px 20px 20px;
+}
+#miniPlayer.visible { transform: translateX(-50%) translateY(0); }
+
+.player-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+  box-shadow: none;
+  transform: none !important;
+}
+.player-close:hover { color: var(--text-main); background: none; box-shadow: none; transform: none !important; }
+
+.player-info { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.player-cover { width: 48px; height: 48px; border-radius: 8px; background-size: cover; background-position: center; background-color: var(--card-bg); flex-shrink: 0; }
+.player-text { flex: 1; min-width: 0; }
+.player-text strong { display: block; font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.player-text span { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+
+.player-controls { display: flex; align-items: center; gap: 12px; }
+.player-volume-row { display: flex; align-items: center; gap: 8px; }
+.player-volume-row span { font-size: 14px; }
+input[type="range"] {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(128,128,128,0.3);
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  background-image: var(--accent-gradient);
+  background-size: var(--vol-pct, 50%) 100%;
+  background-repeat: no-repeat;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* --- MODAL SYSTEM --- */
 .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 2000; display: none; justify-content: center; align-items: center; padding: 20px; }
-.modal-content { 
-  background: var(--card-bg); border: var(--card-border); width: 100%; max-width: 500px; 
-  border-radius: var(--radius-lg); padding: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); 
-  color: var(--text-main); display: flex; flex-direction: column; max-height: 85vh; 
+.modal-content {
+  background: var(--card-bg); border: var(--card-border); width: 100%; max-width: 540px;
+  border-radius: var(--radius-lg); padding: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+  color: var(--text-main); display: flex; flex-direction: column; max-height: 85vh;
 }
 .modal-content h2 { margin-top: 0; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-.modal-body-scroll {
-  overflow-y: auto;
-  flex: 1;
-  padding-right: 10px;
-  margin-top: 10px;
-  margin-bottom: 15px;
-}
+.modal-body-scroll { overflow-y: auto; flex: 1; padding-right: 10px; margin-top: 10px; margin-bottom: 15px; }
 .modal-body-scroll::-webkit-scrollbar { width: 6px; }
 .modal-body-scroll::-webkit-scrollbar-track { background: rgba(128,128,128,0.1); border-radius: 4px; }
 .modal-body-scroll::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; }
+
+/* Modal tabs */
+.modal-tabs { display: flex; gap: 4px; margin-bottom: 16px; background: rgba(128,128,128,0.1); padding: 4px; border-radius: var(--radius-sm); }
+.modal-tab { flex: 1; padding: 8px; border: none; background: transparent; color: var(--text-muted); font-size: 13px; font-weight: 600; border-radius: 6px; cursor: pointer; transition: all 0.2s; box-shadow: none; transform: none !important; }
+.modal-tab:hover { background: rgba(128,128,128,0.15); box-shadow: none; transform: none !important; }
+.modal-tab.active { background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 
 .stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; border-bottom: 1px solid rgba(128,128,128,0.1); padding-bottom: 5px; }
 .stat-row strong { font-weight: 600; }
@@ -577,11 +537,9 @@ body.compact-active .placeholder { height: 70px; }
 .rank-pos { font-weight: 800; color: var(--text-muted); width: 25px; text-align: center; }
 .rank-name { flex: 1; font-weight: 600; }
 .rank-avg { font-size: 12px; padding: 2px 6px; background: var(--text-muted); color: white; border-radius: 4px; min-width: 50px; text-align: center; font-weight: bold; }
-
 .rank-item.top { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); }
 .rank-item.top .rank-pos { color: #10b981; }
 .rank-item.top .rank-avg { background: #10b981; }
-
 .rank-item.flop { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); }
 .rank-item.flop .rank-pos { color: #ef4444; }
 .rank-item.flop .rank-avg { background: #ef4444; }
@@ -600,52 +558,72 @@ body.compact-active .placeholder { height: 70px; }
 body.edit-active .card-tools { opacity: 1; pointer-events: none; }
 body.edit-active .card-tools button { pointer-events: auto; }
 
-.session-card { background: rgba(128,128,128,0.05); border-radius: 8px; padding: 10px; margin-bottom: 8px; border-left: 3px solid var(--text-muted); }
+/* --- SESSION CARDS --- */
+.session-card {
+  background: rgba(128,128,128,0.05); border-radius: 10px; padding: 12px 14px;
+  margin-bottom: 10px; border-left: 3px solid var(--text-muted);
+  cursor: pointer; transition: all 0.2s;
+}
+.session-card:hover { background: rgba(128,128,128,0.1); transform: translateX(3px); }
 .session-card.best { border-left-color: #10b981; }
 .session-card.worst { border-left-color: #ef4444; }
+.session-card.current-session { border-left-color: var(--accent-primary); }
 .session-date { font-size: 11px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
 .session-data { font-size: 14px; font-weight: 600; margin-top: 2px; }
+.session-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.session-action-btn { font-size: 11px; padding: 4px 10px; border-radius: 20px; }
 
+/* Chart canvas inside modal */
+.tier-chart-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px; }
+.tier-chart-bar .bar-label { width: 30px; font-weight: 700; }
+.tier-chart-bar .bar-track { flex: 1; height: 20px; background: rgba(128,128,128,0.15); border-radius: 4px; overflow: hidden; }
+.tier-chart-bar .bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; display: flex; align-items: center; padding-left: 6px; font-size: 11px; color: white; font-weight: 600; }
+
+/* Session history item */
+.history-session {
+  background: rgba(128,128,128,0.05); border: 1px solid rgba(128,128,128,0.1);
+  border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; cursor: pointer;
+  transition: all 0.2s;
+}
+.history-session:hover { background: rgba(99, 102, 241, 0.08); border-color: var(--accent-primary); }
+.history-session .session-head { display: flex; justify-content: space-between; align-items: center; }
+.history-session .session-name { font-weight: 700; font-size: 14px; }
+.history-session .session-meta { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.history-session .session-avg-badge { background: var(--accent-gradient); color: white; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+.history-session-detail { margin-top: 12px; display: none; border-top: 1px solid rgba(128,128,128,0.1); padding-top: 12px; }
+.history-session-detail.open { display: block; }
+
+/* New session form */
+.new-session-form { background: rgba(99, 102, 241, 0.08); border: 1px dashed var(--accent-primary); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+.new-session-form input { background: rgba(255,255,255,0.1); border: 1px solid rgba(128,128,128,0.2); border-radius: 8px; padding: 8px 12px; color: var(--text-main); font-family: inherit; font-size: 14px; width: 100%; margin-bottom: 8px; }
+.new-session-form input::placeholder { color: var(--text-muted); }
 </style>
 </head>
 <body class="dark">
 
 <header>
   <div class="logo">K-TIER ✨</div>
-  
   <div class="header-btns">
     <div class="search-container">
       <input type="text" id="searchBar" placeholder="🔍 Filtrer artiste/titre..." oninput="filterCards()">
       <span id="clearSearchBtn" onclick="clearSearch()">✖</span>
     </div>
-
-    <div class="volume-control" title="Volume Extrait Audio">
-        🔊 <input type="range" id="globalVolume" min="0" max="1" step="0.05" value="0.2" oninput="updateGlobalVolume(this.value)">
-    </div>
-    
     <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;" class="desktop-only"></div>
-    
     <button onclick="exportJson()" title="Sauvegarder">💾</button>
     <button onclick="document.getElementById('fileInput').click()" title="Charger">📂</button>
     <button onclick="resetData()" class="btn-danger" title="Tout effacer">🗑️</button>
-    
     <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;" class="desktop-only"></div>
-    
     <button onclick="toggleDark()" class="icon-btn" title="Thème Sombre/Clair">🌙</button>
     <button onclick="toggleCompact()" id="compactBtn" class="icon-btn" title="Vue Compacte">☰</button>
     <button onclick="toggleTwitch()" class="icon-btn" title="Afficher/Cacher Tchat Twitch">🟣</button>
     <button onclick="togglePolls()" id="pollToggleBtn" class="icon-btn" title="Activer/Désactiver Sondages Twitch">🗳️ OFF</button>
-    <button onclick="forceSync()" class="icon-btn" title="Relancer recherche d'images/audios">🔄</button>
-    
+    <button onclick="forceSync()" class="icon-btn" title="Relancer recherche d'images">🔄</button>
     <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;" class="desktop-only"></div>
-    
-    <button onclick="showSessionManager()" class="icon-btn" title="Gestion des Sessions">🗓️</button>
     <button onclick="showFavorites()" class="icon-btn" title="Mes Favoris" style="color:var(--accent-fav)">❤</button>
     <button onclick="showStats()" class="icon-btn" title="Statistiques">📊</button>
+    <button onclick="showSessionsModal()" class="icon-btn" title="Historique des Sessions">📅</button>
     <button onclick="showAllArtists()" class="icon-btn" title="Liste Complète des Artistes">📑</button>
-
     <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;" class="desktop-only"></div>
-
     <button onclick="toggleEdit()" id="editBtn" class="icon-btn" title="Mode Édition">✏️</button>
     <button onclick="addTier()" class="icon-btn">➕ Tier</button>
   </div>
@@ -660,25 +638,10 @@ body.edit-active .card-tools button { pointer-events: auto; }
 
 <input type="file" id="fileInput" style="display:none" accept=".json" onchange="importJson(this)">
 
-<div id="sessionModal" class="modal-overlay" onclick="closeModal(event)">
-  <div class="modal-content">
-    <h2>🗓️ Gestion des Sessions</h2>
-    <div style="margin-bottom: 15px; background: rgba(0,0,0,0.1); padding: 15px; border-radius: 8px;">
-        <label style="font-size: 14px; font-weight: 600;">Nom de la Session Actuelle :</label><br>
-        <span style="font-size: 12px; opacity: 0.7;">Les prochaines chansons ajoutées iront dans cette session.</span>
-        <input type="text" id="activeSessionInput" style="width: 100%; padding: 10px; margin-top: 8px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: white;" onchange="updateActiveSession(this.value)">
-    </div>
-    <div class="stat-title">Historique des Sessions</div>
-    <div class="modal-body-scroll" id="sessionHistoryList"></div>
-    <div style="margin-top: 15px; text-align: right;">
-      <button onclick="document.getElementById('sessionModal').style.display='none'">Fermer</button>
-    </div>
-  </div>
-</div>
-
+<!-- STATS MODAL -->
 <div id="statsModal" class="modal-overlay" onclick="closeModal(event)">
   <div class="modal-content">
-    <h2 id="statsModalTitle">Classement & Stats</h2>
+    <h2>Classement & Stats</h2>
     <div class="modal-body-scroll" id="statsBody"></div>
     <div style="margin-top: 15px; text-align: right;">
       <button onclick="document.getElementById('statsModal').style.display='none'">Fermer</button>
@@ -686,6 +649,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
   </div>
 </div>
 
+<!-- ALL ARTISTS MODAL -->
 <div id="allArtistsModal" class="modal-overlay" onclick="closeModal(event)">
   <div class="modal-content">
     <h2>Tous les Artistes</h2>
@@ -696,12 +660,28 @@ body.edit-active .card-tools button { pointer-events: auto; }
   </div>
 </div>
 
+<!-- FAVORITES MODAL -->
 <div id="favModal" class="modal-overlay" onclick="closeModal(event)">
   <div class="modal-content">
     <h2 style="color:var(--accent-fav); -webkit-text-fill-color: var(--accent-fav);">❤ Mes Favoris</h2>
     <div class="modal-body-scroll" id="favBody" style="min-height: 100px;"></div>
     <div style="margin-top: 15px; text-align: right;">
       <button onclick="document.getElementById('favModal').style.display='none'">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- SESSIONS MODAL -->
+<div id="sessionsModal" class="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-content" style="max-width: 600px;">
+    <h2>📅 Sessions</h2>
+    <div class="modal-tabs">
+      <button class="modal-tab active" onclick="switchSessionTab('manage')">Gérer</button>
+      <button class="modal-tab" onclick="switchSessionTab('history')">Historique</button>
+    </div>
+    <div class="modal-body-scroll" id="sessionsBody"></div>
+    <div style="margin-top: 15px; text-align: right;">
+      <button onclick="document.getElementById('sessionsModal').style.display='none'">Fermer</button>
     </div>
   </div>
 </div>
@@ -736,239 +716,201 @@ body.edit-active .card-tools button { pointer-events: auto; }
   <div id="pool" class="pool"></div>
 </div>
 
+<!-- MINI PLAYER -->
+<div id="miniPlayer">
+  <button class="player-close" onclick="stopPreview()">✕</button>
+  <div class="player-info">
+    <div class="player-cover" id="playerCover"></div>
+    <div class="player-text">
+      <strong id="playerArtist">—</strong>
+      <span id="playerTitle">—</span>
+    </div>
+  </div>
+  <div class="player-volume-row">
+    <span>🔈</span>
+    <input type="range" id="volumeSlider" min="0" max="100" value="40" oninput="setVolume(this.value)">
+    <span>🔊</span>
+  </div>
+</div>
+
+<audio id="previewAudio"></audio>
+
 <script>
 // ==========================================
 // CONFIGURATION
 // ==========================================
-const YOUTUBE_API_KEY = ""; 
+const YOUTUBE_API_KEY = "";
 // ==========================================
 
 let data = load();
 let editMode = false;
-let compactMode = false; 
+let compactMode = false;
 let draggedId = null;
 let placeholder = null;
-let twitchVisible = false; 
-let pollsEnabled = false;  
-let currentDragAfter = undefined; 
-let selectedIds = new Set(); 
+let twitchVisible = false;
+let pollsEnabled = false;
+let currentDragAfter = undefined;
+let selectedIds = new Set();
+let currentSessionTabView = 'manage';
 
-// --- GESTION AUDIO APPLE MUSIC ---
-const globalAudio = new Audio();
-globalAudio.volume = 0.2; // Volume par défaut (20%)
+// --- AUDIO PREVIEW ---
 let currentPlayingId = null;
-let currentPlayingBtn = null;
+const audio = document.getElementById('previewAudio');
+const volumeSlider = document.getElementById('volumeSlider');
+audio.volume = 0.4;
 
-function updateGlobalVolume(val) {
-    globalAudio.volume = val;
+// Update range background on load
+updateSliderBg(40);
+
+function updateSliderBg(val) {
+  volumeSlider.style.setProperty('--vol-pct', val + '%');
 }
 
-globalAudio.addEventListener('ended', () => {
-    if(currentPlayingBtn) {
-        currentPlayingBtn.innerHTML = '<span style="padding-left:3px;">▶</span>';
-        currentPlayingBtn = null;
-    }
+function setVolume(val) {
+  audio.volume = val / 100;
+  updateSliderBg(val);
+}
+
+function stopPreview() {
+  audio.pause();
+  audio.src = '';
+  if (currentPlayingId) {
+    const btn = document.querySelector(`#card-${currentPlayingId} .card-play-btn`);
+    if (btn) { btn.innerHTML = '▶'; btn.classList.remove('playing'); }
     currentPlayingId = null;
-});
-
-function togglePlay(e, id, url) {
-    e.stopPropagation(); 
-    
-    if(!url || url === 'undefined' || url === 'null') {
-        alert("Extrait audio non disponible pour cette chanson.");
-        return;
-    }
-    
-    const btn = document.getElementById(`play-btn-${id}`);
-    
-    // Si on reclique sur la même chanson en cours
-    if(currentPlayingId === id && !globalAudio.paused) {
-        globalAudio.pause();
-        btn.innerHTML = '<span style="padding-left:3px;">▶</span>';
-        return;
-    }
-    
-    // Réinitialise le bouton précédent si on change de chanson
-    if(currentPlayingBtn && currentPlayingBtn !== btn) {
-        currentPlayingBtn.innerHTML = '<span style="padding-left:3px;">▶</span>';
-    }
-    
-    globalAudio.src = url;
-    globalAudio.play();
-    currentPlayingId = id;
-    currentPlayingBtn = btn;
-    btn.innerHTML = '<span>⏸</span>';
+  }
+  document.getElementById('miniPlayer').classList.remove('visible');
 }
 
-// --- GESTION DES SESSIONS ---
-function getDefaultSessionName() {
-    const d = new Date();
-    const m = d.toLocaleString('fr-FR', {month: 'long'});
-    return m.charAt(0).toUpperCase() + m.slice(1) + " " + d.getFullYear(); // ex: "Avril 2026"
-}
+async function togglePreview(songId, event) {
+  event.stopPropagation();
+  
+  // If same song is playing, stop it
+  if (currentPlayingId === songId) {
+    stopPreview();
+    return;
+  }
+  
+  // Stop previous
+  if (currentPlayingId) {
+    const prevBtn = document.querySelector(`#card-${currentPlayingId} .card-play-btn`);
+    if (prevBtn) { prevBtn.innerHTML = '▶'; prevBtn.classList.remove('playing'); }
+  }
+  audio.pause();
 
-let activeSessionName = localStorage.getItem("activeSessionName");
-if (!activeSessionName) {
-    activeSessionName = getDefaultSessionName();
-    localStorage.setItem("activeSessionName", activeSessionName);
-}
+  const song = findSong(songId);
+  if (!song) return;
 
-function updateActiveSession(val) {
-    if(val.trim()) {
-        activeSessionName = val.trim();
-        localStorage.setItem("activeSessionName", activeSessionName);
+  const btn = event.currentTarget;
+  btn.innerHTML = '⏳';
+
+  try {
+    const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(song.artist + ' ' + song.title)}&entity=song&limit=1`);
+    const json = await res.json();
+    const result = json.results?.[0];
+
+    if (result && result.previewUrl) {
+      audio.src = result.previewUrl;
+      audio.volume = volumeSlider.value / 100;
+      audio.play();
+      currentPlayingId = songId;
+      btn.innerHTML = '⏸';
+      btn.classList.add('playing');
+
+      // Update mini player
+      document.getElementById('playerCover').style.backgroundImage = `url(${result.artworkUrl100 || song.cover})`;
+      document.getElementById('playerArtist').textContent = song.artist;
+      document.getElementById('playerTitle').textContent = song.title;
+      document.getElementById('miniPlayer').classList.add('visible');
+
+      audio.onended = () => stopPreview();
+    } else {
+      btn.innerHTML = '▶';
+      btn.title = 'Pas de preview disponible';
     }
+  } catch(e) {
+    btn.innerHTML = '▶';
+  }
 }
 
-function showSessionManager() {
-    const modal = document.getElementById('sessionModal');
-    document.getElementById('activeSessionInput').value = activeSessionName;
-
-    const list = document.getElementById('sessionHistoryList');
-    
-    // On réutilise la fonction de calcul pour avoir les moyennes par session
-    const { sessionStats } = calculateRankings();
-
-    let html = '';
-    for(let sid in sessionStats) {
-        const stats = sessionStats[sid];
-        const avg = stats.count > 0 ? (stats.sumScore / stats.count).toFixed(2) : "0";
-        
-        html += `
-        <div class="stat-row" style="align-items: center; padding: 10px; background: rgba(128,128,128,0.05); border-radius: 6px;">
-            <div style="flex: 1;">
-                <strong style="color:var(--accent-primary)">${sid}</strong> <br>
-                <span style="font-size:12px; opacity:0.7;">${stats.count} titres • Moyenne: <strong>${avg}/10</strong></span>
-            </div>
-            <div style="display: flex; gap: 5px; flex-direction: column; text-align: right;">
-                <button onclick="showStats('${sid.replace(/'/g, "\\'")}')" style="font-size:11px; padding: 4px 8px; background:var(--accent-primary); color:white; border:none;">📊 Stats</button>
-                <div style="display:flex; gap:5px; justify-content: flex-end;">
-                    <button onclick="renameSessionPrompt('${sid.replace(/'/g, "\\'")}')" style="font-size:11px; padding: 4px 8px;">Renommer</button>
-                    <button onclick="mergeSessionPrompt('${sid.replace(/'/g, "\\'")}')" style="font-size:11px; padding: 4px 8px; border-color: var(--accent-secondary); color: var(--accent-secondary);">Fusionner vers...</button>
-                </div>
-            </div>
-        </div>`;
-    }
-    
-    if(Object.keys(sessionStats).length === 0) {
-        html = "<div style='opacity:0.6; text-align: center; padding: 20px;'>Aucune session enregistrée.</div>";
-    }
-    
-    list.innerHTML = html;
-    modal.style.display = 'flex';
-}
-
-function renameSessionPrompt(oldName) {
-    const newName = prompt(`Nouveau nom pour la session "${oldName}" :`, oldName);
-    if(newName && newName.trim() !== "" && newName !== oldName) {
-        const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
-        allSongs.forEach(s => { if(s.sessionId === oldName) s.sessionId = newName.trim(); });
-        save();
-        showSessionManager(); 
-    }
-}
-
-function mergeSessionPrompt(sourceName) {
-    const targetName = prompt(`Fusionner toutes les musiques de "${sourceName}" dans quelle autre session ? (Entrez le nom exact de destination)`);
-    if(targetName && targetName.trim() !== "" && targetName !== sourceName) {
-        const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
-        allSongs.forEach(s => { if(s.sessionId === sourceName) s.sessionId = targetName.trim(); });
-        save();
-        showSessionManager();
-    }
-}
-
-
-// --- GESTION TWITCH TMI.JS ---
+// --- GESTION TWITCH ---
 let activeTwitchSongId = null;
-let twitchVotes = {}; // { username: note }
+let twitchVotes = {};
 let twitchClient = null;
 
 try {
-    if (typeof tmi !== 'undefined') {
-        twitchClient = new tmi.Client({ channels: ['Dantebose'] });
-        twitchClient.connect().catch(e => console.log('Erreur de connexion Twitch:', e));
-
-        twitchClient.on('message', (channel, tags, message, self) => {
-            if (self || !activeTwitchSongId) return;
-            
-            if (message.toLowerCase().startsWith('!note ')) {
-                const noteStr = message.split(' ')[1];
-                if(noteStr) {
-                    const note = parseFloat(noteStr.replace(',', '.'));
-                    if (!isNaN(note) && note >= 0 && note <= 10) {
-                        twitchVotes[tags.username] = note; 
-                        
-                        let sum = 0; let count = 0;
-                        for (let u in twitchVotes) { sum += twitchVotes[u]; count++; }
-                        const avg = (sum / count).toFixed(1);
-                        
-                        const resDiv = document.getElementById("twitchLiveResult");
-                        if (resDiv) {
-                            resDiv.innerHTML = `Moyenne: <strong style="color:var(--accent-primary); font-size:16px;">${avg} / 10</strong> <span style="font-size:12px; opacity:0.8;">(${count} votes)</span>`;
-                        }
-                    }
-                }
-            }
-        });
-    } else {
-        console.warn("tmi.js bloqué. Le bot Twitch est inactif.");
-    }
-} catch (e) {
-    console.warn("Erreur d'initialisation Twitch:", e);
-}
+  if (typeof tmi !== 'undefined') {
+    twitchClient = new tmi.Client({ channels: ['Dantebose'] });
+    twitchClient.connect().catch(e => console.log('Erreur de connexion Twitch:', e));
+    twitchClient.on('message', (channel, tags, message, self) => {
+      if (self || !activeTwitchSongId) return;
+      if (message.toLowerCase().startsWith('!note ')) {
+        const noteStr = message.split(' ')[1];
+        if(noteStr) {
+          const note = parseFloat(noteStr.replace(',', '.'));
+          if (!isNaN(note) && note >= 0 && note <= 10) {
+            twitchVotes[tags.username] = note;
+            let sum = 0; let count = 0;
+            for (let u in twitchVotes) { sum += twitchVotes[u]; count++; }
+            const avg = (sum / count).toFixed(1);
+            const resDiv = document.getElementById("twitchLiveResult");
+            if (resDiv) resDiv.innerHTML = `Moyenne: <strong style="color:var(--accent-primary); font-size:16px;">${avg} / 10</strong> <span style="font-size:12px; opacity:0.8;">(${count} votes)</span>`;
+          }
+        }
+      }
+    });
+  }
+} catch (e) { console.warn("Erreur Twitch:", e); }
 
 function startTwitchVote(songId, title) {
-    activeTwitchSongId = songId;
-    twitchVotes = {};
-    const ui = document.getElementById("twitchVoteOverlay");
-    document.getElementById("twitchVoteTitle").innerText = title;
-    
-    if (!twitchClient) {
-        document.getElementById("twitchLiveResult").innerHTML = "Moyenne: - / 10 (0 vote)<br><span style='color:#ef4444; font-size:10px; display:block; margin-top:5px;'>⚠ Bloqueur de pub actif. Désactive-le pour le tchat.</span>";
-    } else {
-        document.getElementById("twitchLiveResult").innerHTML = "Moyenne: - / 10 (0 vote)";
-    }
-    
-    ui.style.display = "block";
+  activeTwitchSongId = songId;
+  twitchVotes = {};
+  const ui = document.getElementById("twitchVoteOverlay");
+  document.getElementById("twitchVoteTitle").innerText = title;
+  if (!twitchClient) {
+    document.getElementById("twitchLiveResult").innerHTML = "Moyenne: - / 10 (0 vote)<br><span style='color:#ef4444; font-size:10px; display:block; margin-top:5px;'>⚠ Bloqueur de pub actif.</span>";
+  } else {
+    document.getElementById("twitchLiveResult").innerHTML = "Moyenne: - / 10 (0 vote)";
+  }
+  ui.style.display = "block";
 }
 
 function stopTwitchVote() {
-    if(!activeTwitchSongId) return;
-    const song = findSong(activeTwitchSongId);
-    let sum = 0, count = 0;
-    for(let u in twitchVotes) { sum += twitchVotes[u]; count++; }
-    
-    if (song && count > 0) {
-        song.chatRating = (sum/count).toFixed(1);
-        save();
-        render();
-    }
-    activeTwitchSongId = null;
-    document.getElementById("twitchVoteOverlay").style.display = "none";
+  if(!activeTwitchSongId) return;
+  const song = findSong(activeTwitchSongId);
+  let sum = 0, count = 0;
+  for(let u in twitchVotes) { sum += twitchVotes[u]; count++; }
+  if (song && count > 0) { song.chatRating = (sum/count).toFixed(1); save(); render(); }
+  activeTwitchSongId = null;
+  document.getElementById("twitchVoteOverlay").style.display = "none";
 }
 
 function togglePolls() {
-    pollsEnabled = !pollsEnabled;
-    const btn = document.getElementById("pollToggleBtn");
-    if(pollsEnabled) {
-        btn.innerHTML = "🗳️ ON";
-        btn.style.color = "white";
-        btn.style.background = "var(--accent-secondary)";
-    } else {
-        btn.innerHTML = "🗳️ OFF";
-        btn.style.color = "";
-        btn.style.background = "";
-    }
+  pollsEnabled = !pollsEnabled;
+  const btn = document.getElementById("pollToggleBtn");
+  if(pollsEnabled) { btn.innerHTML = "🗳️ ON"; btn.style.color = "white"; btn.style.background = "var(--accent-secondary)"; }
+  else { btn.innerHTML = "🗳️ OFF"; btn.style.color = ""; btn.style.background = ""; }
 }
 
-// -----------------------------
+// --- UTILS ---
+function generateUniqueId() { return Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9); }
 
-function generateUniqueId() {
-    return Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9);
+// SESSION SYSTEM — now based on a current "active session" label, not date
+function getCurrentSessionId() {
+  if (!data.activeSessionId) {
+    // Create a default session based on today's date
+    const today = new Date().toLocaleDateString('fr-FR');
+    if (!data.sessions) data.sessions = {};
+    if (!data.sessions[today]) {
+      data.sessions[today] = { id: today, name: today, createdAt: Date.now() };
+    }
+    data.activeSessionId = today;
+  }
+  return data.activeSessionId;
 }
 
 function defaultData(){
+  const today = new Date().toLocaleDateString('fr-FR');
   return {
     tiers:[
       {id:"S",name:"S - LÉGENDAIRE",color:"#ec4899",songs:[]},
@@ -976,38 +918,56 @@ function defaultData(){
       {id:"B",name:"B - TRÈS BON",color:"#3b82f6",songs:[]},
       {id:"C",name:"C - SYMPA",color:"#10b981",songs:[]}
     ],
-    pool:[]
+    pool:[],
+    sessions: { [today]: { id: today, name: today, createdAt: Date.now() } },
+    activeSessionId: today
   };
 }
 
 function migrateData(loadedData) {
-    const allSongs = [...loadedData.pool, ...loadedData.tiers.flatMap(t => t.songs)];
-    allSongs.forEach(song => {
-        if (song.favorite === undefined) song.favorite = false;
-        if (song.sessionId === undefined) song.sessionId = 'Legacy';
-        if (song.chatRating === undefined) song.chatRating = null; 
-        if (song.previewUrl === undefined) song.previewUrl = null; 
+  const allSongs = [...loadedData.pool, ...loadedData.tiers.flatMap(t => t.songs)];
+  allSongs.forEach(song => {
+    if (song.favorite === undefined) song.favorite = false;
+    if (song.sessionId === undefined) song.sessionId = 'Legacy';
+    if (song.chatRating === undefined) song.chatRating = null;
+  });
+  // Migrate session system
+  if (!loadedData.sessions) {
+    loadedData.sessions = {};
+    // Collect all existing session IDs from songs
+    allSongs.forEach(s => {
+      if (s.sessionId && !loadedData.sessions[s.sessionId]) {
+        loadedData.sessions[s.sessionId] = { id: s.sessionId, name: s.sessionId, createdAt: 0 };
+      }
     });
-    return loadedData;
+  }
+  if (!loadedData.activeSessionId) {
+    const today = new Date().toLocaleDateString('fr-FR');
+    if (!loadedData.sessions[today]) {
+      loadedData.sessions[today] = { id: today, name: today, createdAt: Date.now() };
+    }
+    loadedData.activeSessionId = today;
+  }
+  return loadedData;
 }
 
 function load(){
-  try{
-    const raw=localStorage.getItem("tierData");
+  try {
+    const raw = localStorage.getItem("tierData");
     const parsed = raw ? JSON.parse(raw) : defaultData();
     return migrateData(parsed);
-  }catch(e){ return defaultData(); }
+  } catch(e) { return defaultData(); }
 }
 
 function save(){ localStorage.setItem("tierData", JSON.stringify(data)); }
 
 function resetData() {
-    if(confirm("Êtes-vous sûr de vouloir tout effacer ? Cette action est irréversible.")) {
-        localStorage.removeItem("tierData");
-        data = defaultData();
-        render();
-        alert("Tier List réinitialisée !");
-    }
+  if(confirm("Êtes-vous sûr de vouloir tout effacer ? Cette action est irréversible.")) {
+    localStorage.removeItem("tierData");
+    data = defaultData();
+    render();
+    alert("Tier List réinitialisée !");
+  }
 }
 
 function exportJson() {
@@ -1015,12 +975,9 @@ function exportJson() {
   const blob = new Blob([dataStr], {type: "application/json"});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url;
-  a.download = "kpop_tierlist_backup.json";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  a.href = url; a.download = "kpop_tierlist_backup.json";
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
 }
 
 function importJson(input) {
@@ -1031,14 +988,12 @@ function importJson(input) {
     try {
       const json = JSON.parse(e.target.result);
       if(!json.tiers || !json.pool) throw new Error("Format invalide");
-      
       json.pool.forEach(s => { if(!s.id.includes('-')) s.id = generateUniqueId(); });
       json.tiers.forEach(t => { t.songs.forEach(s => { if(!s.id.includes('-')) s.id = generateUniqueId(); }); });
-
-      data = migrateData(json); 
-      save(); render(); 
+      data = migrateData(json);
+      save(); render();
       alert("Sauvegarde chargée !");
-      syncCovers(); 
+      syncCovers();
     } catch(err) { alert("Erreur fichier."); }
   };
   reader.readAsText(file);
@@ -1046,388 +1001,487 @@ function importJson(input) {
 }
 
 function toggleTwitch() {
-    const chat = document.getElementById("twitchSidebar");
-    twitchVisible = !twitchVisible;
-    if(twitchVisible) {
-        chat.classList.remove("hidden");
-    } else {
-        chat.classList.add("hidden");
-    }
+  const chat = document.getElementById("twitchSidebar");
+  twitchVisible = !twitchVisible;
+  if(twitchVisible) chat.classList.remove("hidden");
+  else chat.classList.add("hidden");
 }
 
 function changeTwitchChannel() {
-    const channel = document.getElementById("twitchChannelInput").value.trim();
-    const iframe = document.getElementById("twitchIframe");
-    
-    if(!channel) {
-        iframe.src = "";
-        return;
-    }
-    
-    if(twitchClient) {
-        twitchClient.getChannels().forEach(ch => twitchClient.part(ch));
-        twitchClient.join(channel).catch(e => console.log('Erreur join:', e));
-    }
-    
-    let parentDomain = window.location.hostname;
-    if (!parentDomain) {
-        parentDomain = "localhost"; 
-    }
-    
-    iframe.src = `https://www.twitch.tv/embed/${channel}/chat?parent=${parentDomain}&darkpopout`;
+  const channel = document.getElementById("twitchChannelInput").value.trim();
+  const iframe = document.getElementById("twitchIframe");
+  if(!channel) { iframe.src = ""; return; }
+  if(twitchClient) {
+    twitchClient.getChannels().forEach(ch => twitchClient.part(ch));
+    twitchClient.join(channel).catch(e => console.log('Erreur join:', e));
+  }
+  let parentDomain = window.location.hostname || "localhost";
+  iframe.src = `https://www.twitch.tv/embed/${channel}/chat?parent=${parentDomain}&darkpopout`;
 }
 
 let isSyncing = false;
 
 function forceSync() {
-    const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
-    allSongs.forEach(s => {
-        if((s.cover && (s.cover.includes('via.placeholder.com') || s.cover.includes('ui-avatars.com'))) || !s.previewUrl) {
-            s.coverSearched = false;
-        }
-    });
-    save();
-    syncCovers();
+  const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
+  allSongs.forEach(s => {
+    if(s.cover && (s.cover.includes('via.placeholder.com') || s.cover.includes('ui-avatars.com'))) {
+      s.coverSearched = false;
+    }
+  });
+  save(); syncCovers();
 }
 
 async function syncCovers() {
-  if (isSyncing) return; 
+  if (isSyncing) return;
   isSyncing = true;
-
   const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
-  const missingCovers = allSongs.filter(s => ((s.cover && (s.cover.includes('via.placeholder.com') || s.cover.includes('ui-avatars.com'))) || !s.previewUrl) && !s.coverSearched);
-
-  if(missingCovers.length === 0) {
-      isSyncing = false;
-      return;
-  }
+  const missingCovers = allSongs.filter(s => s.cover && (s.cover.includes('via.placeholder.com') || s.cover.includes('ui-avatars.com')) && !s.coverSearched);
+  if(missingCovers.length === 0) { isSyncing = false; return; }
 
   let syncBadge = document.getElementById("syncBadge");
   if(!syncBadge) {
-      syncBadge = document.createElement("div");
-      syncBadge.id = "syncBadge";
-      syncBadge.style = "font-size: 13px; font-weight: 600; background: var(--accent-secondary); color: white; padding: 6px 14px; border-radius: 20px; margin-right: 10px; white-space: nowrap; box-shadow: 0 2px 10px rgba(236, 72, 153, 0.4);";
-      document.querySelector(".header-btns").prepend(syncBadge);
+    syncBadge = document.createElement("div");
+    syncBadge.id = "syncBadge";
+    syncBadge.style = "font-size: 13px; font-weight: 600; background: var(--accent-secondary); color: white; padding: 6px 14px; border-radius: 20px; margin-right: 10px; white-space: nowrap; box-shadow: 0 2px 10px rgba(236, 72, 153, 0.4);";
+    document.querySelector(".header-btns").prepend(syncBadge);
   }
 
   for (let i = 0; i < missingCovers.length; i++) {
     const song = missingCovers[i];
-    syncBadge.innerText = `🔄 Données iTunes : ${i + 1}/${missingCovers.length}`;
-
+    syncBadge.innerText = `🔄 Albums : ${i + 1}/${missingCovers.length}`;
     try {
       const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(song.artist + " " + song.title)}&entity=song&limit=1`);
-      
-      if(!res.ok) {
-          // Gestion du Rate Limit : On attend 10 secondes puis on réessaye la même chanson
-          syncBadge.innerText = "⏳ Apple API limite atteinte, pause 10s...";
-          syncBadge.style.background = "#f59e0b"; 
-          await new Promise(resolve => setTimeout(resolve, 10000));
-          i--; // On recule l'index pour réessayer cette chanson au prochain tour
-          continue; 
-      }
-
-      // Si tout va bien, on remet la couleur normale
-      syncBadge.style.background = "var(--accent-secondary)";
-      
+      if(!res.ok) { syncBadge.innerText = "⏸️ API Apple en pause"; syncBadge.style.background = "#f59e0b"; isSyncing = false; setTimeout(() => syncBadge.remove(), 5000); return; }
       const json = await res.json();
-      
       if(json.results && json.results.length > 0) {
         song.cover = json.results[0].artworkUrl100.replace("100x100", "300x300");
-        song.previewUrl = json.results[0].previewUrl || null;
-        
-        const cardEl = document.getElementById(`card-${song.id}`);
-        if(cardEl) {
-            cardEl.style.backgroundImage = `url(${song.cover})`;
-            const playBtn = cardEl.querySelector('.btn-play-preview');
-            if(playBtn && song.previewUrl) playBtn.innerHTML = '<span style="padding-left:3px;">▶</span>';
-        }
       } else {
         song.cover = `https://ui-avatars.com/api/?name=${encodeURIComponent(song.artist)}&background=random&color=fff&size=300&font-size=0.33`;
-        const cardEl = document.getElementById(`card-${song.id}`);
-        if(cardEl) cardEl.style.backgroundImage = `url(${song.cover})`;
       }
-    } catch(e) {
-        console.log("Erreur de recherche pour", song.title);
-    }
-
-    song.coverSearched = true; 
-    save(); 
-    
-    // Délai plus long pour éviter le spam API Apple (2.5s au lieu de 1s)
-    await new Promise(resolve => setTimeout(resolve, 2500)); 
+      const cardEl = document.getElementById(`card-${song.id}`);
+      if(cardEl) cardEl.style.backgroundImage = `url(${song.cover})`;
+    } catch(e) { console.log("Erreur recherche", song.title); }
+    song.coverSearched = true;
+    save();
+    await new Promise(resolve => setTimeout(resolve, 1000));
   }
 
-  syncBadge.innerText = "✅ Images & Audios récupérés !";
-  syncBadge.style.background = "#10b981"; 
+  syncBadge.innerText = "✅ Images récupérées !";
+  syncBadge.style.background = "#10b981";
   syncBadge.style.boxShadow = "0 2px 10px rgba(16, 185, 129, 0.4)";
-  render(); 
-  
-  setTimeout(() => {
-      syncBadge.remove();
-      isSyncing = false;
-  }, 4000);
+  setTimeout(() => { syncBadge.remove(); isSyncing = false; }, 4000);
 }
 
 function filterCards() {
-    const term = document.getElementById("searchBar").value.toLowerCase().trim();
-    const clearBtn = document.getElementById("clearSearchBtn");
-    
-    if (clearBtn) {
-        clearBtn.style.display = term ? "block" : "none";
-    }
-    
-    const cards = document.querySelectorAll(".card");
-    cards.forEach(card => {
-        const text = card.innerText.toLowerCase();
-        if (text.includes(term)) {
-            card.style.display = ""; 
-        } else {
-            card.style.display = "none"; 
-        }
-    });
+  const term = document.getElementById("searchBar").value.toLowerCase().trim();
+  const clearBtn = document.getElementById("clearSearchBtn");
+  if (clearBtn) clearBtn.style.display = term ? "block" : "none";
+  document.querySelectorAll(".card").forEach(card => {
+    card.style.display = card.innerText.toLowerCase().includes(term) ? "" : "none";
+  });
 }
 
-function clearSearch() {
-    document.getElementById("searchBar").value = "";
-    filterCards();
-}
+function clearSearch() { document.getElementById("searchBar").value = ""; filterCards(); }
 
 function toggleFavorite(id) {
-    const s = findSong(id);
-    if(s) {
-        s.favorite = !s.favorite;
-        save();
-        
-        const card = document.getElementById(`card-${id}`);
-        if(card) {
-            card.classList.toggle("is-favorite", s.favorite);
-            const favBtn = card.querySelector('.btn-fav-pos');
-            if(favBtn) {
-                favBtn.classList.toggle("active-fav", s.favorite);
-                favBtn.innerHTML = s.favorite ? '❤' : '♡';
-            }
-        }
+  const s = findSong(id);
+  if(s) {
+    s.favorite = !s.favorite; save();
+    const card = document.getElementById(`card-${id}`);
+    if(card) {
+      card.classList.toggle("is-favorite", s.favorite);
+      const favBtn = card.querySelector('.btn-fav-pos');
+      if(favBtn) { favBtn.classList.toggle("active-fav", s.favorite); favBtn.innerHTML = s.favorite ? '❤' : '♡'; }
     }
+  }
 }
 
 function showFavorites() {
-    const modal = document.getElementById('favModal');
-    const body = document.getElementById('favBody');
-    
-    const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
-    const favorites = allSongs.filter(s => s.favorite === true);
-    
-    if(favorites.length === 0) {
-        body.innerHTML = '<div style="opacity:0.6; text-align:center; padding:20px;">Aucun favori pour le moment. <br> Cliquez sur le coeur en mode édition !</div>';
-    } else {
-        let html = '';
-        favorites.forEach(s => {
-            html += `
-            <div class="fav-list-item" onclick="window.open('${s.youtubeUrl}', '_blank')" style="cursor:pointer">
-                <div class="fav-thumb" style="background-image:url(${s.cover})"></div>
-                <div class="fav-info">
-                    <strong>${s.artist}</strong>
-                    <span>${s.title}</span>
-                </div>
-                <div style="font-size:20px; color:var(--accent-fav)">❤</div>
-            </div>`;
-        });
-        body.innerHTML = html;
-    }
-    
-    modal.style.display = 'flex';
+  const modal = document.getElementById('favModal');
+  const body = document.getElementById('favBody');
+  const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
+  const favorites = allSongs.filter(s => s.favorite === true);
+  if(favorites.length === 0) {
+    body.innerHTML = '<div style="opacity:0.6; text-align:center; padding:20px;">Aucun favori pour le moment.</div>';
+  } else {
+    let html = '';
+    favorites.forEach(s => {
+      html += `<div class="fav-list-item" onclick="window.open('${s.youtubeUrl}', '_blank')" style="cursor:pointer">
+        <div class="fav-thumb" style="background-image:url(${s.cover})"></div>
+        <div class="fav-info"><strong>${s.artist}</strong><span>${s.title}</span></div>
+        <div style="font-size:20px; color:var(--accent-fav)">❤</div>
+      </div>`;
+    });
+    body.innerHTML = html;
+  }
+  modal.style.display = 'flex';
 }
 
-function calculateRankings(sessionFilter = null) {
-  let totalSongs = 0;
+// --- SESSION MANAGEMENT ---
+
+function showSessionsModal() {
+  document.getElementById('sessionsModal').style.display = 'flex';
+  renderSessionTab(currentSessionTabView);
+}
+
+function switchSessionTab(tab) {
+  currentSessionTabView = tab;
+  document.querySelectorAll('#sessionsModal .modal-tab').forEach((btn, i) => {
+    btn.classList.toggle('active', (i === 0 && tab === 'manage') || (i === 1 && tab === 'history'));
+  });
+  renderSessionTab(tab);
+}
+
+function renderSessionTab(tab) {
+  const body = document.getElementById('sessionsBody');
+  if (tab === 'manage') renderManageSessions(body);
+  else renderSessionHistory(body);
+}
+
+function renderManageSessions(body) {
+  const sessions = data.sessions || {};
+  const activeId = data.activeSessionId;
+  const activeSession = sessions[activeId];
+
+  let html = `<div class="new-session-form">
+    <div style="font-weight:700; font-size:13px; margin-bottom:8px; color: var(--accent-primary);">➕ Nouvelle session</div>
+    <input type="text" id="newSessionName" placeholder="Nom de la session (ex: Janvier 2025)" style="">
+    <button class="btn-primary" style="width:100%; justify-content:center;" onclick="createNewSession()">Créer et activer cette session</button>
+  </div>`;
+
+  html += `<div class="stat-title" style="margin-top:4px;">Sessions existantes</div>`;
+
+  const sessionIds = Object.keys(sessions).sort((a, b) => (sessions[b].createdAt || 0) - (sessions[a].createdAt || 0));
+
+  if (sessionIds.length === 0) {
+    html += `<div style="opacity:0.5; font-size:13px; text-align:center; padding:20px;">Aucune session trouvée.</div>`;
+  }
+
+  sessionIds.forEach(sid => {
+    const sess = sessions[sid];
+    const isActive = sid === activeId;
+    const songCount = getSongsForSession(sid).length;
+    html += `<div class="history-session" style="${isActive ? 'border-color: var(--accent-primary); background: rgba(99,102,241,0.08);' : ''}">
+      <div class="session-head">
+        <span class="session-name">${isActive ? '▶ ' : ''}${sess.name || sid}</span>
+        ${isActive ? '<span style="font-size:11px; background:var(--accent-gradient); color:white; padding:2px 8px; border-radius:20px;">Active</span>' : ''}
+      </div>
+      <div class="session-meta">${songCount} chanson(s) classée(s)</div>
+      <div class="session-actions">
+        ${!isActive ? `<button class="session-action-btn btn-primary" onclick="activateSession('${sid}')">Activer</button>` : ''}
+        <button class="session-action-btn" onclick="renameSession('${sid}')">✎ Renommer</button>
+        ${sessionIds.length > 1 ? `<button class="session-action-btn" onclick="showMergeUI('${sid}')">⊕ Fusionner</button>` : ''}
+        ${!isActive ? `<button class="session-action-btn btn-danger" onclick="deleteSession('${sid}')">✕ Supprimer</button>` : ''}
+      </div>
+    </div>`;
+  });
+
+  body.innerHTML = html;
+}
+
+function renderSessionHistory(body) {
+  const sessions = data.sessions || {};
+  const sessionIds = Object.keys(sessions).sort((a, b) => (sessions[b].createdAt || 0) - (sessions[a].createdAt || 0));
   
-  let artistStats = {};
-  let sessionStats = {};
-  
-  const maxScore = Math.max(1, data.tiers.length); 
-  
-  // Tableau contenant le bon nombre de sons par tier (filtré ou non)
-  let tierCounts = data.tiers.map(t => ({ id: t.id, name: t.name, color: t.color, count: 0 }));
-  
+  if (sessionIds.length === 0) {
+    body.innerHTML = '<div style="opacity:0.5; text-align:center; padding:20px;">Aucune session.</div>';
+    return;
+  }
+
+  let html = '';
+  sessionIds.forEach(sid => {
+    const sess = sessions[sid];
+    const stats = calcSessionStats(sid);
+    const isActive = sid === data.activeSessionId;
+    html += `<div class="history-session" onclick="toggleHistoryDetail('detail-${sid}')">
+      <div class="session-head">
+        <span class="session-name">${isActive ? '▶ ' : ''}${sess.name || sid}</span>
+        <span class="session-avg-badge">${stats.avg !== null ? stats.avg + ' / 10' : 'N/A'}</span>
+      </div>
+      <div class="session-meta">${stats.count} chanson(s) • Moy. ${stats.avg !== null ? stats.avg + '/10' : '—'}</div>
+      <div class="history-session-detail" id="detail-${sid}">
+        ${renderSessionDetail(sid, stats)}
+      </div>
+    </div>`;
+  });
+
+  body.innerHTML = html;
+}
+
+function toggleHistoryDetail(detailId) {
+  const el = document.getElementById(detailId);
+  if (el) el.classList.toggle('open');
+}
+
+function calcSessionStats(sessionId) {
+  const maxScore = Math.max(1, data.tiers.length);
+  let sumScore = 0, count = 0;
+  let tierCounts = {};
   data.tiers.forEach((tier, index) => {
-    const scoreOutOf10 = ((maxScore - index) / maxScore) * 10; 
+    const score = ((maxScore - index) / maxScore) * 10;
+    const songs = tier.songs.filter(s => s.sessionId === sessionId);
+    songs.forEach(() => { sumScore += score; count++; });
+    tierCounts[tier.id] = { name: tier.name, count: songs.length, color: tier.color };
+  });
+  const avg = count > 0 ? (sumScore / count).toFixed(1) : null;
 
-    tier.songs.forEach(song => {
-      // Construction des stats de base des sessions (toujours globale pour le menu session)
-      if(song.sessionId) {
-          if(!sessionStats[song.sessionId]) {
-              sessionStats[song.sessionId] = { sumScore: 0, count: 0 };
-          }
-          sessionStats[song.sessionId].sumScore += scoreOutOf10;
-          sessionStats[song.sessionId].count++;
-      }
-
-      // Si un filtre est actif, on ignore ce qui n'est pas dans la session pour la suite
-      if (sessionFilter && song.sessionId !== sessionFilter) return;
-
-      totalSongs++;
-      tierCounts[index].count++;
-      
-      const rawName = song.artist.trim();
-      const lowerName = rawName.toLowerCase(); 
-      
-      if(!artistStats[lowerName]) {
-          artistStats[lowerName] = { sumScore: 0, count: 0, displayName: rawName.toUpperCase() };
-      }
-      
-      artistStats[lowerName].sumScore += scoreOutOf10;
-      artistStats[lowerName].count++;
+  // Top / Flop songs
+  let allRated = [];
+  data.tiers.forEach((tier, index) => {
+    const score = ((maxScore - index) / maxScore) * 10;
+    tier.songs.filter(s => s.sessionId === sessionId).forEach(s => {
+      allRated.push({ ...s, score });
     });
   });
-  
-  data.pool.forEach(song => { 
-      if (!sessionFilter || song.sessionId === sessionFilter) {
-          totalSongs++; 
-      }
+  allRated.sort((a, b) => b.score - a.score);
+  const top3 = allRated.slice(0, 3);
+  const flop3 = allRated.slice(-3).reverse();
+
+  return { avg, count, tierCounts, top3, flop3 };
+}
+
+function renderSessionDetail(sessionId, stats) {
+  if (stats.count === 0) return '<div style="opacity:0.5; font-size:13px; padding:4px 0;">Aucune chanson dans cette session.</div>';
+
+  let html = '<div class="stat-title" style="margin-top:0;">Répartition</div>';
+  Object.values(stats.tierCounts).forEach(tc => {
+    const pct = stats.count > 0 ? Math.round(tc.count / stats.count * 100) : 0;
+    html += `<div class="tier-chart-bar">
+      <span class="bar-label">${tc.name.split(' ')[0]}</span>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${pct}%; background:${tc.color};">${tc.count > 0 ? tc.count : ''}</div>
+      </div>
+    </div>`;
   });
+
+  if (stats.top3.length > 0) {
+    html += '<div class="stat-title" style="margin-top:12px;">🔥 Top 3</div>';
+    stats.top3.forEach((s, i) => {
+      html += `<div class="rank-item top" style="padding:6px 8px;">
+        <span class="rank-pos" style="font-size:12px;">#${i+1}</span>
+        <span class="rank-name" style="font-size:12px;">${s.artist} — ${s.title}</span>
+      </div>`;
+    });
+  }
+
+  if (stats.flop3.length > 0 && stats.count > 3) {
+    html += '<div class="stat-title" style="margin-top:12px;">❄️ Flop 3</div>';
+    stats.flop3.forEach((s, i) => {
+      html += `<div class="rank-item flop" style="padding:6px 8px;">
+        <span class="rank-pos" style="font-size:12px;">#${i+1}</span>
+        <span class="rank-name" style="font-size:12px;">${s.artist} — ${s.title}</span>
+      </div>`;
+    });
+  }
+
+  return html;
+}
+
+function getSongsForSession(sessionId) {
+  const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
+  return allSongs.filter(s => s.sessionId === sessionId);
+}
+
+function createNewSession() {
+  const nameInput = document.getElementById('newSessionName');
+  const name = nameInput.value.trim();
+  if (!name) { alert("Veuillez entrer un nom pour la session."); return; }
+  const id = generateUniqueId();
+  if (!data.sessions) data.sessions = {};
+  data.sessions[id] = { id, name, createdAt: Date.now() };
+  data.activeSessionId = id;
+  save();
+  nameInput.value = '';
+  renderSessionTab('manage');
+}
+
+function activateSession(sid) {
+  data.activeSessionId = sid;
+  save();
+  renderSessionTab('manage');
+}
+
+function renameSession(sid) {
+  const sess = data.sessions[sid];
+  const newName = prompt("Nouveau nom pour cette session :", sess.name || sid);
+  if (newName && newName.trim()) {
+    data.sessions[sid].name = newName.trim();
+    save();
+    renderSessionTab(currentSessionTabView);
+  }
+}
+
+function deleteSession(sid) {
+  const songsInSession = getSongsForSession(sid);
+  if (!confirm(`Supprimer la session "${data.sessions[sid]?.name || sid}" ? Les ${songsInSession.length} chanson(s) associées garderont leur ID de session mais la session disparaîtra de la liste.`)) return;
+  delete data.sessions[sid];
+  if (data.activeSessionId === sid) {
+    const remaining = Object.keys(data.sessions);
+    data.activeSessionId = remaining.length > 0 ? remaining[remaining.length - 1] : null;
+    if (!data.activeSessionId) {
+      const today = new Date().toLocaleDateString('fr-FR');
+      data.sessions[today] = { id: today, name: today, createdAt: Date.now() };
+      data.activeSessionId = today;
+    }
+  }
+  save();
+  renderSessionTab(currentSessionTabView);
+}
+
+function showMergeUI(sid) {
+  const sessions = data.sessions;
+  const otherSessions = Object.keys(sessions).filter(s => s !== sid);
+  if (otherSessions.length === 0) { alert("Aucune autre session à fusionner."); return; }
+  
+  let options = otherSessions.map(s => `- ${sessions[s].name || s}`).join('\n');
+  const targetName = prompt(`Fusionner "${sessions[sid].name || sid}" AVEC quelle session ?\n\nSessions disponibles :\n${options}\n\nEntrez le nom exact de la session cible :`);
+  if (!targetName) return;
+  
+  const targetId = otherSessions.find(s => (sessions[s].name || s) === targetName.trim());
+  if (!targetId) { alert("Session non trouvée. Vérifiez le nom."); return; }
+  
+  // Reassign all songs from sid to targetId
+  const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
+  let count = 0;
+  allSongs.forEach(s => {
+    if (s.sessionId === sid) { s.sessionId = targetId; count++; }
+  });
+  
+  // Delete merged session
+  delete data.sessions[sid];
+  if (data.activeSessionId === sid) data.activeSessionId = targetId;
+  
+  save();
+  alert(`${count} chanson(s) déplacée(s) vers "${sessions[targetId].name || targetId}". Session "${sessions[sid]?.name || sid}" supprimée.`);
+  renderSessionTab(currentSessionTabView);
+}
+
+// --- STATS ---
+function calculateRankings() {
+  let totalSongs = 0;
+  let placedSongsCount = 0;
+  let artistStats = {};
+  let sessionStats = {};
+  const maxScore = Math.max(1, data.tiers.length);
+
+  data.tiers.forEach((tier, index) => {
+    const scoreOutOf10 = ((maxScore - index) / maxScore) * 10;
+    tier.songs.forEach(song => {
+      totalSongs++; placedSongsCount++;
+      const rawName = song.artist.trim();
+      const lowerName = rawName.toLowerCase();
+      if(!artistStats[lowerName]) artistStats[lowerName] = { sumScore: 0, count: 0, displayName: rawName.toUpperCase() };
+      artistStats[lowerName].sumScore += scoreOutOf10;
+      artistStats[lowerName].count++;
+      if(song.sessionId) {
+        if(!sessionStats[song.sessionId]) sessionStats[song.sessionId] = { sumScore: 0, count: 0 };
+        sessionStats[song.sessionId].sumScore += scoreOutOf10;
+        sessionStats[song.sessionId].count++;
+      }
+    });
+  });
+  data.pool.forEach(song => { totalSongs++; });
 
   let rankings = Object.keys(artistStats).map(key => {
     const n = artistStats[key].count;
-    const x_bar = artistStats[key].sumScore / n; 
-    
+    const x_bar = artistStats[key].sumScore / n;
     let exactScore = 0;
-
     if (x_bar >= 5) {
-        const baseBayes = ((n * x_bar) + (1 * 5)) / (n + 1);
-        const base100 = baseBayes * 10;
-        const volumeFactor = (n - 1) / (n + 2);
-        const qualityFactor = Math.pow((x_bar - 5) / 5, 2); 
-        const boost = volumeFactor * qualityFactor * 30; 
-        exactScore = base100 + boost;
+      const baseBayes = ((n * x_bar) + (1 * 5)) / (n + 1);
+      const base100 = baseBayes * 10;
+      const volumeFactor = (n - 1) / (n + 2);
+      const qualityFactor = Math.pow((x_bar - 5) / 5, 2);
+      const boost = volumeFactor * qualityFactor * 30;
+      exactScore = base100 + boost;
     } else {
-        const base100 = x_bar * 10;
-        const volumeFactor = (n - 1) / (n + 2);
-        const flopFactor = Math.pow((5 - x_bar) / 5, 2); 
-        const malus = volumeFactor * flopFactor * 15; 
-        exactScore = base100 - malus;
+      const base100 = x_bar * 10;
+      const volumeFactor = (n - 1) / (n + 2);
+      const flopFactor = Math.pow((5 - x_bar) / 5, 2);
+      const malus = volumeFactor * flopFactor * 15;
+      exactScore = base100 - malus;
     }
-
     const displayScore = Math.min(100, Math.max(0, exactScore));
-
-    return {
-      name: artistStats[key].displayName, 
-      points: displayScore.toFixed(0), 
-      exactScore: exactScore, 
-      avg: x_bar.toFixed(2), 
-      count: n
-    };
+    return { name: artistStats[key].displayName, points: displayScore.toFixed(0), exactScore, avg: x_bar.toFixed(2), count: n };
   });
 
   rankings.sort((a, b) => {
-      const pointsA = parseInt(a.points);
-      const pointsB = parseInt(b.points);
-      
-      if (pointsB !== pointsA) return pointsB - pointsA; 
-      if (b.count !== a.count) return b.count - a.count; 
-      if (b.exactScore !== a.exactScore) return b.exactScore - a.exactScore; 
-      return parseFloat(b.avg) - parseFloat(a.avg); 
+    if (parseInt(b.points) !== parseInt(a.points)) return parseInt(b.points) - parseInt(a.points);
+    if (b.count !== a.count) return b.count - a.count;
+    if (b.exactScore !== a.exactScore) return b.exactScore - a.exactScore;
+    return parseFloat(b.avg) - parseFloat(a.avg);
   });
 
-  let uniqueArtists = Object.keys(artistStats).length;
-  if(totalSongs > 0 && uniqueArtists === 0) uniqueArtists = 1; // pool only
-
-  return { rankings, totalSongs, uniqueArtists, sessionStats, tierCounts };
+  return { rankings, totalSongs, uniqueArtists: Object.keys(artistStats).length, sessionStats };
 }
 
-function showStats(sessionFilter = null) {
-  // Ferme le modal de session s'il est ouvert par dessus
-  document.getElementById('sessionModal').style.display = 'none';
-
+function showStats() {
   const modal = document.getElementById('statsModal');
   const body = document.getElementById('statsBody');
-  const title = document.getElementById('statsModalTitle');
-  
-  title.innerText = sessionFilter ? `📊 Stats : ${sessionFilter}` : `Classement & Stats`;
-
-  const { rankings, totalSongs, uniqueArtists, sessionStats, tierCounts } = calculateRankings(sessionFilter);
-  
+  const { rankings, totalSongs, uniqueArtists, sessionStats } = calculateRankings();
   const top3 = rankings.slice(0, 3);
-  let flop3 = [];
-  if (rankings.length > 3) {
-      flop3 = rankings.slice(-3).reverse(); 
-  }
-  
+  let flop3 = rankings.length > 3 ? rankings.slice(-3).reverse() : [];
   const mostProductive = rankings.reduce((prev, current) => (prev.count > current.count) ? prev : current, {name:'-', count:0});
 
-  let tierCountsHTML = "";
-  let sumGlobal = 0;
-  let countGlobal = 0;
-
-  tierCounts.forEach((t, index) => {
-      const maxScore = Math.max(1, data.tiers.length);
-      const score = ((maxScore - index) / maxScore) * 10;
-      sumGlobal += score * t.count;
-      countGlobal += t.count;
-      
-      const pct = totalSongs > 0 ? (t.count / totalSongs * 100).toFixed(0) : 0;
-      tierCountsHTML += `
-        <div style="display:flex; align-items:center; margin-bottom:4px; font-size:11px;">
-            <div style="width:30px; font-weight:bold;">${t.name.split(' ')[0]}</div>
-            <div class="stat-bar-container" style="flex:1;">
-                <div class="stat-bar-fill" style="width:${pct}%; background:${t.color};"></div>
-            </div>
-            <div style="width:40px; text-align:right;">${t.count}</div>
-        </div>
-      `;
+  let topTierCount = 0, tierCountsHTML = "", sumGlobal = 0, countGlobal = 0;
+  data.tiers.forEach((t, index) => {
+    const maxScore = Math.max(1, data.tiers.length);
+    const score = ((maxScore - index) / maxScore) * 10;
+    sumGlobal += score * t.songs.length; countGlobal += t.songs.length;
+    const isTop = t.id === data.tiers[0]?.id || t.id === data.tiers[1]?.id;
+    if(isTop) topTierCount += t.songs.length;
+    const pct = totalSongs > 0 ? (t.songs.length / totalSongs * 100).toFixed(0) : 0;
+    tierCountsHTML += `<div class="tier-chart-bar">
+      <span class="bar-label">${t.name.split(' ')[0]}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%; background:${t.color};">${t.songs.length > 0 ? t.songs.length : ''}</div></div>
+    </div>`;
   });
-  
+
   const globalAvg = countGlobal > 0 ? (sumGlobal / countGlobal).toFixed(1) : '-';
+  const activeId = data.activeSessionId;
+  const todayData = sessionStats[activeId] || { count: 0, sumScore: 0 };
+  const todayAvg = todayData.count > 0 ? (todayData.sumScore / todayData.count).toFixed(1) : '-';
+  const activeSessionName = (data.sessions && data.sessions[activeId]) ? data.sessions[activeId].name : activeId;
 
-  // Section historique des sessions (affichée uniquement en vue globale)
-  let sessionHistoryHTML = '';
-  if (!sessionFilter) {
-      const todayId = activeSessionName;
-      let bestSess = { id: '-', avg: 0, count: 0 };
-      let worstSess = { id: '-', avg: 99, count: 0 };
-      
-      Object.keys(sessionStats).forEach(sid => {
-          const s = sessionStats[sid];
-          if(s.count >= 3) { 
-              const avg = s.sumScore / s.count;
-              if(avg > bestSess.avg) bestSess = { id: sid, avg: avg, count: s.count };
-              if(avg < worstSess.avg) worstSess = { id: sid, avg: avg, count: s.count };
-          }
-      });
+  let bestSess = { id: '-', avg: 0, count: 0 };
+  let worstSess = { id: '-', avg: 99, count: 0 };
+  Object.keys(sessionStats).forEach(sid => {
+    const s = sessionStats[sid];
+    if(s.count >= 3) {
+      const avg = s.sumScore / s.count;
+      if(avg > bestSess.avg) bestSess = { id: sid, avg, count: s.count };
+      if(avg < worstSess.avg) worstSess = { id: sid, avg, count: s.count };
+    }
+  });
 
-      const todayData = sessionStats[todayId] || { count: 0, sumScore: 0 };
-      const todayAvg = todayData.count > 0 ? (todayData.sumScore / todayData.count).toFixed(1) : '-';
-
-      sessionHistoryHTML = `
-      <div class="stat-section">
-        <div class="stat-title">⏱️ Statistiques de Sessions</div>
-        <div class="session-card">
-            <div class="session-date">Session active (${todayId})</div>
-            <div class="session-data">${todayData.count} titres classés (Moyenne : ${todayAvg} / 10)</div>
-        </div>
-        <div class="session-card best">
-            <div class="session-date">Session la plus généreuse</div>
-            <div class="session-data">${bestSess.id !== '-' ? bestSess.id : 'N/A'} : ${bestSess.avg.toFixed(1)} / 10 <small>(${bestSess.count} titres)</small></div>
-        </div>
-        <div class="session-card worst">
-            <div class="session-date">Session la plus sévère</div>
-            <div class="session-data">${worstSess.id !== '-' ? worstSess.id : 'N/A'} : ${worstSess.avg.toFixed(1)} / 10 <small>(${worstSess.count} titres)</small></div>
-        </div>
-      </div>`;
-  }
+  const getSessionName = sid => (data.sessions && data.sessions[sid]) ? data.sessions[sid].name : sid;
 
   let html = `
     <div class="stat-row"><strong>Total Chansons :</strong> <span>${totalSongs}</span></div>
     <div class="stat-row"><strong>Artistes :</strong> <span>${uniqueArtists}</span></div>
     <div class="stat-row"><strong>Moyenne Globale :</strong> <span>${globalAvg} / 10</span></div>
     <div class="stat-row"><strong>Le plus présent :</strong> <span>${mostProductive.name} (${mostProductive.count} sons)</span></div>
-    
+
     <div class="stat-section">
       <div class="stat-title">📊 Répartition par Catégorie</div>
       ${tierCountsHTML}
     </div>
 
-    ${sessionHistoryHTML}
-    
+    <div class="stat-section">
+      <div class="stat-title">⏱️ Statistiques de Sessions</div>
+      <div class="session-card current-session">
+        <div class="session-date">Session active : ${activeSessionName}</div>
+        <div class="session-data">${todayData.count} titres classés (Moyenne : ${todayAvg} / 10)</div>
+      </div>
+      <div class="session-card best">
+        <div class="session-date">Session la plus généreuse</div>
+        <div class="session-data">${bestSess.id !== '-' ? getSessionName(bestSess.id) : 'N/A'} : ${bestSess.avg.toFixed ? bestSess.avg.toFixed(1) : bestSess.avg} / 10 <small>(${bestSess.count} titres)</small></div>
+      </div>
+      <div class="session-card worst">
+        <div class="session-date">Session la plus sévère</div>
+        <div class="session-data">${worstSess.id !== '-' ? getSessionName(worstSess.id) : 'N/A'} : ${worstSess.avg.toFixed ? worstSess.avg.toFixed(1) : worstSess.avg} / 10 <small>(${worstSess.count} titres)</small></div>
+      </div>
+    </div>
+
     <div class="stat-section">
       <div class="stat-title">🔥 TOP 3 - L'ÉLITE</div>
       ${top3.length > 0 ? top3.map((r, i) => `
@@ -1435,8 +1489,7 @@ function showStats(sessionFilter = null) {
           <span class="rank-pos">#${i+1}</span>
           <span class="rank-name">${r.name}</span>
           <span class="rank-avg">${r.points} / 100</span>
-        </div>
-      `).join('') : '<div style="opacity:0.5; font-size:13px">Pas assez de données.</div>'}
+        </div>`).join('') : '<div style="opacity:0.5; font-size:13px">Pas assez de données.</div>'}
     </div>
 
     <div class="stat-section">
@@ -1446,8 +1499,7 @@ function showStats(sessionFilter = null) {
           <span class="rank-pos">#${i+1}</span>
           <span class="rank-name">${r.name}</span>
           <span class="rank-avg">${r.points} / 100</span>
-        </div>
-      `).join('') : '<div style="opacity:0.5; font-size:13px">Tout le monde est bon.</div>'}
+        </div>`).join('') : '<div style="opacity:0.5; font-size:13px">Tout le monde est bon.</div>'}
     </div>
   `;
   body.innerHTML = html;
@@ -1455,80 +1507,56 @@ function showStats(sessionFilter = null) {
 }
 
 function showAllArtists() {
-    const modal = document.getElementById('allArtistsModal');
-    const body = document.getElementById('allArtistsBody');
-    
-    const { rankings } = calculateRankings();
-    
-    if(rankings.length === 0) {
-        body.innerHTML = '<div style="opacity:0.5; text-align:center;">Aucune donnée de classement disponible.</div>';
-    } else {
-        let html = '';
-        rankings.forEach((r, i) => {
-            let colorClass = "";
-            if(i < 3) colorClass = "top";
-            else if(i >= rankings.length - 3 && rankings.length > 3) colorClass = "flop"; 
-            
-            html += `
-            <div class="rank-item ${colorClass}" style="margin-bottom:5px;">
-              <span class="rank-pos" style="font-size:12px; width:30px; opacity:0.7;">#${i+1}</span>
-              <span class="rank-name">
-                ${r.name} 
-                <span style="font-size:10px; opacity:0.5; font-weight:normal; margin-left:4px;">(Moy. pure: ${r.avg})</span>
-              </span>
-              <span class="rank-avg" style="background:var(--accent-gradient); color:white; min-width: 65px;">${r.points} / 100</span>
-              <span style="font-size:11px; opacity:0.6; width:50px; text-align:right;">${r.count} 🎵</span>
-            </div>`;
-        });
-        body.innerHTML = html;
-    }
-    
-    modal.style.display = 'flex';
+  const modal = document.getElementById('allArtistsModal');
+  const body = document.getElementById('allArtistsBody');
+  const { rankings } = calculateRankings();
+  if(rankings.length === 0) {
+    body.innerHTML = '<div style="opacity:0.5; text-align:center;">Aucune donnée disponible.</div>';
+  } else {
+    let html = '';
+    rankings.forEach((r, i) => {
+      let colorClass = i < 3 ? "top" : (i >= rankings.length - 3 && rankings.length > 3 ? "flop" : "");
+      html += `<div class="rank-item ${colorClass}" style="margin-bottom:5px;">
+        <span class="rank-pos" style="font-size:12px; width:30px; opacity:0.7;">#${i+1}</span>
+        <span class="rank-name">${r.name} <span style="font-size:10px; opacity:0.5; font-weight:normal; margin-left:4px;">(Moy. pure: ${r.avg})</span></span>
+        <span class="rank-avg" style="background:var(--accent-gradient); color:white; min-width: 65px;">${r.points} / 100</span>
+        <span style="font-size:11px; opacity:0.6; width:50px; text-align:right;">${r.count} 🎵</span>
+      </div>`;
+    });
+    body.innerHTML = html;
+  }
+  modal.style.display = 'flex';
 }
 
-function closeModal(e) {
-  if(e.target.classList.contains('modal-overlay')) e.target.style.display = 'none';
-}
+function closeModal(e) { if(e.target.classList.contains('modal-overlay')) e.target.style.display = 'none'; }
 
 function moveTierUp(id) {
-    const index = data.tiers.findIndex(t => t.id === id);
-    if (index > 0) {
-        const temp = data.tiers[index - 1];
-        data.tiers[index - 1] = data.tiers[index];
-        data.tiers[index] = temp;
-        save(); render();
-    }
+  const index = data.tiers.findIndex(t => t.id === id);
+  if (index > 0) { [data.tiers[index-1], data.tiers[index]] = [data.tiers[index], data.tiers[index-1]]; save(); render(); }
 }
 
 function moveTierDown(id) {
-    const index = data.tiers.findIndex(t => t.id === id);
-    if (index < data.tiers.length - 1) {
-        const temp = data.tiers[index + 1];
-        data.tiers[index + 1] = data.tiers[index];
-        data.tiers[index] = temp;
-        save(); render();
-    }
+  const index = data.tiers.findIndex(t => t.id === id);
+  if (index < data.tiers.length - 1) { [data.tiers[index+1], data.tiers[index]] = [data.tiers[index], data.tiers[index+1]]; save(); render(); }
 }
 
 function render(){
   const tiersDiv = document.getElementById("tiers");
   tiersDiv.innerHTML = "";
-  
   const sommaireList = document.getElementById("sommaireList");
   if(sommaireList) sommaireList.innerHTML = "";
-  
+
   document.body.classList.toggle('edit-active', editMode);
   document.body.classList.toggle('compact-active', compactMode);
 
-  data.tiers.forEach(t=>{
+  data.tiers.forEach(t => {
     const tier = document.createElement("div");
     tier.className = "tier";
-    tier.id = `tier-node-${t.id}`; 
+    tier.id = `tier-node-${t.id}`;
 
     const header = document.createElement("div");
     header.className = "tier-header";
     header.style.background = `linear-gradient(90deg, ${t.color}, ${adjustColor(t.color, -40)})`;
-    
     header.innerHTML = `<span>${t.name}</span>`;
 
     const controls = document.createElement("div");
@@ -1542,12 +1570,10 @@ function render(){
     const colorWrapper = document.createElement("div");
     colorWrapper.className = "color-picker-wrapper";
     colorWrapper.style.backgroundColor = t.color;
-    
     const colorInput = document.createElement("input");
     colorInput.type = "color";
     colorInput.value = t.color;
     colorInput.onchange = e => { t.color = e.target.value; save(); render(); };
-    
     colorWrapper.appendChild(colorInput);
 
     const renameBtn = document.createElement("button");
@@ -1562,15 +1588,9 @@ function render(){
 
     if (editMode) {
       const upBtn = document.createElement("button");
-      upBtn.innerHTML = "▲";
-      upBtn.title = "Monter";
-      upBtn.onclick = () => moveTierUp(t.id);
-
+      upBtn.innerHTML = "▲"; upBtn.title = "Monter"; upBtn.onclick = () => moveTierUp(t.id);
       const downBtn = document.createElement("button");
-      downBtn.innerHTML = "▼";
-      downBtn.title = "Descendre";
-      downBtn.onclick = () => moveTierDown(t.id);
-
+      downBtn.innerHTML = "▼"; downBtn.title = "Descendre"; downBtn.onclick = () => moveTierDown(t.id);
       controls.append(upBtn, downBtn);
     }
 
@@ -1583,20 +1603,19 @@ function render(){
     t.songs.forEach(s => container.appendChild(createCard(s)));
     tier.append(container);
     tiersDiv.appendChild(tier);
-    
+
     if(sommaireList) {
-        const somItem = document.createElement("div");
-        somItem.className = "sommaire-item";
-        somItem.setAttribute("data-tier-id", t.id);
-        somItem.style.borderLeftColor = t.color;
-        somItem.innerHTML = `<span>${t.name}</span><span class="sommaire-count">${t.songs.length}</span>`;
-        
-        somItem.onclick = () => {
-            const target = document.getElementById(`tier-node-${t.id}`);
-            const y = target.getBoundingClientRect().top + window.pageYOffset - 80;
-            window.scrollTo({top: y, behavior: 'smooth'});
-        };
-        sommaireList.appendChild(somItem);
+      const somItem = document.createElement("div");
+      somItem.className = "sommaire-item";
+      somItem.setAttribute("data-tier-id", t.id);
+      somItem.style.borderLeftColor = t.color;
+      somItem.innerHTML = `<span>${t.name}</span><span class="sommaire-count">${t.songs.length}</span>`;
+      somItem.onclick = () => {
+        const target = document.getElementById(`tier-node-${t.id}`);
+        const y = target.getBoundingClientRect().top + window.pageYOffset - 80;
+        window.scrollTo({top: y, behavior: 'smooth'});
+      };
+      sommaireList.appendChild(somItem);
     }
   });
 
@@ -1607,139 +1626,121 @@ function render(){
 
   document.body.classList.toggle("hidden", !editMode);
   filterCards();
-  
+
   selectedIds.forEach(id => {
-      const el = document.getElementById(`card-${id}`);
-      if(el) el.classList.add('selected');
+    const el = document.getElementById(`card-${id}`);
+    if(el) el.classList.add('selected');
   });
 }
 
 function adjustColor(color, amount) {
-    return '#' + color.replace(/^#/, '').replace(/../g, color => ('0'+Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2));
+  return '#' + color.replace(/^#/, '').replace(/../g, c => ('0'+Math.min(255, Math.max(0, parseInt(c, 16) + amount)).toString(16)).substr(-2));
 }
 
 function createCard(song){
   const card = document.createElement("div");
   card.className = "card";
   card.id = `card-${song.id}`;
-  
-  if(song.favorite) card.classList.add("is-favorite"); 
+  if(song.favorite) card.classList.add("is-favorite");
   if(selectedIds.has(song.id)) card.classList.add("selected");
-  
   card.draggable = true;
   card.style.backgroundImage = `url(${song.cover})`;
 
-  card.onclick = (e) => { 
-      if(!editMode) {
-          window.open(song.youtubeUrl, '_blank'); 
-      } else {
-          if(selectedIds.has(song.id)) {
-              selectedIds.delete(song.id);
-              card.classList.remove('selected');
-          } else {
-              selectedIds.add(song.id);
-              card.classList.add('selected');
-          }
-      }
+  card.onclick = (e) => {
+    if(e.target.closest('.card-play-btn') || e.target.closest('.card-tools')) return;
+    if(!editMode) {
+      window.open(song.youtubeUrl, '_blank');
+    } else {
+      if(selectedIds.has(song.id)) { selectedIds.delete(song.id); card.classList.remove('selected'); }
+      else { selectedIds.add(song.id); card.classList.add('selected'); }
+    }
   };
 
   card.addEventListener("dragstart", (e) => {
     if (!selectedIds.has(song.id)) {
-        selectedIds.clear();
-        document.querySelectorAll('.card.selected').forEach(c => c.classList.remove('selected'));
-        selectedIds.add(song.id);
-        card.classList.add('selected');
+      selectedIds.clear();
+      document.querySelectorAll('.card.selected').forEach(c => c.classList.remove('selected'));
+      selectedIds.add(song.id);
+      card.classList.add('selected');
     }
-
     draggedId = song.id;
     document.body.classList.add("is-dragging");
-    
     selectedIds.forEach(id => {
-        const c = document.getElementById(`card-${id}`);
-        if(c) setTimeout(() => c.classList.add("dragging"), 0);
+      const c = document.getElementById(`card-${id}`);
+      if(c) setTimeout(() => c.classList.add("dragging"), 0);
     });
   });
 
   card.addEventListener("dragend", () => {
     document.body.classList.remove("is-dragging");
     selectedIds.forEach(id => {
-        const c = document.getElementById(`card-${id}`);
-        if(c) {
-            c.classList.remove("dragging", "selected");
-        }
+      const c = document.getElementById(`card-${id}`);
+      if(c) c.classList.remove("dragging", "selected");
     });
     selectedIds.clear();
-    
     if(placeholder) placeholder.remove();
+    placeholder = null;
     draggedId = null;
     currentDragAfter = undefined;
   });
 
-  // Bouton de preview audio
-  const isPlaying = (currentPlayingId === song.id && !globalAudio.paused);
-  const audioIcon = !song.previewUrl ? '<span>🔇</span>' : (isPlaying ? '<span>⏸</span>' : '<span style="padding-left:3px;">▶</span>');
+  // Play button (not in edit mode)
+  const playBtn = document.createElement("div");
+  playBtn.className = "card-play-btn";
+  playBtn.innerHTML = currentPlayingId === song.id ? '⏸' : '▶';
+  if (currentPlayingId === song.id) playBtn.classList.add('playing');
+  playBtn.addEventListener('click', (e) => togglePreview(song.id, e));
 
   card.innerHTML = `
     <div class="fav-badge">❤</div>
-    
-    <div class="btn-play-preview" onclick="togglePlay(event, '${song.id}', '${song.previewUrl || ''}')" id="play-btn-${song.id}" title="${!song.previewUrl ? 'Aucun audio disponible' : 'Écouter un extrait'}">
-        ${audioIcon}
-    </div>
-
     <div class="card-overlay">
       <strong>${song.artist}</strong>
       <span>${song.title}</span>
       ${song.chatRating ? `<span style="color:#bfdbfe; font-size:11px; margin-top:2px;">Chat: ${song.chatRating}/10</span>` : ''}
     </div>
-    
     <div class="card-tools">
       <button class="btn-edit-pos" onclick="event.stopPropagation(); editSong('${song.id}')" title="Éditer">✎</button>
-      
-      <button class="btn-fav-pos ${song.favorite ? 'active-fav' : ''}" 
-              onclick="event.stopPropagation(); toggleFavorite('${song.id}')" 
-              title="Favoris">
-          ${song.favorite ? '❤' : '♡'}
-      </button>
-
-      <button class="btn-del-pos" 
-              onclick="event.stopPropagation(); removeSong('${song.id}'); document.getElementById('card-${song.id}').remove(); updateCounters(); save();" 
-              title="Supprimer" 
-              style="background:#ef4444; border:none;">
-          ✕
-      </button>
+      <button class="btn-fav-pos ${song.favorite ? 'active-fav' : ''}" onclick="event.stopPropagation(); toggleFavorite('${song.id}')" title="Favoris">${song.favorite ? '❤' : '♡'}</button>
+      <button class="btn-del-pos" onclick="event.stopPropagation(); removeSong('${song.id}'); document.getElementById('card-${song.id}').remove(); updateCounters(); save();" title="Supprimer" style="background:#ef4444; border:none;">✕</button>
     </div>
   `;
+
+  card.appendChild(playBtn);
   return card;
 }
 
 function rebuildDataFromDOM() {
   const allSongsMap = {};
   [...data.pool, ...data.tiers.flatMap(t => t.songs)].forEach(s => { allSongsMap[s.id] = s; });
-
   data.tiers.forEach(t => {
-      const tierContainer = document.querySelector(`#tier-node-${t.id} .cards`);
-      if (tierContainer) {
-          const cardIds = Array.from(tierContainer.querySelectorAll('.card:not(.placeholder)')).map(c => c.id.replace('card-', ''));
-          t.songs = cardIds.map(id => allSongsMap[id]).filter(Boolean);
-      }
+    const tierContainer = document.querySelector(`#tier-node-${t.id} .cards`);
+    if (tierContainer) {
+      const cardIds = Array.from(tierContainer.querySelectorAll('.card:not(.placeholder)')).map(c => c.id.replace('card-', ''));
+      t.songs = cardIds.map(id => allSongsMap[id]).filter(Boolean);
+    }
   });
-
   const poolContainer = document.getElementById('pool');
   if (poolContainer) {
-      const poolCardIds = Array.from(poolContainer.querySelectorAll('.card:not(.placeholder)')).map(c => c.id.replace('card-', ''));
-      data.pool = poolCardIds.map(id => allSongsMap[id]).filter(Boolean);
+    const poolCardIds = Array.from(poolContainer.querySelectorAll('.card:not(.placeholder)')).map(c => c.id.replace('card-', ''));
+    data.pool = poolCardIds.map(id => allSongsMap[id]).filter(Boolean);
   }
 }
 
 function updateCounters() {
   data.tiers.forEach(t => {
-      const countSpan = document.querySelector(`#tier-node-${t.id} .tier-controls span`);
-      if(countSpan) countSpan.innerText = `(${t.songs.length})`;
-      
-      const somCount = document.querySelector(`.sommaire-item[data-tier-id="${t.id}"] .sommaire-count`);
-      if(somCount) somCount.innerText = t.songs.length;
+    const countSpan = document.querySelector(`#tier-node-${t.id} .tier-controls span`);
+    if(countSpan) countSpan.innerText = `(${t.songs.length})`;
+    const somCount = document.querySelector(`.sommaire-item[data-tier-id="${t.id}"] .sommaire-count`);
+    if(somCount) somCount.innerText = t.songs.length;
   });
 }
+
+// =============================================
+// DRAG & DROP — VERSION CORRIGÉE
+// Le bug de clignotement/téléportation venait de:
+// 1. La mise à jour du placeholder trop fréquente
+// 2. La logique getDragAfterElement qui ignorait les cartes sur la même ligne
+// =============================================
 
 function setupDrop(container, tierId){
   container.addEventListener("dragover", e => {
@@ -1747,99 +1748,123 @@ function setupDrop(container, tierId){
     if(selectedIds.size === 0 && !draggedId) return;
     if(e.target.classList.contains('placeholder') || e.target.classList.contains('dragging')) return;
 
-    if(!placeholder) { 
-        placeholder = document.createElement("div"); 
-        placeholder.className = "placeholder"; 
+    if(!placeholder) {
+      placeholder = document.createElement("div");
+      placeholder.className = "placeholder";
+      if (compactMode) placeholder.style.height = '70px';
     }
-    
-    // NOUVEAU CALCUL ABSOLU (Pythagore)
+
     const after = getDragAfterElement(container, e.clientX, e.clientY);
-    
+
     if (after !== currentDragAfter) {
-        currentDragAfter = after;
-        if(after == null) container.appendChild(placeholder);
-        else container.insertBefore(placeholder, after);
+      currentDragAfter = after;
+      if(after == null) {
+        container.appendChild(placeholder);
+      } else {
+        container.insertBefore(placeholder, after);
+      }
+    }
+  });
+
+  container.addEventListener("dragleave", e => {
+    // Only remove placeholder if truly leaving the container (not entering a child)
+    if (!container.contains(e.relatedTarget)) {
+      if (placeholder && placeholder.parentNode === container) {
+        placeholder.remove();
+        currentDragAfter = undefined;
+      }
     }
   });
 
   container.addEventListener("drop", e => {
     e.preventDefault();
     if(selectedIds.size === 0) return;
-    
+
     const fragment = document.createDocumentFragment();
     selectedIds.forEach(id => {
-        const draggedElement = document.getElementById(`card-${id}`);
-        if(draggedElement) {
-            fragment.appendChild(draggedElement);
-        }
+      const draggedElement = document.getElementById(`card-${id}`);
+      if(draggedElement) fragment.appendChild(draggedElement);
     });
 
     if(placeholder && placeholder.parentNode === container) {
-        container.insertBefore(fragment, placeholder);
-        placeholder.remove();
-        placeholder = null;
+      container.insertBefore(fragment, placeholder);
+      placeholder.remove();
+      placeholder = null;
     } else {
-        container.appendChild(fragment);
+      container.appendChild(fragment);
     }
 
     document.body.classList.remove("is-dragging");
-    
     selectedIds.forEach(id => {
-        const c = document.getElementById(`card-${id}`);
-        if(c) c.classList.remove("dragging", "selected");
+      const c = document.getElementById(`card-${id}`);
+      if(c) c.classList.remove("dragging", "selected");
     });
     selectedIds.clear();
-    
     draggedId = null;
     currentDragAfter = undefined;
-    
-    setTimeout(() => {
-        rebuildDataFromDOM();
-        save(); 
-        updateCounters();
-    }, 10);
+
+    setTimeout(() => { rebuildDataFromDOM(); save(); updateCounters(); }, 10);
   });
 }
 
 function getDragAfterElement(container, x, y) {
-  const cards = [...container.querySelectorAll('.card:not(.dragging)')];
-  let closest = null;
-  let minDistance = Infinity;
-  let insertBefore = true;
+  // Get all non-dragging cards
+  const cards = [...container.querySelectorAll('.card:not(.dragging):not(.placeholder)')];
+  
+  if (cards.length === 0) return null;
 
-  // Calcul mathématique précis (trouve la carte la plus proche du pointeur)
-  for (let card of cards) {
-      const box = card.getBoundingClientRect();
-      const centerX = box.left + box.width / 2;
-      const centerY = box.top + box.height / 2;
-      
-      // Distance absolue
-      const dist = Math.hypot(x - centerX, y - centerY);
+  // Find which row the cursor is on (within ±card_height tolerance)
+  // and then find the correct insertion point
+  
+  let bestCandidate = null;
+  let bestScore = Infinity;
 
-      if (dist < minDistance) {
-          minDistance = dist;
-          closest = card;
-          insertBefore = x < centerX; // Si on est à gauche du centre, on insère avant
+  for (const card of cards) {
+    const box = card.getBoundingClientRect();
+    const cardCenterX = box.left + box.width / 2;
+    const cardCenterY = box.top + box.height / 2;
+
+    // Vertical distance to this card's row
+    const vertDist = Math.abs(y - cardCenterY);
+    // Horizontal: is cursor to the LEFT of this card's center?
+    const horizDist = cardCenterX - x;
+
+    // We want: cards that are on the same row (vertDist small),
+    // and cursor is to their left (horizDist > 0)
+    // Score = vertical distance * 1000 + horizDist
+    if (vertDist < box.height * 0.75 && horizDist > 0) {
+      const score = vertDist * 1000 + horizDist;
+      if (score < bestScore) {
+        bestScore = score;
+        bestCandidate = card;
       }
+    }
   }
 
-  if (!closest) return null;
+  // If no card found on the same row to the right,
+  // check if cursor is below all cards → append at end (return null)
+  // Or if cursor is on a new row below the last card
+  if (bestCandidate === null) {
+    // Find the last card's bottom
+    const lastCard = cards[cards.length - 1];
+    const lastBox = lastCard.getBoundingClientRect();
+    
+    // If cursor is clearly below the last row, append at end
+    if (y > lastBox.bottom) return null;
 
-  if (insertBefore) {
-      return closest;
-  } else {
-      // Si on insère APRES la carte la plus proche, on cherche le prochain VRAI noeud (pas un placeholder fantôme)
-      let next = closest.nextElementSibling;
-      while(next && (next.classList.contains('placeholder') || next.classList.contains('dragging'))) {
-          next = next.nextElementSibling;
-      }
-      return next; // S'il n'y a plus rien après, ça renvoie null et ça ira tout à la fin proprement.
+    // Otherwise cursor might be to the right of all cards on a row
+    // Find which row the cursor is on and return null (append at end of that row)
+    // which effectively means appending to container
+    return null;
   }
+
+  return bestCandidate;
 }
 
 function removeSong(id){
   data.pool = data.pool.filter(s => s.id !== id);
   data.tiers.forEach(t => t.songs = t.songs.filter(s => s.id !== id));
+  if (currentPlayingId === id) stopPreview();
 }
 
 function findSong(id){
@@ -1850,17 +1875,16 @@ function editSong(id){
   const s = findSong(id);
   const a = prompt("Artiste :", s.artist);
   const t = prompt("Titre :", s.title);
-  if(a && t) { 
-    s.artist = a; s.title = t; 
+  if(a && t) {
+    s.artist = a; s.title = t;
     s.youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(a + ' ' + t + ' official mv')}`;
-    save(); 
-    
+    save();
     const card = document.getElementById(`card-${id}`);
     if (card) {
-        const strong = card.querySelector('.card-overlay strong');
-        const span = card.querySelector('.card-overlay span');
-        if (strong) strong.innerText = a;
-        if (span) span.innerText = t;
+      const strong = card.querySelector('.card-overlay strong');
+      const span = card.querySelector('.card-overlay span');
+      if (strong) strong.innerText = a;
+      if (span) span.innerText = t;
     }
     filterCards();
   }
@@ -1876,55 +1900,43 @@ async function addSong(){
   btn.innerText = "Recherche...";
 
   let cover = "";
-  let previewUrl = null;
-  
   try {
     const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + " " + title)}&entity=song&limit=1`);
     const json = await res.json();
-    if(json.results && json.results.length > 0) {
-        cover = json.results[0].artworkUrl100.replace("100x100", "300x300");
-        previewUrl = json.results[0].previewUrl || null;
-    }
+    cover = json.results[0]?.artworkUrl100?.replace("100x100", "300x300") || "";
   } catch(e) {}
 
-  if(!cover) {
-      cover = `https://ui-avatars.com/api/?name=${encodeURIComponent(artist)}&background=random&color=fff&size=300&font-size=0.33`;
-  }
+  if(!cover) cover = `https://ui-avatars.com/api/?name=${encodeURIComponent(artist)}&background=random&color=fff&size=300&font-size=0.33`;
 
   let youtubeUrl = "";
   if(YOUTUBE_API_KEY) {
-      try {
-          const query = `${artist} ${title} Official MV`;
-          const ytRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
-          const ytJson = await ytRes.json();
-          if(ytJson.items && ytJson.items.length > 0) {
-              const videoId = ytJson.items[0].id.videoId;
-              youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
-          } else { throw new Error("No video"); }
-      } catch(e) {
-          youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`;
-      }
+    try {
+      const query = `${artist} ${title} Official MV`;
+      const ytRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
+      const ytJson = await ytRes.json();
+      if(ytJson.items && ytJson.items.length > 0) {
+        youtubeUrl = `https://www.youtube.com/watch?v=${ytJson.items[0].id.videoId}`;
+      } else throw new Error("No video");
+    } catch(e) { youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`; }
   } else {
-      youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`;
+    youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`;
   }
 
-  const newSong = { id: generateUniqueId(), artist, title, cover, previewUrl, youtubeUrl, favorite: false, sessionId: activeSessionName, chatRating: null };
+  // Use active session
+  const sessionId = getCurrentSessionId();
+  const newSong = { id: generateUniqueId(), artist, title, cover, youtubeUrl, favorite: false, sessionId, chatRating: null };
   data.pool.push(newSong);
-  save(); 
-  
+  save();
+
   const poolEl = document.getElementById("pool");
-  if(poolEl) {
-      poolEl.appendChild(createCard(newSong));
-  }
-  
+  if(poolEl) poolEl.appendChild(createCard(newSong));
+
   document.getElementById("artistInput").value = "";
   document.getElementById("titleInput").value = "";
   btn.innerText = originalText;
   filterCards();
 
-  if(pollsEnabled) {
-      startTwitchVote(newSong.id, `${artist} - ${title}`);
-  }
+  if(pollsEnabled) startTwitchVote(newSong.id, `${artist} - ${title}`);
 }
 
 function addTier(){
@@ -1935,24 +1947,9 @@ function addTier(){
 function toggleEdit(){
   editMode = !editMode;
   const btn = document.getElementById("editBtn");
-  
-  if (!editMode) {
-      selectedIds.forEach(id => {
-          const c = document.getElementById(`card-${id}`);
-          if(c) c.classList.remove('selected');
-      });
-      selectedIds.clear();
-  }
-  
-  if(editMode) {
-      btn.innerHTML = "✅";
-      btn.style.background = "var(--accent-secondary)";
-      btn.style.color = "white";
-  } else {
-      btn.innerHTML = "✏️";
-      btn.style.background = "";
-      btn.style.color = "";
-  }
+  if (!editMode) { selectedIds.forEach(id => { const c = document.getElementById(`card-${id}`); if(c) c.classList.remove('selected'); }); selectedIds.clear(); }
+  if(editMode) { btn.innerHTML = "✅"; btn.style.background = "var(--accent-secondary)"; btn.style.color = "white"; }
+  else { btn.innerHTML = "✏️"; btn.style.background = ""; btn.style.color = ""; }
   render();
 }
 
@@ -1967,64 +1964,40 @@ function toggleCompact(){
 
 function toggleDark(){ document.body.classList.toggle("dark"); }
 
-function handleEnter(e) {
-    if(e.key === "Enter") {
-        addSong();
-    }
-}
+function handleEnter(e) { if(e.key === "Enter") addSong(); }
 document.getElementById("artistInput").addEventListener("keypress", handleEnter);
 document.getElementById("titleInput").addEventListener("keypress", handleEnter);
 
 window.addEventListener('scroll', () => {
-    const btn = document.getElementById("scrollTopBtn");
-    if (window.scrollY > 300) {
-        btn.classList.add("visible");
-    } else {
-        btn.classList.remove("visible");
-    }
+  const btn = document.getElementById("scrollTopBtn");
+  if (window.scrollY > 300) btn.classList.add("visible");
+  else btn.classList.remove("visible");
 });
 
 let autoScrollSpeed = 0;
 let autoScrollRAF = null;
 
-document.addEventListener("dragover", (e) => {
-    const edge = 80; 
-    if (e.clientY < edge) {
-        autoScrollSpeed = -15; 
-    } else if (e.clientY > window.innerHeight - edge) {
-        autoScrollSpeed = 15;  
-    } else {
-        autoScrollSpeed = 0;   
-    }
+function doAutoScroll() {
+  if (autoScrollSpeed !== 0) { window.scrollBy(0, autoScrollSpeed); autoScrollRAF = requestAnimationFrame(doAutoScroll); }
+  else autoScrollRAF = null;
+}
 
-    if (autoScrollSpeed !== 0 && !autoScrollRAF) {
-        autoScrollRAF = requestAnimationFrame(doAutoScroll);
-    }
+document.addEventListener("dragover", (e) => {
+  const edge = 80;
+  if (e.clientY < edge) autoScrollSpeed = -15;
+  else if (e.clientY > window.innerHeight - edge) autoScrollSpeed = 15;
+  else autoScrollSpeed = 0;
+  if (autoScrollSpeed !== 0 && !autoScrollRAF) autoScrollRAF = requestAnimationFrame(doAutoScroll);
 });
 
 document.addEventListener("dragend", () => {
-    autoScrollSpeed = 0;
-    if (autoScrollRAF) {
-        cancelAnimationFrame(autoScrollRAF);
-        autoScrollRAF = null;
-    }
+  autoScrollSpeed = 0;
+  if (autoScrollRAF) { cancelAnimationFrame(autoScrollRAF); autoScrollRAF = null; }
 });
 
-function doAutoScroll() {
-    if (autoScrollSpeed !== 0) {
-        window.scrollBy(0, autoScrollSpeed);
-        autoScrollRAF = requestAnimationFrame(doAutoScroll);
-    } else {
-        autoScrollRAF = null;
-    }
-}
-
 render();
-
-// Relancer une récupération pour chercher les audios manquants de l'historique
-setTimeout(syncCovers, 1500); 
-
-changeTwitchChannel(); 
+setTimeout(syncCovers, 1500);
+changeTwitchChannel();
 
 </script>
 </body>
