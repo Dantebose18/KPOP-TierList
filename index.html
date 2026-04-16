@@ -1057,6 +1057,7 @@ async function syncCovers() {
   isSyncing = true;
   const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
   const missingCovers = allSongs.filter(s => s.cover && (s.cover.includes('via.placeholder.com') || s.cover.includes('ui-avatars.com')) && !s.coverSearched);
+  
   if(missingCovers.length === 0) { isSyncing = false; return; }
 
   let syncBadge = document.getElementById("syncBadge");
@@ -1072,7 +1073,16 @@ async function syncCovers() {
     syncBadge.innerText = `🔄 Albums : ${i + 1}/${missingCovers.length}`;
     try {
       const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(song.artist + " " + song.title)}&entity=song&limit=1`);
-      if(!res.ok) { syncBadge.innerText = "⏸️ API Apple en pause"; syncBadge.style.background = "#f59e0b"; isSyncing = false; setTimeout(() => syncBadge.remove(), 5000); return; }
+      
+      // Si l'API bloque (Erreur 403 ou 429), on arrête proprement la boucle
+      if(!res.ok) { 
+        syncBadge.innerText = "⏸️ API Apple en pause (Trop de requêtes)"; 
+        syncBadge.style.background = "#f59e0b"; 
+        isSyncing = false; 
+        setTimeout(() => syncBadge.remove(), 5000); 
+        return; 
+      }
+      
       const json = await res.json();
       if(json.results && json.results.length > 0) {
         song.cover = json.results[0].artworkUrl100.replace("100x100", "300x300");
@@ -1089,7 +1099,6 @@ async function syncCovers() {
       const cardEl = document.getElementById(`card-${song.id}`);
       if(cardEl) {
         cardEl.style.backgroundImage = `url(${song.cover})`;
-        // Met à jour le bouton si nécessaire
         const playBtn = cardEl.querySelector('.card-play-btn');
         if(playBtn && song.hasPreview === false) {
            playBtn.innerHTML = '🔇';
@@ -1098,9 +1107,12 @@ async function syncCovers() {
         }
       }
     } catch(e) { console.log("Erreur recherche", song.title); }
+    
     song.coverSearched = true;
     save();
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // LA SOLUTION EST ICI : Pause de 3 secondes au lieu de 1 seconde
+    await new Promise(resolve => setTimeout(resolve, 3000));
   }
 
   syncBadge.innerText = "✅ Images récupérées !";
