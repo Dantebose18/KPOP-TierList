@@ -395,7 +395,7 @@ body.is-dragging .cards { transition: none !important; }
   z-index: 25;
   cursor: pointer;
   pointer-events: none;
-  padding-left: 3px;
+  padding-left: 3px; /* optical centering for play icon */
 }
 .card:hover .card-play-btn { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
 body.is-dragging .card .card-play-btn { opacity: 0 !important; pointer-events: none !important; }
@@ -765,11 +765,7 @@ function stopPreview() {
   audio.src = '';
   if (currentPlayingId) {
     const btn = document.querySelector(`#card-${currentPlayingId} .card-play-btn`);
-    if (btn) { 
-      const song = findSong(currentPlayingId);
-      btn.innerHTML = (song && song.hasPreview === false) ? '🔇' : '▶'; 
-      btn.classList.remove('playing'); 
-    }
+    if (btn) { btn.innerHTML = '▶'; btn.classList.remove('playing'); }
     currentPlayingId = null;
   }
   document.getElementById('miniPlayer').classList.remove('visible');
@@ -785,11 +781,7 @@ async function togglePreview(songId, event) {
   
   if (currentPlayingId) {
     const prevBtn = document.querySelector(`#card-${currentPlayingId} .card-play-btn`);
-    if (prevBtn) { 
-      const prevSong = findSong(currentPlayingId);
-      prevBtn.innerHTML = (prevSong && prevSong.hasPreview === false) ? '🔇' : '▶'; 
-      prevBtn.classList.remove('playing'); 
-    }
+    if (prevBtn) { prevBtn.innerHTML = '▶'; prevBtn.classList.remove('playing'); }
   }
   audio.pause();
 
@@ -803,9 +795,8 @@ async function togglePreview(songId, event) {
     const query = song.searchQuery || (song.artist + ' ' + song.title);
     const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=1`);
     
-    // Si on a un blocage de l'API (rate limit / erreur réseau), on ne le sauvegarde pas
-    if (!res.ok) throw new Error("Erreur de communication avec l'API Apple");
-
+    if (!res.ok) throw new Error("Erreur HTTP " + res.status);
+    
     const json = await res.json();
     const result = json.results?.[0];
 
@@ -826,15 +817,19 @@ async function togglePreview(songId, event) {
 
       audio.onended = () => stopPreview();
     } else {
+      // 🔇 seulement si l'API répond bien mais ne trouve vraiment rien
       btn.innerHTML = '🔇';
-      btn.title = 'Aucun extrait disponible (cliquez pour réessayer)';
+      btn.title = 'Aucun extrait disponible';
+      btn.style.cursor = 'default';
+      btn.onclick = null;
       song.hasPreview = false;
       save();
     }
   } catch(e) {
-    // Si ça rate à cause du réseau/sécurité Apple, on remet l'icone de base sans bloquer la carte
-    btn.innerHTML = song.hasPreview === false ? '🔇' : '▶';
-    console.error("Erreur de preview:", e);
+    console.warn("Erreur API Apple:", e);
+    // En cas d'erreur réseau ou blocage IP temporaire, on remet le bouton normal pour réessayer plus tard
+    btn.innerHTML = '▶';
+    btn.title = 'Erreur de connexion avec Apple. Réessayez plus tard.';
   }
 }
 
@@ -934,11 +929,6 @@ function migrateData(loadedData) {
     if (song.favorite === undefined) song.favorite = false;
     if (song.sessionId === undefined) song.sessionId = 'Legacy';
     if (song.chatRating === undefined) song.chatRating = null;
-    
-    // --- SCRIPT AUTO-REPARATION BUG API APPLE ---
-    // On réinitialise à null pour débloquer les cartes corrompues 
-    song.hasPreview = null; 
-    // --------------------------------------------
   });
   if (!loadedData.sessions) {
     loadedData.sessions = {};
@@ -1059,7 +1049,13 @@ async function syncCovers() {
     try {
       const query = song.searchQuery || (song.artist + " " + song.title);
       const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=1`);
-      if(!res.ok) { syncBadge.innerText = "⏸️ API Apple en pause"; syncBadge.style.background = "#f59e0b"; isSyncing = false; setTimeout(() => syncBadge.remove(), 5000); return; }
+      if(!res.ok) { 
+        syncBadge.innerText = "⏸️ API Apple en pause (Anti-Spam)"; 
+        syncBadge.style.background = "#f59e0b"; 
+        isSyncing = false; 
+        setTimeout(() => syncBadge.remove(), 5000); 
+        return; 
+      }
       const json = await res.json();
       if(json.results && json.results.length > 0) {
         song.cover = json.results[0].artworkUrl100.replace("100x100", "300x300");
@@ -1071,7 +1067,9 @@ async function syncCovers() {
     } catch(e) { console.log("Erreur recherche", song.title); }
     song.coverSearched = true;
     save();
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Délai augmenté à 3 secondes pour ne plus se faire bloquer par Apple !
+    await new Promise(resolve => setTimeout(resolve, 3000));
   }
 
   syncBadge.innerText = "✅ Images récupérées !";
@@ -1654,20 +1652,18 @@ function createCard(song){
     currentDragAfter = undefined;
   });
 
-  // Play button (not in edit mode)
   const playBtn = document.createElement("div");
   playBtn.className = "card-play-btn";
   
   if (song.hasPreview === false) {
     playBtn.innerHTML = '🔇';
-    playBtn.title = 'Aucun extrait (cliquer pour réessayer)';
+    playBtn.title = 'Aucun extrait disponible';
+    playBtn.style.cursor = 'default';
   } else {
     playBtn.innerHTML = currentPlayingId === song.id ? '⏸' : '▶';
     if (currentPlayingId === song.id) playBtn.classList.add('playing');
+    playBtn.addEventListener('click', (e) => togglePreview(song.id, e));
   }
-  
-  // TOUJOURS écouter le clic pour permettre de réessayer si c'était juste un plantage API temporaire
-  playBtn.addEventListener('click', (e) => togglePreview(song.id, e));
 
   card.innerHTML = `
     <div class="fav-badge">❤</div>
@@ -1838,7 +1834,8 @@ function findSong(id){
 
 function editSong(id){
   const s = findSong(id);
-  const a = prompt("Artiste :", s.searchQuery ? s.searchQuery.split(" ")[0] : s.artist);
+  // Afficher le nom brut complet par défaut
+  const a = prompt("Artiste :", s.rawArtist || s.artist);
   const t = prompt("Titre :", s.title);
   if(a && t) {
     let displayArtist = a;
@@ -1847,10 +1844,13 @@ function editSong(id){
       displayArtist = a.split(featRegex)[0].trim();
     }
 
+    s.rawArtist = a;
     s.artist = displayArtist;
     s.title = t;
     s.searchQuery = a + " " + t;
     s.youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(s.searchQuery + ' official mv')}`;
+    
+    // On repasse hasPreview à null pour revérifier lors du prochain clic
     s.hasPreview = null; 
     save();
     
@@ -1895,11 +1895,17 @@ async function addSong(){
   let hasPreview = null; 
   try {
     const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(searchQuery)}&entity=song&limit=1`);
-    const json = await res.json();
-    const result = json.results?.[0];
-    cover = result?.artworkUrl100?.replace("100x100", "300x300") || "";
-    hasPreview = !!(result?.previewUrl); 
-  } catch(e) {}
+    if (res.ok) {
+      const json = await res.json();
+      const result = json.results?.[0];
+      cover = result?.artworkUrl100?.replace("100x100", "300x300") || "";
+      hasPreview = !!(result?.previewUrl);
+    } else {
+      console.warn("L'API Apple a rejeté la requête : HTTP " + res.status);
+    }
+  } catch(e) {
+    console.warn("Erreur de connexion API iTunes:", e);
+  }
 
   if(!cover) cover = `https://ui-avatars.com/api/?name=${encodeURIComponent(artist)}&background=random&color=fff&size=300&font-size=0.33`;
 
@@ -1918,7 +1924,8 @@ async function addSong(){
   }
 
   const sessionId = getCurrentSessionId();
-  const newSong = { id: generateUniqueId(), artist, title, searchQuery, cover, youtubeUrl, favorite: false, sessionId, chatRating: null, hasPreview };
+  // On ajoute le "rawArtist" (avec le feat complet) à l'objet pour l'édition future
+  const newSong = { id: generateUniqueId(), artist, rawArtist, title, searchQuery, cover, youtubeUrl, favorite: false, sessionId, chatRating: null, hasPreview };
   data.pool.push(newSong);
   save();
 
