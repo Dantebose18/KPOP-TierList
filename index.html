@@ -697,7 +697,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
 
 <div class="main">
   <div class="input-section">
-    <input type="text" id="artistInput" placeholder="Artiste (ex: NMIXX)">
+    <input type="text" id="artistInput" placeholder="Artiste (ex: YB feat Xdinary Heroes)">
     <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
     <input type="text" id="titleInput" placeholder="Titre (ex: Dash)">
     <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
@@ -732,7 +732,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
 // ==========================================
 // CONFIGURATION
 // ==========================================
-const YOUTUBE_API_KEY = "AIzaSyBzRO4J6W-M8uSt2k9vd1HJHECCwdKdiGM";
+const YOUTUBE_API_KEY = "";
 // ==========================================
 
 let data = load();
@@ -779,13 +779,11 @@ async function togglePreview(songId, event) {
   const song = findSong(songId);
   if (!song) return;
 
-  // Si on joue déjà la chanson, on stoppe
   if (currentPlayingId === songId) {
     stopPreview();
     return;
   }
   
-  // Stoppe la chanson précédente
   if (currentPlayingId) {
     const prevBtn = document.querySelector(`#card-${currentPlayingId} .card-play-btn`);
     if (prevBtn) { prevBtn.innerHTML = '▶'; prevBtn.classList.remove('playing'); }
@@ -795,7 +793,6 @@ async function togglePreview(songId, event) {
   const btn = event.currentTarget;
   btn.innerHTML = '⏳';
 
-  // Si on sait déjà qu'il n'y a pas d'extrait
   if (song.hasPreview === false) {
      btn.innerHTML = '🔇';
      btn.title = 'Aucun extrait disponible';
@@ -805,10 +802,10 @@ async function togglePreview(songId, event) {
 
   let urlToPlay = song.previewUrl;
 
-  // Si on n'a pas encore le lien en cache, on cherche sur Apple Music
   if (!urlToPlay) {
     try {
-      const query = encodeURIComponent(song.artist + ' ' + song.title);
+      // FIX : Conversion en minuscule pour l'API Apple
+      const query = encodeURIComponent((song.artist + ' ' + song.title).toLowerCase());
       const res = await fetch(`https://itunes.apple.com/search?term=${query}&entity=song&limit=1`);
       if(!res.ok) throw new Error("API Limit");
       const json = await res.json();
@@ -818,7 +815,7 @@ async function togglePreview(songId, event) {
         urlToPlay = result.previewUrl;
         song.previewUrl = urlToPlay;
         song.hasPreview = true;
-        save(); // On sauvegarde pour ne plus refaire de requête
+        save();
       } else {
         song.hasPreview = false;
         save();
@@ -830,11 +827,10 @@ async function togglePreview(songId, event) {
     } catch(e) {
       console.warn("Erreur API Apple:", e);
       btn.innerHTML = '▶';
-      return; // Ne pas marquer en false si c'est juste une erreur de limite d'API
+      return; 
     }
   }
 
-  // Lancement de l'audio si on a un lien
   if (urlToPlay) {
     audio.src = urlToPlay;
     audio.volume = volumeSlider.value / 100;
@@ -843,7 +839,6 @@ async function togglePreview(songId, event) {
     btn.innerHTML = '⏸';
     btn.classList.add('playing');
 
-    // Update mini player
     document.getElementById('playerCover').style.backgroundImage = `url(${song.cover})`;
     document.getElementById('playerArtist').textContent = song.artist;
     document.getElementById('playerTitle').textContent = song.title;
@@ -949,9 +944,8 @@ function migrateData(loadedData) {
     if (song.favorite === undefined) song.favorite = false;
     if (song.sessionId === undefined) song.sessionId = 'Legacy';
     if (song.chatRating === undefined) song.chatRating = null;
-    // Migration pour les nouveautés Apple API (cache)
     if (song.previewUrl === undefined) song.previewUrl = null;
-    if (song.hasPreview === undefined) song.hasPreview = null; // null = on ne sait pas encore
+    if (song.hasPreview === undefined) song.hasPreview = null;
   });
   if (!loadedData.sessions) {
     loadedData.sessions = {};
@@ -1044,7 +1038,6 @@ let isSyncing = false;
 function forceSync() {
   const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
   allSongs.forEach(s => {
-    // Si la cover est un placeholder on force la recherche
     if(s.cover && (s.cover.includes('via.placeholder.com') || s.cover.includes('ui-avatars.com'))) {
       s.coverSearched = false;
     }
@@ -1072,9 +1065,10 @@ async function syncCovers() {
     const song = missingCovers[i];
     syncBadge.innerText = `🔄 Albums : ${i + 1}/${missingCovers.length}`;
     try {
-      const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(song.artist + " " + song.title)}&entity=song&limit=1`);
+      // FIX : Conversion en minuscule pour l'API Apple
+      const appleQuery = (song.artist + " " + song.title).toLowerCase();
+      const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(appleQuery)}&entity=song&limit=1`);
       
-      // Si l'API bloque (Erreur 403 ou 429), on arrête proprement la boucle
       if(!res.ok) { 
         syncBadge.innerText = "⏸️ API Apple en pause (Trop de requêtes)"; 
         syncBadge.style.background = "#f59e0b"; 
@@ -1111,7 +1105,7 @@ async function syncCovers() {
     song.coverSearched = true;
     save();
     
-    // LA SOLUTION EST ICI : Pause de 3 secondes au lieu de 1 seconde
+    // DELAI DE SECURITE (3 SECONDES)
     await new Promise(resolve => setTimeout(resolve, 3000));
   }
 
@@ -1705,7 +1699,6 @@ function createCard(song){
   const playBtn = document.createElement("div");
   playBtn.className = "card-play-btn";
   
-  // Si on est sur qu'il n'y a pas d'extrait, on affiche direct mute
   if (song.hasPreview === false) {
     playBtn.innerHTML = '🔇';
     playBtn.classList.add('muted-btn');
@@ -1944,7 +1937,6 @@ async function addSong(){
   let mainArtist = rawArtist;
   let displayTitle = rawTitle;
 
-  // Détection du feat pour isoler l'artiste principal (ex: "YB feat Xdinary Heroes" -> YB)
   const featRegex = /\s+(feat\.?|ft\.?)\s+(.*)/i;
   const match = rawArtist.match(featRegex);
   if(match) {
@@ -1957,7 +1949,9 @@ async function addSong(){
   let hasPreview = true;
 
   try {
-    const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(mainArtist + " " + displayTitle)}&entity=song&limit=1`);
+    // FIX : Conversion en minuscule pour l'API Apple
+    const appleQuery = (mainArtist + " " + displayTitle).toLowerCase();
+    const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(appleQuery)}&entity=song&limit=1`);
     const json = await res.json();
     if(json.results && json.results.length > 0) {
       cover = json.results[0].artworkUrl100?.replace("100x100", "300x300") || "";
@@ -1968,7 +1962,6 @@ async function addSong(){
     }
   } catch(e) { 
     console.warn("Erreur recherche API:", e);
-    // On laisse hasPreview à true/null pour retenter plus tard si c'est juste une erreur réseau
   }
 
   if(!cover) cover = `https://ui-avatars.com/api/?name=${encodeURIComponent(mainArtist)}&background=random&color=fff&size=300&font-size=0.33`;
