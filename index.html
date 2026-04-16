@@ -401,6 +401,8 @@ body.is-dragging .cards { transition: none !important; }
 body.is-dragging .card .card-play-btn { opacity: 0 !important; pointer-events: none !important; }
 body.edit-active .card-play-btn { display: none; }
 .card-play-btn.playing { background: var(--accent-secondary); border-color: var(--accent-secondary); padding-left: 0; }
+.card-play-btn.muted-btn { background: rgba(0,0,0,0.8); border-color: rgba(255,255,255,0.3); padding-left: 0; cursor: not-allowed; }
+.card-play-btn.muted-btn:hover { background: rgba(0,0,0,0.9); transform: translate(-50%, -50%) scale(1); }
 
 /* --- MODE COMPACT --- */
 body.compact-active .card { height: 70px; }
@@ -638,7 +640,6 @@ body.edit-active .card-tools button { pointer-events: auto; }
 
 <input type="file" id="fileInput" style="display:none" accept=".json" onchange="importJson(this)">
 
-<!-- STATS MODAL -->
 <div id="statsModal" class="modal-overlay" onclick="closeModal(event)">
   <div class="modal-content">
     <h2>Classement & Stats</h2>
@@ -649,7 +650,6 @@ body.edit-active .card-tools button { pointer-events: auto; }
   </div>
 </div>
 
-<!-- ALL ARTISTS MODAL -->
 <div id="allArtistsModal" class="modal-overlay" onclick="closeModal(event)">
   <div class="modal-content">
     <h2>Tous les Artistes</h2>
@@ -660,7 +660,6 @@ body.edit-active .card-tools button { pointer-events: auto; }
   </div>
 </div>
 
-<!-- FAVORITES MODAL -->
 <div id="favModal" class="modal-overlay" onclick="closeModal(event)">
   <div class="modal-content">
     <h2 style="color:var(--accent-fav); -webkit-text-fill-color: var(--accent-fav);">❤ Mes Favoris</h2>
@@ -671,7 +670,6 @@ body.edit-active .card-tools button { pointer-events: auto; }
   </div>
 </div>
 
-<!-- SESSIONS MODAL -->
 <div id="sessionsModal" class="modal-overlay" onclick="closeModal(event)">
   <div class="modal-content" style="max-width: 600px;">
     <h2>📅 Sessions</h2>
@@ -699,7 +697,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
 
 <div class="main">
   <div class="input-section">
-    <input type="text" id="artistInput" placeholder="Artiste (ex: NMIXX)">
+    <input type="text" id="artistInput" placeholder="Artiste (ex: YB feat Xdinary Heroes)">
     <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
     <input type="text" id="titleInput" placeholder="Titre (ex: Dash)">
     <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
@@ -712,7 +710,6 @@ body.edit-active .card-tools button { pointer-events: auto; }
   <div id="pool" class="pool"></div>
 </div>
 
-<!-- MINI PLAYER -->
 <div id="miniPlayer">
   <button class="player-close" onclick="stopPreview()">✕</button>
   <div class="player-info">
@@ -724,7 +721,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
   </div>
   <div class="player-volume-row">
     <span>🔈</span>
-    <input type="range" id="volumeSlider" min="0" max="100" value="20" oninput="setVolume(this.value)">
+    <input type="range" id="volumeSlider" min="0" max="100" value="15" oninput="setVolume(this.value)">
     <span>🔊</span>
   </div>
 </div>
@@ -751,10 +748,10 @@ let selectedIds = new Set();
 let currentPlayingId = null;
 const audio = document.getElementById('previewAudio');
 const volumeSlider = document.getElementById('volumeSlider');
-audio.volume = 0.2;
+audio.volume = 0.15;
 
 // Update range background on load
-updateSliderBg(20);
+updateSliderBg(15);
 
 function updateSliderBg(val) {
   volumeSlider.style.setProperty('--vol-pct', val + '%');
@@ -779,51 +776,80 @@ function stopPreview() {
 async function togglePreview(songId, event) {
   event.stopPropagation();
   
-  // If same song is playing, stop it
+  const song = findSong(songId);
+  if (!song) return;
+
+  // Si on joue déjà la chanson, on stoppe
   if (currentPlayingId === songId) {
     stopPreview();
     return;
   }
   
-  // Stop previous
+  // Stoppe la chanson précédente
   if (currentPlayingId) {
     const prevBtn = document.querySelector(`#card-${currentPlayingId} .card-play-btn`);
     if (prevBtn) { prevBtn.innerHTML = '▶'; prevBtn.classList.remove('playing'); }
   }
   audio.pause();
 
-  const song = findSong(songId);
-  if (!song) return;
-
   const btn = event.currentTarget;
   btn.innerHTML = '⏳';
 
-  try {
-    const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(song.artist + ' ' + song.title)}&entity=song&limit=1`);
-    const json = await res.json();
-    const result = json.results?.[0];
+  // Si on sait déjà qu'il n'y a pas d'extrait
+  if (song.hasPreview === false) {
+     btn.innerHTML = '🔇';
+     btn.title = 'Aucun extrait disponible';
+     btn.classList.add('muted-btn');
+     return;
+  }
 
-    if (result && result.previewUrl) {
-      audio.src = result.previewUrl;
-      audio.volume = volumeSlider.value / 100;
-      audio.play();
-      currentPlayingId = songId;
-      btn.innerHTML = '⏸';
-      btn.classList.add('playing');
+  let urlToPlay = song.previewUrl;
 
-      // Update mini player
-      document.getElementById('playerCover').style.backgroundImage = `url(${result.artworkUrl100 || song.cover})`;
-      document.getElementById('playerArtist').textContent = song.artist;
-      document.getElementById('playerTitle').textContent = song.title;
-      document.getElementById('miniPlayer').classList.add('visible');
+  // Si on n'a pas encore le lien en cache, on cherche sur Apple Music
+  if (!urlToPlay) {
+    try {
+      const query = encodeURIComponent(song.artist + ' ' + song.title);
+      const res = await fetch(`https://itunes.apple.com/search?term=${query}&entity=song&limit=1`);
+      if(!res.ok) throw new Error("API Limit");
+      const json = await res.json();
+      const result = json.results?.[0];
 
-      audio.onended = () => stopPreview();
-    } else {
+      if (result && result.previewUrl) {
+        urlToPlay = result.previewUrl;
+        song.previewUrl = urlToPlay;
+        song.hasPreview = true;
+        save(); // On sauvegarde pour ne plus refaire de requête
+      } else {
+        song.hasPreview = false;
+        save();
+        btn.innerHTML = '🔇';
+        btn.title = 'Aucun extrait disponible';
+        btn.classList.add('muted-btn');
+        return;
+      }
+    } catch(e) {
+      console.warn("Erreur API Apple:", e);
       btn.innerHTML = '▶';
-      btn.title = 'Pas de preview disponible';
+      return; // Ne pas marquer en false si c'est juste une erreur de limite d'API
     }
-  } catch(e) {
-    btn.innerHTML = '▶';
+  }
+
+  // Lancement de l'audio si on a un lien
+  if (urlToPlay) {
+    audio.src = urlToPlay;
+    audio.volume = volumeSlider.value / 100;
+    audio.play();
+    currentPlayingId = songId;
+    btn.innerHTML = '⏸';
+    btn.classList.add('playing');
+
+    // Update mini player
+    document.getElementById('playerCover').style.backgroundImage = `url(${song.cover})`;
+    document.getElementById('playerArtist').textContent = song.artist;
+    document.getElementById('playerTitle').textContent = song.title;
+    document.getElementById('miniPlayer').classList.add('visible');
+
+    audio.onended = () => stopPreview();
   }
 }
 
@@ -889,10 +915,9 @@ function togglePolls() {
 // --- UTILS ---
 function generateUniqueId() { return Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9); }
 
-// SESSION SYSTEM — now based on a current "active session" label, not date
+// SESSION SYSTEM
 function getCurrentSessionId() {
   if (!data.activeSessionId) {
-    // Create a default session based on today's date
     const today = new Date().toLocaleDateString('fr-FR');
     if (!data.sessions) data.sessions = {};
     if (!data.sessions[today]) {
@@ -924,11 +949,12 @@ function migrateData(loadedData) {
     if (song.favorite === undefined) song.favorite = false;
     if (song.sessionId === undefined) song.sessionId = 'Legacy';
     if (song.chatRating === undefined) song.chatRating = null;
+    // Migration pour les nouveautés Apple API (cache)
+    if (song.previewUrl === undefined) song.previewUrl = null;
+    if (song.hasPreview === undefined) song.hasPreview = null; // null = on ne sait pas encore
   });
-  // Migrate session system
   if (!loadedData.sessions) {
     loadedData.sessions = {};
-    // Collect all existing session IDs from songs
     allSongs.forEach(s => {
       if (s.sessionId && !loadedData.sessions[s.sessionId]) {
         loadedData.sessions[s.sessionId] = { id: s.sessionId, name: s.sessionId, createdAt: 0 };
@@ -1018,6 +1044,7 @@ let isSyncing = false;
 function forceSync() {
   const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
   allSongs.forEach(s => {
+    // Si la cover est un placeholder on force la recherche
     if(s.cover && (s.cover.includes('via.placeholder.com') || s.cover.includes('ui-avatars.com'))) {
       s.coverSearched = false;
     }
@@ -1049,11 +1076,27 @@ async function syncCovers() {
       const json = await res.json();
       if(json.results && json.results.length > 0) {
         song.cover = json.results[0].artworkUrl100.replace("100x100", "300x300");
+        if(json.results[0].previewUrl) {
+          song.previewUrl = json.results[0].previewUrl;
+          song.hasPreview = true;
+        } else {
+          song.hasPreview = false;
+        }
       } else {
         song.cover = `https://ui-avatars.com/api/?name=${encodeURIComponent(song.artist)}&background=random&color=fff&size=300&font-size=0.33`;
+        song.hasPreview = false;
       }
       const cardEl = document.getElementById(`card-${song.id}`);
-      if(cardEl) cardEl.style.backgroundImage = `url(${song.cover})`;
+      if(cardEl) {
+        cardEl.style.backgroundImage = `url(${song.cover})`;
+        // Met à jour le bouton si nécessaire
+        const playBtn = cardEl.querySelector('.card-play-btn');
+        if(playBtn && song.hasPreview === false) {
+           playBtn.innerHTML = '🔇';
+           playBtn.classList.add('muted-btn');
+           playBtn.title = 'Aucun extrait disponible';
+        }
+      }
     } catch(e) { console.log("Erreur recherche", song.title); }
     song.coverSearched = true;
     save();
@@ -1183,7 +1226,6 @@ function calcSessionStats(sessionId) {
   });
   const avg = count > 0 ? (sumScore / count).toFixed(1) : null;
 
-  // Top / Flop songs
   let allRated = [];
   data.tiers.forEach((tier, index) => {
     const score = ((maxScore - index) / maxScore) * 10;
@@ -1298,14 +1340,12 @@ function showMergeUI(sid) {
   const targetId = otherSessions.find(s => (sessions[s].name || s) === targetName.trim());
   if (!targetId) { alert("Session non trouvée. Vérifiez le nom."); return; }
   
-  // Reassign all songs from sid to targetId
   const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
   let count = 0;
   allSongs.forEach(s => {
     if (s.sessionId === sid) { s.sessionId = targetId; count++; }
   });
   
-  // Delete merged session
   const mergedName = sessions[sid]?.name || sid;
   delete data.sessions[sid];
   if (data.activeSessionId === sid) data.activeSessionId = targetId;
@@ -1628,7 +1668,6 @@ function createCard(song){
       const c = document.getElementById(`card-${id}`);
       if(c) setTimeout(() => c.classList.add("dragging"), 0);
     });
-    // Capturer le snapshot du container actuel après que les cartes sont marquées .dragging
     setTimeout(() => {
       const parentContainer = card.closest('.cards, .pool');
       if (parentContainer) captureSnapshot(parentContainer);
@@ -1650,12 +1689,20 @@ function createCard(song){
     snapshotContainer = null;
   });
 
-  // Play button (not in edit mode)
+  // Play button
   const playBtn = document.createElement("div");
   playBtn.className = "card-play-btn";
-  playBtn.innerHTML = currentPlayingId === song.id ? '⏸' : '▶';
-  if (currentPlayingId === song.id) playBtn.classList.add('playing');
-  playBtn.addEventListener('click', (e) => togglePreview(song.id, e));
+  
+  // Si on est sur qu'il n'y a pas d'extrait, on affiche direct mute
+  if (song.hasPreview === false) {
+    playBtn.innerHTML = '🔇';
+    playBtn.classList.add('muted-btn');
+    playBtn.title = 'Aucun extrait disponible';
+  } else {
+    playBtn.innerHTML = currentPlayingId === song.id ? '⏸' : '▶';
+    if (currentPlayingId === song.id) playBtn.classList.add('playing');
+    playBtn.addEventListener('click', (e) => togglePreview(song.id, e));
+  }
 
   card.innerHTML = `
     <div class="fav-badge">❤</div>
@@ -1703,27 +1750,13 @@ function updateCounters() {
 
 // =============================================
 // DRAG & DROP — SNAPSHOT APPROACH
-//
-// PROBLÈME RACINE des clignotements :
-// Lire getBoundingClientRect() pendant dragover
-// retourne des positions APRÈS insertion du placeholder,
-// ce qui change le résultat au prochain dragover → boucle.
-//
-// SOLUTION : capturer les positions des cartes UNE SEULE
-// FOIS au dragstart (snapshot), et utiliser ces positions
-// figées pendant tout le drag. Le placeholder ne perturbe
-// plus les calculs.
 // =============================================
-
-// Snapshot des positions : { id → { el, top, left, right, bottom, midX, midY } }
 let cardSnapshot = [];
-// Container snapshot actif
 let snapshotContainer = null;
 
 function captureSnapshot(container) {
   snapshotContainer = container;
   cardSnapshot = [];
-  // On capture TOUTES les cartes non-draggées du container
   const cards = [...container.querySelectorAll('.card:not(.dragging)')];
   for (const card of cards) {
     const box = card.getBoundingClientRect();
@@ -1744,7 +1777,6 @@ function captureSnapshot(container) {
 function getInsertionPoint(x, y) {
   if (cardSnapshot.length === 0) return null;
 
-  // 1. Grouper par lignes en utilisant les positions SNAPSHOT (figées)
   const rows = [];
   for (const snap of cardSnapshot) {
     let row = rows.find(r => Math.abs(r.midY - snap.midY) < snap.height * 0.6);
@@ -1754,11 +1786,9 @@ function getInsertionPoint(x, y) {
     }
     row.snaps.push(snap);
   }
-  // Trier lignes par Y croissant, et cartes de chaque ligne par X croissant
   rows.sort((a, b) => a.midY - b.midY);
   rows.forEach(r => r.snaps.sort((a, b) => a.left - b.left));
 
-  // 2. Trouver la ligne la plus proche verticalement du curseur
   let targetRow = rows[0];
   let minDist = Infinity;
   for (const row of rows) {
@@ -1766,20 +1796,16 @@ function getInsertionPoint(x, y) {
     if (dist < minDist) { minDist = dist; targetRow = row; }
   }
 
-  // 3. Dans cette ligne, trouver la première carte dont le midX > curseur X
   for (const snap of targetRow.snaps) {
     if (x < snap.midX) return snap.el;
   }
 
-  // 4. Curseur à droite de toutes les cartes de cette ligne
   const rowIdx = rows.indexOf(targetRow);
   const isLastRow = rowIdx === rows.length - 1;
 
   if (isLastRow) {
-    // Fin du container
     return null;
   } else {
-    // Début de la ligne suivante
     return rows[rowIdx + 1].snaps[0].el;
   }
 }
@@ -1787,7 +1813,6 @@ function getInsertionPoint(x, y) {
 function setupDrop(container, tierId){
   container.addEventListener("dragenter", e => {
     e.preventDefault();
-    // Capturer le snapshot dès qu'on entre dans un nouveau container
     if (snapshotContainer !== container && draggedId) {
       captureSnapshot(container);
     }
@@ -1797,7 +1822,6 @@ function setupDrop(container, tierId){
     e.preventDefault();
     if (!draggedId) return;
 
-    // Si on est dans un nouveau container, recapturer
     if (snapshotContainer !== container) {
       captureSnapshot(container);
     }
@@ -1810,7 +1834,6 @@ function setupDrop(container, tierId){
 
     const insertBefore = getInsertionPoint(e.clientX, e.clientY);
 
-    // Ne bouger le placeholder que si la cible a changé
     if (insertBefore === null) {
       if (placeholder.parentNode !== container || placeholder.nextSibling !== null) {
         container.appendChild(placeholder);
@@ -1852,7 +1875,6 @@ function setupDrop(container, tierId){
       container.appendChild(fragment);
     }
 
-    // Reset snapshot
     cardSnapshot = [];
     snapshotContainer = null;
 
@@ -1899,40 +1921,74 @@ function editSong(id){
 }
 
 async function addSong(){
-  const artist = document.getElementById("artistInput").value.trim();
-  const title = document.getElementById("titleInput").value.trim();
-  if(!artist || !title) return;
+  const rawArtist = document.getElementById("artistInput").value.trim();
+  const rawTitle = document.getElementById("titleInput").value.trim();
+  if(!rawArtist || !rawTitle) return;
 
   const btn = document.querySelector('.btn-primary');
   const originalText = btn.innerText;
   btn.innerText = "Recherche...";
 
-  let cover = "";
-  try {
-    const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + " " + title)}&entity=song&limit=1`);
-    const json = await res.json();
-    cover = json.results[0]?.artworkUrl100?.replace("100x100", "300x300") || "";
-  } catch(e) {}
+  let mainArtist = rawArtist;
+  let displayTitle = rawTitle;
 
-  if(!cover) cover = `https://ui-avatars.com/api/?name=${encodeURIComponent(artist)}&background=random&color=fff&size=300&font-size=0.33`;
+  // Détection du feat pour isoler l'artiste principal (ex: "YB feat Xdinary Heroes" -> YB)
+  const featRegex = /\s+(feat\.?|ft\.?)\s+(.*)/i;
+  const match = rawArtist.match(featRegex);
+  if(match) {
+    mainArtist = rawArtist.substring(0, match.index).trim();
+    displayTitle = rawTitle + ` (feat. ${match[2].trim()})`;
+  }
+
+  let cover = "";
+  let previewUrl = null;
+  let hasPreview = true;
+
+  try {
+    const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(mainArtist + " " + displayTitle)}&entity=song&limit=1`);
+    const json = await res.json();
+    if(json.results && json.results.length > 0) {
+      cover = json.results[0].artworkUrl100?.replace("100x100", "300x300") || "";
+      previewUrl = json.results[0].previewUrl || null;
+      hasPreview = !!previewUrl;
+    } else {
+      hasPreview = false;
+    }
+  } catch(e) { 
+    console.warn("Erreur recherche API:", e);
+    // On laisse hasPreview à true/null pour retenter plus tard si c'est juste une erreur réseau
+  }
+
+  if(!cover) cover = `https://ui-avatars.com/api/?name=${encodeURIComponent(mainArtist)}&background=random&color=fff&size=300&font-size=0.33`;
 
   let youtubeUrl = "";
   if(YOUTUBE_API_KEY) {
     try {
-      const query = `${artist} ${title} Official MV`;
+      const query = `${mainArtist} ${displayTitle} Official MV`;
       const ytRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
       const ytJson = await ytRes.json();
       if(ytJson.items && ytJson.items.length > 0) {
         youtubeUrl = `https://www.youtube.com/watch?v=${ytJson.items[0].id.videoId}`;
       } else throw new Error("No video");
-    } catch(e) { youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`; }
+    } catch(e) { youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(mainArtist + " " + displayTitle + " official mv")}`; }
   } else {
-    youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(artist + " " + title + " official mv")}`;
+    youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(mainArtist + " " + displayTitle + " official mv")}`;
   }
 
-  // Use active session
   const sessionId = getCurrentSessionId();
-  const newSong = { id: generateUniqueId(), artist, title, cover, youtubeUrl, favorite: false, sessionId, chatRating: null };
+  const newSong = { 
+    id: generateUniqueId(), 
+    artist: mainArtist, 
+    title: displayTitle, 
+    cover, 
+    youtubeUrl, 
+    favorite: false, 
+    sessionId, 
+    chatRating: null,
+    previewUrl,
+    hasPreview 
+  };
+  
   data.pool.push(newSong);
   save();
 
@@ -1944,7 +2000,7 @@ async function addSong(){
   btn.innerText = originalText;
   filterCards();
 
-  if(pollsEnabled) startTwitchVote(newSong.id, `${artist} - ${title}`);
+  if(pollsEnabled) startTwitchVote(newSong.id, `${mainArtist} - ${displayTitle}`);
 }
 
 function addTier(){
