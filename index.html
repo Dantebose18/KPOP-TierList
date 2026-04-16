@@ -675,10 +675,6 @@ body.edit-active .card-tools button { pointer-events: auto; }
 <div id="sessionsModal" class="modal-overlay" onclick="closeModal(event)">
   <div class="modal-content" style="max-width: 600px;">
     <h2>📅 Sessions</h2>
-    <div class="modal-tabs">
-      <button class="modal-tab active" onclick="switchSessionTab('manage')">Gérer</button>
-      <button class="modal-tab" onclick="switchSessionTab('history')">Historique</button>
-    </div>
     <div class="modal-body-scroll" id="sessionsBody"></div>
     <div style="margin-top: 15px; text-align: right;">
       <button onclick="document.getElementById('sessionsModal').style.display='none'">Fermer</button>
@@ -728,7 +724,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
   </div>
   <div class="player-volume-row">
     <span>🔈</span>
-    <input type="range" id="volumeSlider" min="0" max="100" value="40" oninput="setVolume(this.value)">
+    <input type="range" id="volumeSlider" min="0" max="100" value="20" oninput="setVolume(this.value)">
     <span>🔊</span>
   </div>
 </div>
@@ -751,16 +747,14 @@ let twitchVisible = false;
 let pollsEnabled = false;
 let currentDragAfter = undefined;
 let selectedIds = new Set();
-let currentSessionTabView = 'manage';
-
 // --- AUDIO PREVIEW ---
 let currentPlayingId = null;
 const audio = document.getElementById('previewAudio');
 const volumeSlider = document.getElementById('volumeSlider');
-audio.volume = 0.4;
+audio.volume = 0.2;
 
 // Update range background on load
-updateSliderBg(40);
+updateSliderBg(20);
 
 function updateSliderBg(val) {
   volumeSlider.style.setProperty('--vol-pct', val + '%');
@@ -1121,35 +1115,21 @@ function showFavorites() {
 
 function showSessionsModal() {
   document.getElementById('sessionsModal').style.display = 'flex';
-  renderSessionTab(currentSessionTabView);
+  renderSessions();
 }
 
-function switchSessionTab(tab) {
-  currentSessionTabView = tab;
-  document.querySelectorAll('#sessionsModal .modal-tab').forEach((btn, i) => {
-    btn.classList.toggle('active', (i === 0 && tab === 'manage') || (i === 1 && tab === 'history'));
-  });
-  renderSessionTab(tab);
-}
-
-function renderSessionTab(tab) {
+function renderSessions() {
   const body = document.getElementById('sessionsBody');
-  if (tab === 'manage') renderManageSessions(body);
-  else renderSessionHistory(body);
-}
-
-function renderManageSessions(body) {
   const sessions = data.sessions || {};
   const activeId = data.activeSessionId;
-  const activeSession = sessions[activeId];
 
   let html = `<div class="new-session-form">
     <div style="font-weight:700; font-size:13px; margin-bottom:8px; color: var(--accent-primary);">➕ Nouvelle session</div>
-    <input type="text" id="newSessionName" placeholder="Nom de la session (ex: Janvier 2025)" style="">
+    <input type="text" id="newSessionName" placeholder="Nom de la session (ex: Janvier 2025)">
     <button class="btn-primary" style="width:100%; justify-content:center;" onclick="createNewSession()">Créer et activer cette session</button>
   </div>`;
 
-  html += `<div class="stat-title" style="margin-top:4px;">Sessions existantes</div>`;
+  html += `<div class="stat-title" style="margin-top:4px;">Sessions existantes — cliquer pour voir les stats</div>`;
 
   const sessionIds = Object.keys(sessions).sort((a, b) => (sessions[b].createdAt || 0) - (sessions[a].createdAt || 0));
 
@@ -1160,45 +1140,23 @@ function renderManageSessions(body) {
   sessionIds.forEach(sid => {
     const sess = sessions[sid];
     const isActive = sid === activeId;
-    const songCount = getSongsForSession(sid).length;
-    html += `<div class="history-session" style="${isActive ? 'border-color: var(--accent-primary); background: rgba(99,102,241,0.08);' : ''}">
+    const stats = calcSessionStats(sid);
+
+    html += `<div class="history-session" style="${isActive ? 'border-color: var(--accent-primary); background: rgba(99,102,241,0.08);' : ''}" onclick="toggleHistoryDetail('detail-${sid}')">
       <div class="session-head">
         <span class="session-name">${isActive ? '▶ ' : ''}${sess.name || sid}</span>
-        ${isActive ? '<span style="font-size:11px; background:var(--accent-gradient); color:white; padding:2px 8px; border-radius:20px;">Active</span>' : ''}
+        <div style="display:flex; align-items:center; gap:6px;">
+          ${stats.avg !== null ? `<span class="session-avg-badge">${stats.avg} / 10</span>` : ''}
+          ${isActive ? '<span style="font-size:11px; background:var(--accent-gradient); color:white; padding:2px 8px; border-radius:20px;">Active</span>' : ''}
+        </div>
       </div>
-      <div class="session-meta">${songCount} chanson(s) classée(s)</div>
-      <div class="session-actions">
+      <div class="session-meta">${stats.count} chanson(s) classée(s)</div>
+      <div class="session-actions" onclick="event.stopPropagation()">
         ${!isActive ? `<button class="session-action-btn btn-primary" onclick="activateSession('${sid}')">Activer</button>` : ''}
         <button class="session-action-btn" onclick="renameSession('${sid}')">✎ Renommer</button>
         ${sessionIds.length > 1 ? `<button class="session-action-btn" onclick="showMergeUI('${sid}')">⊕ Fusionner</button>` : ''}
         ${!isActive ? `<button class="session-action-btn btn-danger" onclick="deleteSession('${sid}')">✕ Supprimer</button>` : ''}
       </div>
-    </div>`;
-  });
-
-  body.innerHTML = html;
-}
-
-function renderSessionHistory(body) {
-  const sessions = data.sessions || {};
-  const sessionIds = Object.keys(sessions).sort((a, b) => (sessions[b].createdAt || 0) - (sessions[a].createdAt || 0));
-  
-  if (sessionIds.length === 0) {
-    body.innerHTML = '<div style="opacity:0.5; text-align:center; padding:20px;">Aucune session.</div>';
-    return;
-  }
-
-  let html = '';
-  sessionIds.forEach(sid => {
-    const sess = sessions[sid];
-    const stats = calcSessionStats(sid);
-    const isActive = sid === data.activeSessionId;
-    html += `<div class="history-session" onclick="toggleHistoryDetail('detail-${sid}')">
-      <div class="session-head">
-        <span class="session-name">${isActive ? '▶ ' : ''}${sess.name || sid}</span>
-        <span class="session-avg-badge">${stats.avg !== null ? stats.avg + ' / 10' : 'N/A'}</span>
-      </div>
-      <div class="session-meta">${stats.count} chanson(s) • Moy. ${stats.avg !== null ? stats.avg + '/10' : '—'}</div>
       <div class="history-session-detail" id="detail-${sid}">
         ${renderSessionDetail(sid, stats)}
       </div>
@@ -1292,13 +1250,13 @@ function createNewSession() {
   data.activeSessionId = id;
   save();
   nameInput.value = '';
-  renderSessionTab('manage');
+  renderSessions();
 }
 
 function activateSession(sid) {
   data.activeSessionId = sid;
   save();
-  renderSessionTab('manage');
+  renderSessions();
 }
 
 function renameSession(sid) {
@@ -1307,7 +1265,7 @@ function renameSession(sid) {
   if (newName && newName.trim()) {
     data.sessions[sid].name = newName.trim();
     save();
-    renderSessionTab(currentSessionTabView);
+    renderSessions();
   }
 }
 
@@ -1325,7 +1283,7 @@ function deleteSession(sid) {
     }
   }
   save();
-  renderSessionTab(currentSessionTabView);
+  renderSessions();
 }
 
 function showMergeUI(sid) {
@@ -1348,12 +1306,13 @@ function showMergeUI(sid) {
   });
   
   // Delete merged session
+  const mergedName = sessions[sid]?.name || sid;
   delete data.sessions[sid];
   if (data.activeSessionId === sid) data.activeSessionId = targetId;
   
   save();
-  alert(`${count} chanson(s) déplacée(s) vers "${sessions[targetId].name || targetId}". Session "${sessions[sid]?.name || sid}" supprimée.`);
-  renderSessionTab(currentSessionTabView);
+  alert(`${count} chanson(s) déplacée(s) vers "${sessions[targetId].name || targetId}". Session "${mergedName}" supprimée.`);
+  renderSessions();
 }
 
 // --- STATS ---
@@ -1736,17 +1695,18 @@ function updateCounters() {
 }
 
 // =============================================
-// DRAG & DROP — VERSION CORRIGÉE
-// Le bug de clignotement/téléportation venait de:
-// 1. La mise à jour du placeholder trop fréquente
-// 2. La logique getDragAfterElement qui ignorait les cartes sur la même ligne
+// DRAG & DROP — ALGORITHME STABLE
+// Principe : on cherche l'élément IMMÉDIATEMENT
+// après le curseur dans l'ordre DOM, en comparant
+// chaque carte avec la position (x, y) du curseur.
+// On tient compte du wrapping en traitant chaque
+// ligne séparément (groupées par top approximatif).
 // =============================================
 
 function setupDrop(container, tierId){
   container.addEventListener("dragover", e => {
     e.preventDefault();
     if(selectedIds.size === 0 && !draggedId) return;
-    if(e.target.classList.contains('placeholder') || e.target.classList.contains('dragging')) return;
 
     if(!placeholder) {
       placeholder = document.createElement("div");
@@ -1756,22 +1716,28 @@ function setupDrop(container, tierId){
 
     const after = getDragAfterElement(container, e.clientX, e.clientY);
 
-    if (after !== currentDragAfter) {
-      currentDragAfter = after;
-      if(after == null) {
+    // Seulement bouger le placeholder si la position a changé
+    // On compare les références des noeuds DOM
+    const placeholderNext = placeholder.nextSibling;
+    const placeholderParent = placeholder.parentNode;
+
+    if (after === null) {
+      // Insérer à la fin — vérifier qu'il n'est pas déjà à la fin
+      if (placeholderParent !== container || placeholderNext !== null) {
         container.appendChild(placeholder);
-      } else {
+      }
+    } else {
+      // Insérer avant `after` — vérifier qu'il n'est pas déjà là
+      if (placeholderParent !== container || placeholderNext !== after) {
         container.insertBefore(placeholder, after);
       }
     }
   });
 
   container.addEventListener("dragleave", e => {
-    // Only remove placeholder if truly leaving the container (not entering a child)
     if (!container.contains(e.relatedTarget)) {
       if (placeholder && placeholder.parentNode === container) {
         placeholder.remove();
-        currentDragAfter = undefined;
       }
     }
   });
@@ -1808,57 +1774,62 @@ function setupDrop(container, tierId){
 }
 
 function getDragAfterElement(container, x, y) {
-  // Get all non-dragging cards
+  // On prend toutes les cartes non-draggées et non-placeholder
   const cards = [...container.querySelectorAll('.card:not(.dragging):not(.placeholder)')];
-  
   if (cards.length === 0) return null;
 
-  // Find which row the cursor is on (within ±card_height tolerance)
-  // and then find the correct insertion point
-  
-  let bestCandidate = null;
-  let bestScore = Infinity;
-
+  // Grouper les cartes par lignes (même top approximatif ± 20px)
+  const rows = [];
   for (const card of cards) {
     const box = card.getBoundingClientRect();
-    const cardCenterX = box.left + box.width / 2;
-    const cardCenterY = box.top + box.height / 2;
+    const cardTop = Math.round(box.top);
+    // Chercher une ligne existante proche
+    let row = rows.find(r => Math.abs(r.top - cardTop) < 30);
+    if (!row) {
+      row = { top: cardTop, cards: [] };
+      rows.push(row);
+    }
+    row.cards.push({ el: card, box });
+  }
 
-    // Vertical distance to this card's row
-    const vertDist = Math.abs(y - cardCenterY);
-    // Horizontal: is cursor to the LEFT of this card's center?
-    const horizDist = cardCenterX - x;
+  // Trier les lignes par position verticale
+  rows.sort((a, b) => a.top - b.top);
 
-    // We want: cards that are on the same row (vertDist small),
-    // and cursor is to their left (horizDist > 0)
-    // Score = vertical distance * 1000 + horizDist
-    if (vertDist < box.height * 0.75 && horizDist > 0) {
-      const score = vertDist * 1000 + horizDist;
-      if (score < bestScore) {
-        bestScore = score;
-        bestCandidate = card;
-      }
+  // Trouver la ligne la plus proche du curseur
+  let targetRow = null;
+  let minVertDist = Infinity;
+  for (const row of rows) {
+    // Utiliser la première carte de la ligne pour avoir sa hauteur
+    const rowBox = row.cards[0].box;
+    const rowMidY = rowBox.top + rowBox.height / 2;
+    const dist = Math.abs(y - rowMidY);
+    if (dist < minVertDist) {
+      minVertDist = dist;
+      targetRow = row;
     }
   }
 
-  // If no card found on the same row to the right,
-  // check if cursor is below all cards → append at end (return null)
-  // Or if cursor is on a new row below the last card
-  if (bestCandidate === null) {
-    // Find the last card's bottom
-    const lastCard = cards[cards.length - 1];
-    const lastBox = lastCard.getBoundingClientRect();
-    
-    // If cursor is clearly below the last row, append at end
-    if (y > lastBox.bottom) return null;
+  if (!targetRow) return null;
 
-    // Otherwise cursor might be to the right of all cards on a row
-    // Find which row the cursor is on and return null (append at end of that row)
-    // which effectively means appending to container
-    return null;
+  // Dans la ligne cible, trouver la première carte dont le centre X est > curseur X
+  for (const { el, box } of targetRow.cards) {
+    const cardMidX = box.left + box.width / 2;
+    if (x < cardMidX) {
+      return el; // Insérer AVANT cette carte
+    }
   }
 
-  return bestCandidate;
+  // Le curseur est à droite de toutes les cartes de cette ligne.
+  // → Est-ce la dernière ligne ?
+  const isLastRow = targetRow === rows[rows.length - 1];
+  if (isLastRow) {
+    // Insérer à la fin du container
+    return null;
+  } else {
+    // Insérer avant la première carte de la ligne suivante
+    const nextRowIndex = rows.indexOf(targetRow) + 1;
+    return rows[nextRowIndex].cards[0].el;
+  }
 }
 
 function removeSong(id){
