@@ -55,6 +55,7 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--accent-primary); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent-secondary); }
 
+/* --- HEADER RESTRUCTURÉ --- */
 header {
   position: sticky;
   top: 0;
@@ -63,14 +64,16 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 15px;
   background: var(--card-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: var(--card-border);
   box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
 }
+
+.header-left { flex: 1; display: flex; justify-content: flex-start; }
+.header-center { flex: 1; display: flex; justify-content: center; }
+.header-right { flex: 1; display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
 
 .logo {
   font-weight: 800;
@@ -81,20 +84,20 @@ header {
   letter-spacing: -0.5px;
 }
 
-.header-btns { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 .search-container { position: relative; display: flex; align-items: center; }
 
 #searchBar {
   background: rgba(128,128,128,0.1);
-  border: var(--card-border);
-  padding: 8px 25px 8px 15px;
+  border: 1px solid rgba(128,128,128,0.2);
+  padding: 8px 30px 8px 15px;
   border-radius: 20px;
   color: var(--text-main);
-  width: 160px;
+  width: 200px;
   transition: all 0.3s ease;
   font-size: 13px;
+  text-align: center;
 }
-#searchBar:focus { width: 240px; background: rgba(255,255,255,0.15); box-shadow: 0 0 0 2px var(--accent-primary); }
+#searchBar:focus { width: 280px; background: rgba(255,255,255,0.15); box-shadow: 0 0 0 2px var(--accent-primary); }
 #searchBar::placeholder { color: var(--text-muted); opacity: 0.7; }
 #clearSearchBtn { position: absolute; right: 10px; cursor: pointer; display: none; color: var(--text-muted); font-size: 14px; }
 
@@ -157,12 +160,12 @@ input[type="text"] {
 input[type="text"]:focus { background: rgba(100,100,100,0.05); }
 input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 
-/* --- BUTTON GROUPS (nouveau menu rétractable) --- */
+/* --- BUTTON GROUPS (Menu Rétractable Amélioré) --- */
 .btn-group {
   display: inline-flex;
   align-items: center;
-  background: rgba(128,128,128,0.07);
-  border: var(--card-border);
+  background: rgba(128,128,128,0.04);
+  border: 1px solid rgba(128,128,128,0.15);
   border-radius: var(--radius-sm);
   overflow: hidden;
   flex-shrink: 0;
@@ -171,29 +174,32 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 
 .btn-group-label {
   font-family: 'Outfit', sans-serif;
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--accent-primary);
-  background: rgba(99, 102, 241, 0.08);
-  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-main);
+  background: transparent;
+  padding: 0 16px;
   border: none;
   cursor: pointer;
   border-right: 1px solid transparent;
   align-self: stretch;
   display: flex;
   align-items: center;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   white-space: nowrap;
   height: 100%;
-  min-height: 34px; /* Fix pour alignement correct */
+  min-height: 34px;
 }
 
-.btn-group.open .btn-group-label, .btn-group-label:hover {
+.btn-group-label:hover {
+  background: rgba(128,128,128,0.08);
+}
+
+.btn-group.open .btn-group-label {
   background: var(--accent-gradient);
   color: white;
   border-right-color: rgba(255,255,255,0.2);
+  font-weight: 800;
 }
 
 .group-content {
@@ -202,11 +208,11 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   max-width: 0;
   opacity: 0;
   overflow: hidden;
-  transition: max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
 }
 
 .btn-group.open .group-content {
-  max-width: 500px; /* Ajustement automatique via CSS */
+  max-width: 500px;
   opacity: 1;
 }
 
@@ -229,7 +235,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   white-space: nowrap;
 }
 .group-btn:last-child { border-right: none; }
-.group-btn:hover { background: rgba(99,102,241,0.12); color: var(--accent-primary); transform: none; box-shadow: none; }
+.group-btn:hover { background: rgba(128,128,128,0.08); color: var(--accent-primary); transform: none; box-shadow: none; }
 .group-btn svg { flex-shrink: 0; opacity: 0.8; }
 .group-btn.active-state { background: rgba(99,102,241,0.15); color: var(--accent-primary); }
 
@@ -354,13 +360,14 @@ iframe.twitch-iframe { flex: 1; width: 100%; border: none; border-bottom-left-ra
 #twitchVoteOverlay button:hover { background: #772ce8; }
 
 @media (max-width: 1750px) { .twitch-sidebar, .sommaire-sidebar { display: none !important; } }
-@media (max-width: 768px) {
-  header { flex-direction: column; padding: 10px 15px; align-items: stretch; }
-  .logo { text-align: center; margin-bottom: 5px; }
-  .header-btns { justify-content: center; }
-  .search-container { width: 100%; margin-bottom: 10px; }
-  #searchBar { width: 100% !important; }
+@media (max-width: 900px) {
+  header { flex-direction: column; gap: 15px; padding: 15px; }
+  .header-left, .header-center, .header-right { width: 100%; justify-content: center; }
+  .search-container { width: 100%; max-width: 400px; }
+  #searchBar { width: 100% !important; text-align: left; }
   .desktop-only { display: none; }
+}
+@media (max-width: 768px) {
   .input-section { flex-direction: column; margin: 20px auto; }
   .input-section > div { display: none; }
   .main { padding: 0 10px 240px 10px; }
@@ -698,14 +705,19 @@ body.edit-active .card-tools button { pointer-events: auto; }
 <body class="dark">
 
 <header>
-  <div class="logo">K-TIER ✨</div>
-  <div class="header-btns">
+  <div class="header-left">
+    <div class="logo">K-TIER ✨</div>
+  </div>
+  
+  <div class="header-center">
     <div class="search-container">
       <input type="text" id="searchBar" placeholder="🔍 Filtrer artiste/titre..." oninput="filterCards()">
       <span id="clearSearchBtn" onclick="clearSearch()">✖</span>
     </div>
+  </div>
 
-    <div class="btn-group desktop-only" id="menu-donnees">
+  <div class="header-right desktop-only">
+    <div class="btn-group" id="menu-donnees">
       <button class="btn-group-label" onclick="toggleMenu('menu-donnees', event)">Données</button>
       <div class="group-content">
         <button onclick="exportJson()" title="Sauvegarder en JSON" class="group-btn">
@@ -723,7 +735,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
       </div>
     </div>
 
-    <div class="btn-group desktop-only" id="menu-affichage">
+    <div class="btn-group" id="menu-affichage">
       <button class="btn-group-label" onclick="toggleMenu('menu-affichage', event)">Affichage</button>
       <div class="group-content">
         <button onclick="toggleDark()" id="darkBtn" title="Thème Sombre/Clair" class="group-btn">
@@ -741,7 +753,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
       </div>
     </div>
 
-    <div class="btn-group desktop-only" id="menu-twitch">
+    <div class="btn-group" id="menu-twitch">
       <button class="btn-group-label" onclick="toggleMenu('menu-twitch', event)">Twitch</button>
       <div class="group-content">
         <button onclick="toggleTwitch()" title="Afficher/Cacher le Tchat" class="group-btn">
@@ -755,7 +767,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
       </div>
     </div>
 
-    <div class="btn-group desktop-only" id="menu-outils">
+    <div class="btn-group" id="menu-outils">
       <button class="btn-group-label" onclick="toggleMenu('menu-outils', event)">Outils</button>
       <div class="group-content">
         <button onclick="forceSync()" title="Rafraîchir les données et images des cartes" class="group-btn">
@@ -773,7 +785,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
       </div>
     </div>
 
-    <div class="btn-group desktop-only" id="menu-analyses">
+    <div class="btn-group" id="menu-analyses">
       <button class="btn-group-label" onclick="toggleMenu('menu-analyses', event)">Analyses</button>
       <div class="group-content">
         <button onclick="showFavorites()" title="Mes Favoris" class="group-btn btn-group-fav">
@@ -924,16 +936,23 @@ let pollsEnabled = false;
 let currentDragAfter = undefined;
 let selectedIds = new Set();
 
-// --- GESTION MENUS DÉROULANTS ---
+// --- GESTION MENUS DÉROULANTS (SÉQUENTIELLE) ---
 function toggleMenu(groupId, event) {
   event.stopPropagation();
-  document.querySelectorAll('.btn-group').forEach(group => {
-    if (group.id === groupId) {
-      group.classList.toggle('open');
-    } else {
-      group.classList.remove('open');
-    }
-  });
+  const targetGroup = document.getElementById(groupId);
+  const currentlyOpen = document.querySelector('.btn-group.open');
+
+  if (currentlyOpen && currentlyOpen.id !== groupId) {
+    // Si un autre menu est ouvert, on le ferme d'abord
+    currentlyOpen.classList.remove('open');
+    // On attend la fin de l'animation CSS (300ms) pour ouvrir le nouveau
+    setTimeout(() => {
+      targetGroup.classList.add('open');
+    }, 300);
+  } else {
+    // Sinon, on l'ouvre ou on le ferme normalement
+    targetGroup.classList.toggle('open');
+  }
 }
 
 // Fermer les menus en cliquant en dehors
@@ -1264,7 +1283,7 @@ async function syncCovers() {
     syncBadge = document.createElement("div");
     syncBadge.id = "syncBadge";
     syncBadge.style = "font-size: 13px; font-weight: 600; background: var(--accent-secondary); color: white; padding: 6px 14px; border-radius: 20px; margin-right: 10px; white-space: nowrap; box-shadow: 0 2px 10px rgba(236, 72, 153, 0.4);";
-    document.querySelector(".header-btns").prepend(syncBadge);
+    document.querySelector(".header-right").prepend(syncBadge);
   }
 
   for (let i = 0; i < toSync.length; i++) {
