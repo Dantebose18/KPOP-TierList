@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KPOP Tier List</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/tmi.js@1.8.5/dist/tmi.min.js"></script>
 
@@ -101,11 +102,13 @@ header {
 #searchBar::placeholder { color: var(--text-muted); opacity: 0.7; }
 #clearSearchBtn { position: absolute; right: 10px; cursor: pointer; display: none; color: var(--text-muted); font-size: 14px; }
 
+/* Nouveau design de base des boutons */
 button {
-  padding: 8px 14px;
-  border-radius: var(--radius-sm);
-  border: var(--card-border);
-  background: var(--card-bg);
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(128,128,128,0.2);
+  background: rgba(128,128,128,0.05);
+  backdrop-filter: blur(4px);
   color: var(--text-main);
   font-size: 13px;
   font-weight: 600;
@@ -118,7 +121,7 @@ button {
   gap: 6px;
 }
 
-button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); background: rgba(255,255,255,0.1); }
+button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); background: rgba(128,128,128,0.1); }
 
 .btn-primary {
   background: var(--accent-gradient);
@@ -128,7 +131,7 @@ button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.
   padding: 10px 18px;
   font-size: 14px;
 }
-.btn-primary:hover { box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4); background: linear-gradient(135deg, #4f46e5 0%, #db2777 100%); }
+.btn-primary:hover { box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4); background: linear-gradient(135deg, #4f46e5 0%, #db2777 100%); color: white; }
 .btn-danger { color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
 .btn-danger:hover { background: rgba(239, 68, 68, 0.1); }
 .icon-btn { padding: 8px 12px; font-size: 16px; }
@@ -160,23 +163,30 @@ input[type="text"] {
 input[type="text"]:focus { background: rgba(100,100,100,0.05); }
 input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 
-/* --- BUTTON GROUPS (Menu Rétractable Amélioré) --- */
+/* --- BUTTON GROUPS (Menu Rétractable Refait à neuf) --- */
 .btn-group {
   display: inline-flex;
   align-items: center;
-  background: rgba(128,128,128,0.04);
-  border: 1px solid rgba(128,128,128,0.15);
-  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.08); /* Effet verre dépoli */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  border-radius: 20px; /* Forme de pilule */
   overflow: hidden;
   flex-shrink: 0;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+body.dark .btn-group {
+  background: rgba(0, 0, 0, 0.2); /* Verre dépoli sombre */
 }
 
 .btn-group-label {
   font-family: 'Outfit', sans-serif;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
-  color: var(--text-main);
+  color: var(--text-main); /* Couleur standard au lieu du violet */
   background: transparent;
   padding: 0 16px;
   border: none;
@@ -188,18 +198,17 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   transition: all 0.2s ease;
   white-space: nowrap;
   height: 100%;
-  min-height: 34px;
+  min-height: 38px;
 }
 
 .btn-group-label:hover {
-  background: rgba(128,128,128,0.08);
+  background: rgba(128,128,128,0.1);
 }
 
 .btn-group.open .btn-group-label {
   background: var(--accent-gradient);
   color: white;
   border-right-color: rgba(255,255,255,0.2);
-  font-weight: 800;
 }
 
 .group-content {
@@ -220,7 +229,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 7px 10px;
+  padding: 7px 12px;
   border: none;
   border-right: 1px solid rgba(128,128,128,0.1);
   background: transparent;
@@ -234,15 +243,16 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   font-family: 'Outfit', sans-serif;
   white-space: nowrap;
 }
-.group-btn:last-child { border-right: none; }
+.group-btn:last-child { 
+  border-right: none; 
+  padding-right: 18px; /* Plus d'espace à la fin de la pilule */
+}
 .group-btn:hover { background: rgba(128,128,128,0.08); color: var(--accent-primary); transform: none; box-shadow: none; }
 .group-btn svg { flex-shrink: 0; opacity: 0.8; }
 .group-btn.active-state { background: rgba(99,102,241,0.15); color: var(--accent-primary); }
 
 .btn-group-danger { color: #ef4444 !important; }
 .btn-group-danger:hover { background: rgba(239, 68, 68, 0.1) !important; color: #ef4444 !important; }
-.btn-group-primary { background: var(--accent-gradient) !important; color: white !important; }
-.btn-group-primary:hover { opacity: 0.85; color: white !important; }
 .btn-group-fav { color: var(--accent-fav) !important; }
 .btn-group-fav:hover { background: rgba(236, 72, 153, 0.1) !important; }
 
@@ -273,7 +283,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   letter-spacing: 0.3px;
 }
 .scroll-top-btn.visible { opacity: 1; visibility: visible; }
-.scroll-top-btn:hover { transform: translateY(-3px) !important; box-shadow: 0 8px 24px rgba(236, 72, 153, 0.5) !important; }
+.scroll-top-btn:hover { transform: translateY(-3px) !important; box-shadow: 0 8px 24px rgba(236, 72, 153, 0.5) !important; color: white; }
 
 .main { max-width: 1320px; margin: auto; padding: 0 20px 240px 20px; }
 
@@ -357,7 +367,7 @@ iframe.twitch-iframe { flex: 1; width: 100%; border: none; border-bottom-left-ra
   text-align: center; color: var(--text-main); min-width: 300px;
 }
 #twitchVoteOverlay button { margin-top: 10px; background: #9146FF; color: white; border: none; width: 100%; justify-content: center; }
-#twitchVoteOverlay button:hover { background: #772ce8; }
+#twitchVoteOverlay button:hover { background: #772ce8; color: white; }
 
 @media (max-width: 1750px) { .twitch-sidebar, .sommaire-sidebar { display: none !important; } }
 @media (max-width: 900px) {
@@ -413,8 +423,8 @@ iframe.twitch-iframe { flex: 1; width: 100%; border: none; border-bottom-left-ra
 }
 
 .tier-controls { display: flex; gap: 8px; align-items: center; z-index: 2; }
-.tier-controls button { background: rgba(0,0,0,0.2); border: none; color: white; padding: 6px 10px; font-size: 12px; border-radius: 6px; backdrop-filter: blur(4px); }
-.tier-controls button:hover { background: rgba(0,0,0,0.4); }
+.tier-controls button { background: rgba(0,0,0,0.2); border: none; color: white; padding: 6px 10px; font-size: 12px; border-radius: 6px; backdrop-filter: blur(4px); box-shadow: none; }
+.tier-controls button:hover { background: rgba(0,0,0,0.4); transform: none; box-shadow: none; color: white; }
 
 .color-picker-wrapper { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 5px rgba(0,0,0,0.2); overflow: hidden; position: relative; cursor: pointer; transition: transform 0.2s; }
 .color-picker-wrapper:hover { transform: scale(1.1); }
@@ -451,10 +461,17 @@ body.edit-active .fav-badge { display: none !important; }
   100% { box-shadow: 0 0 25px var(--accent-fav), inset 0 0 15px rgba(236, 72, 153, 0.6); border-color: var(--accent-fav); }
 }
 
-/* Pendant le drag : on désactive les transitions sur toutes les cartes pour éviter le clignotement */
+/* FIX DU PLACEHOLDER DRAG & DROP : On retire la carte d'origine du layout pendant qu'on la drag */
 body.is-dragging .card { transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s !important; }
 body.is-dragging .cards { transition: none !important; }
-.card.dragging { opacity: 0.35; transform: scale(0.93); pointer-events: none; }
+
+.card.dragging {
+  opacity: 0 !important;
+  position: absolute !important;
+  pointer-events: none !important;
+  margin: 0 !important;
+  transform: scale(0) !important;
+}
 
 #tiers .card:hover:not(.dragging) { transform: scale(1.15) translateY(-5px); z-index: 50; box-shadow: 0 20px 30px rgba(0,0,0,0.25); border-color: var(--accent-secondary); }
 .card.is-favorite:hover:not(.dragging) { border-color: var(--accent-fav); }
@@ -521,7 +538,7 @@ body.compact-active .card:hover .card-overlay { top: auto; bottom: 0; background
   border-radius: 50%; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
   transition: transform 0.1s, background 0.2s; padding-bottom: 2px;
 }
-.card-tools button:hover { background: var(--accent-secondary); transform: scale(1.1); }
+.card-tools button:hover { background: var(--accent-secondary); transform: scale(1.1); color: white; }
 .card-tools button.active-fav { color: var(--accent-fav); background: rgba(0,0,0,0.8); border-color: var(--accent-fav); }
 
 .placeholder {
@@ -628,7 +645,7 @@ input[type="range"]::-webkit-slider-thumb {
 /* Modal tabs */
 .modal-tabs { display: flex; gap: 4px; margin-bottom: 16px; background: rgba(128,128,128,0.1); padding: 4px; border-radius: var(--radius-sm); }
 .modal-tab { flex: 1; padding: 8px; border: none; background: transparent; color: var(--text-muted); font-size: 13px; font-weight: 600; border-radius: 6px; cursor: pointer; transition: all 0.2s; box-shadow: none; transform: none !important; }
-.modal-tab:hover { background: rgba(128,128,128,0.15); box-shadow: none; transform: none !important; }
+.modal-tab:hover { background: rgba(128,128,128,0.15); box-shadow: none; transform: none !important; color: var(--text-main); }
 .modal-tab.active { background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 
 .stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; border-bottom: 1px solid rgba(128,128,128,0.1); padding-bottom: 5px; }
@@ -778,9 +795,9 @@ body.edit-active .card-tools button { pointer-events: auto; }
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           Édition
         </button>
-        <button onclick="addTier()" title="Ajouter un Tier" class="group-btn btn-group-primary">
+        <button onclick="addTier()" title="Ajouter un Tier" class="group-btn" style="color: var(--accent-primary);">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          + Tier
+          Tier
         </button>
       </div>
     </div>
@@ -943,19 +960,15 @@ function toggleMenu(groupId, event) {
   const currentlyOpen = document.querySelector('.btn-group.open');
 
   if (currentlyOpen && currentlyOpen.id !== groupId) {
-    // Si un autre menu est ouvert, on le ferme d'abord
     currentlyOpen.classList.remove('open');
-    // On attend la fin de l'animation CSS (300ms) pour ouvrir le nouveau
     setTimeout(() => {
       targetGroup.classList.add('open');
     }, 300);
   } else {
-    // Sinon, on l'ouvre ou on le ferme normalement
     targetGroup.classList.toggle('open');
   }
 }
 
-// Fermer les menus en cliquant en dehors
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.btn-group')) {
     document.querySelectorAll('.btn-group').forEach(group => group.classList.remove('open'));
@@ -968,9 +981,6 @@ let currentPlayingId = null;
 const audio = document.getElementById('previewAudio');
 const volumeSlider = document.getElementById('volumeSlider');
 audio.volume = 0.15;
-
-// Update range background on load
-updateSliderBg(15);
 
 function updateSliderBg(val) {
   volumeSlider.style.setProperty('--vol-pct', val + '%');
@@ -2006,11 +2016,13 @@ function createCard(song){
     }
     draggedId = song.id;
     document.body.classList.add("is-dragging");
-    selectedIds.forEach(id => {
-      const c = document.getElementById(`card-${id}`);
-      if(c) setTimeout(() => c.classList.add("dragging"), 0);
-    });
+    
+    // Le setTimeout permet au navigateur de "capturer" l'image fantôme de la carte avant de la cacher
     setTimeout(() => {
+      selectedIds.forEach(id => {
+        const c = document.getElementById(`card-${id}`);
+        if(c) c.classList.add("dragging");
+      });
       const parentContainer = card.closest('.cards, .pool');
       if (parentContainer) captureSnapshot(parentContainer);
     }, 0);
