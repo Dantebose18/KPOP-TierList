@@ -157,36 +157,97 @@ input[type="text"] {
 input[type="text"]:focus { background: rgba(100,100,100,0.05); }
 input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 
+/* --- BUTTON GROUPS (nouveau menu) --- */
+.btn-group {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(128,128,128,0.07);
+  border: var(--card-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.btn-group-label {
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  padding: 0 8px;
+  opacity: 0.6;
+  white-space: nowrap;
+  border-right: 1px solid rgba(128,128,128,0.15);
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+}
+
+.group-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 10px;
+  border: none;
+  border-right: 1px solid rgba(128,128,128,0.1);
+  background: transparent;
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  border-radius: 0;
+  box-shadow: none;
+  font-family: 'Outfit', sans-serif;
+  white-space: nowrap;
+}
+.group-btn:last-child { border-right: none; }
+.group-btn:hover { background: rgba(99,102,241,0.12); color: var(--accent-primary); transform: none; box-shadow: none; }
+.group-btn svg { flex-shrink: 0; opacity: 0.8; }
+.group-btn.active-state { background: rgba(99,102,241,0.15); color: var(--accent-primary); }
+
+.btn-group-danger { color: #ef4444 !important; }
+.btn-group-danger:hover { background: rgba(239, 68, 68, 0.1) !important; color: #ef4444 !important; }
+.btn-group-primary { background: var(--accent-gradient) !important; color: white !important; }
+.btn-group-primary:hover { opacity: 0.85; color: white !important; }
+.btn-group-fav { color: var(--accent-fav) !important; }
+.btn-group-fav:hover { background: rgba(236, 72, 153, 0.1) !important; }
+
+/* --- SCROLL TOP BTN REDESIGN --- */
 .scroll-top-btn {
   position: fixed;
   bottom: 30px;
   right: 30px;
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  font-size: 20px;
-  background: var(--accent-primary);
+  height: 40px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--accent-gradient);
   color: white;
   border: none;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
   display: flex;
   justify-content: center;
   align-items: center;
+  gap: 5px;
+  padding: 0 16px;
   cursor: pointer;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s, transform 0.3s, visibility 0.3s;
+  transition: opacity 0.3s, transform 0.3s, visibility 0.3s, box-shadow 0.3s;
   z-index: 2000;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.3px;
 }
 .scroll-top-btn.visible { opacity: 1; visibility: visible; }
-.scroll-top-btn:hover { transform: translateY(-5px); background: var(--accent-secondary); }
+.scroll-top-btn:hover { transform: translateY(-3px) !important; box-shadow: 0 8px 24px rgba(236, 72, 153, 0.5) !important; }
 
 .main { max-width: 1320px; margin: auto; padding: 0 20px 240px 20px; }
 
 /* --- SOMMAIRE --- */
 .sommaire-sidebar {
   position: fixed;
-  top: 225px;
+  top: 190px;
   left: max(20px, calc(25vw - 460px));
   width: 250px;
   background: var(--card-bg);
@@ -197,7 +258,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 250px);
+  max-height: calc(100vh - 215px);
   z-index: 100;
 }
 .sommaire-header { padding: 12px 15px; background: rgba(0, 0, 0, 0.1); border-bottom: var(--card-border); font-weight: 600; font-size: 14px; }
@@ -214,10 +275,10 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 /* --- TWITCH SIDEBAR --- */
 .twitch-sidebar {
   position: fixed;
-  top: 225px;
+  top: 190px;
   right: max(20px, calc(25vw - 490px));
   width: 320px;
-  height: calc(100vh - 250px);
+  height: calc(100vh - 215px);
   background: var(--card-bg);
   border: var(--card-border);
   border-radius: var(--radius-md);
@@ -438,6 +499,12 @@ body.compact-active .card:hover .card-overlay { top: auto; bottom: 0; background
 body.compact-active .placeholder { height: 70px; }
 @keyframes pulse { 0%{opacity:0.3} 50%{opacity:0.7} 100%{opacity:0.3} }
 
+/* Désactiver les animations pour l'export PNG */
+body.no-animations *, body.no-animations *::before, body.no-animations *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
 /* --- POOL --- */
 .pool-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 1200px; background: var(--card-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 20px; border: var(--card-border); border-radius: var(--radius-lg); box-shadow: 0 -10px 40px rgba(0,0,0,0.1); z-index: 100; }
 .pool-header { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
@@ -610,24 +677,81 @@ body.edit-active .card-tools button { pointer-events: auto; }
       <input type="text" id="searchBar" placeholder="🔍 Filtrer artiste/titre..." oninput="filterCards()">
       <span id="clearSearchBtn" onclick="clearSearch()">✖</span>
     </div>
-    <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;" class="desktop-only"></div>
-    <button onclick="exportJson()" title="Sauvegarder">💾</button>
-    <button onclick="document.getElementById('fileInput').click()" title="Charger">📂</button>
-    <button onclick="resetData()" class="btn-danger" title="Tout effacer">🗑️</button>
-    <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;" class="desktop-only"></div>
-    <button onclick="toggleDark()" class="icon-btn" title="Thème Sombre/Clair">🌙</button>
-    <button onclick="toggleCompact()" id="compactBtn" class="icon-btn" title="Vue Compacte">☰</button>
-    <button onclick="toggleTwitch()" class="icon-btn" title="Afficher/Cacher Tchat Twitch">🟣</button>
-    <button onclick="togglePolls()" id="pollToggleBtn" class="icon-btn" title="Activer/Désactiver Sondages Twitch">🗳️ OFF</button>
-    <button onclick="forceSync()" class="icon-btn" title="Relancer recherche d'images">🔄</button>
-    <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;" class="desktop-only"></div>
-    <button onclick="showFavorites()" class="icon-btn" title="Mes Favoris" style="color:var(--accent-fav)">❤</button>
-    <button onclick="showStats()" class="icon-btn" title="Statistiques">📊</button>
-    <button onclick="showSessionsModal()" class="icon-btn" title="Historique des Sessions">📅</button>
-    <button onclick="showAllArtists()" class="icon-btn" title="Liste Complète des Artistes">📑</button>
-    <div style="width:1px; height:20px; background:var(--text-muted); opacity:0.3; margin:0 5px;" class="desktop-only"></div>
-    <button onclick="toggleEdit()" id="editBtn" class="icon-btn" title="Mode Édition">✏️</button>
-    <button onclick="addTier()" class="icon-btn">➕ Tier</button>
+    <div class="btn-group desktop-only">
+      <span class="btn-group-label">Données</span>
+      <button onclick="exportJson()" title="Sauvegarder en JSON" class="group-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Sauvegarder
+      </button>
+      <button onclick="document.getElementById('fileInput').click()" title="Charger un fichier JSON" class="group-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Charger
+      </button>
+      <button onclick="resetData()" title="Tout effacer" class="group-btn btn-group-danger">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M9 6V4h6v2"/></svg>
+        Effacer
+      </button>
+    </div>
+    <div class="btn-group desktop-only">
+      <span class="btn-group-label">Affichage</span>
+      <button onclick="toggleDark()" id="darkBtn" title="Thème Sombre/Clair" class="group-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        Thème
+      </button>
+      <button onclick="toggleCompact()" id="compactBtn" title="Vue Compacte" class="group-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        Compact
+      </button>
+      <button onclick="exportPng()" title="Exporter la Tier List en PNG" class="group-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Export PNG
+      </button>
+    </div>
+    <div class="btn-group desktop-only">
+      <span class="btn-group-label">Twitch</span>
+      <button onclick="toggleTwitch()" title="Afficher/Cacher le Tchat" class="group-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2H3v16h5v4l4-4h5l4-4V2z"/><line x1="9" y1="9" x2="9" y2="14"/><line x1="15" y1="9" x2="15" y2="14"/></svg>
+        Tchat
+      </button>
+      <button onclick="togglePolls()" id="pollToggleBtn" title="Activer/Désactiver les Sondages" class="group-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Sondages <span id="pollStatus" style="font-size:10px; padding:1px 5px; border-radius:10px; background:rgba(128,128,128,0.2); margin-left:2px;">OFF</span>
+      </button>
+    </div>
+    <div class="btn-group desktop-only">
+      <span class="btn-group-label">Outils</span>
+      <button onclick="forceSync()" title="Rafraîchir les données et images des cartes" class="group-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Refresh
+      </button>
+      <button onclick="toggleEdit()" id="editBtn" title="Mode Édition" class="group-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Édition
+      </button>
+      <button onclick="addTier()" title="Ajouter un Tier" class="group-btn btn-group-primary">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        + Tier
+      </button>
+    </div>
+    <div class="btn-group desktop-only">
+      <span class="btn-group-label">Analyses</span>
+      <button onclick="showFavorites()" title="Mes Favoris" class="group-btn btn-group-fav">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        Favoris
+      </button>
+      <button onclick="showStats()" title="Statistiques" class="group-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Stats
+      </button>
+      <button onclick="showSessionsModal()" title="Sessions" class="group-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Sessions
+      </button>
+      <button onclick="showAllArtists()" title="Tous les Artistes" class="group-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Artistes
+      </button>
+    </div>
   </div>
 </header>
 
@@ -680,7 +804,20 @@ body.edit-active .card-tools button { pointer-events: auto; }
   </div>
 </div>
 
-<button id="scrollTopBtn" class="scroll-top-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Remonter tout en haut">⬆️</button>
+<div id="sessionCardsModal" class="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-content" style="max-width: 680px;">
+    <h2 id="sessionCardsTitle">🎵 Cartes de la session</h2>
+    <div class="modal-body-scroll" id="sessionCardsBody"></div>
+    <div style="margin-top: 15px; text-align: right;">
+      <button onclick="document.getElementById('sessionCardsModal').style.display='none'">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<button id="scrollTopBtn" class="scroll-top-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Remonter tout en haut">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+  <span>Top</span>
+</button>
 
 <div class="sommaire-sidebar" id="sommaireSidebar">
   <div class="sommaire-header">📑 Sommaire</div>
@@ -697,7 +834,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
 
 <div class="main">
   <div class="input-section">
-    <input type="text" id="artistInput" placeholder="Artiste (ex: YB feat Xdinary Heroes)">
+    <input type="text" id="artistInput" placeholder="Artiste (ex: NMIXX)">
     <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
     <input type="text" id="titleInput" placeholder="Titre (ex: Dash)">
     <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
@@ -903,8 +1040,14 @@ function stopTwitchVote() {
 function togglePolls() {
   pollsEnabled = !pollsEnabled;
   const btn = document.getElementById("pollToggleBtn");
-  if(pollsEnabled) { btn.innerHTML = "🗳️ ON"; btn.style.color = "white"; btn.style.background = "var(--accent-secondary)"; }
-  else { btn.innerHTML = "🗳️ OFF"; btn.style.color = ""; btn.style.background = ""; }
+  const statusSpan = document.getElementById("pollStatus");
+  if(pollsEnabled) { 
+    btn.classList.add('active-state'); 
+    if(statusSpan) { statusSpan.textContent = 'ON'; statusSpan.style.background = 'rgba(236,72,153,0.3)'; statusSpan.style.color = 'var(--accent-secondary)'; }
+  } else { 
+    btn.classList.remove('active-state'); 
+    if(statusSpan) { statusSpan.textContent = 'OFF'; statusSpan.style.background = 'rgba(128,128,128,0.2)'; statusSpan.style.color = ''; }
+  }
 }
 
 // --- UTILS ---
@@ -1033,25 +1176,30 @@ function changeTwitchChannel() {
   iframe.src = `https://www.twitch.tv/embed/${channel}/chat?parent=${parentDomain}&darkpopout`;
 }
 
-let isSyncing = false;
-
 function forceSync() {
   const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
+  // Marquer toutes les cartes pour resynchronisation (pas seulement celles avec placeholder)
   allSongs.forEach(s => {
-    if(s.cover && (s.cover.includes('via.placeholder.com') || s.cover.includes('ui-avatars.com'))) {
-      s.coverSearched = false;
-    }
+    s.coverSearched = false;
+    // Réinitialiser previewUrl uniquement si null/absent pour ne pas perdre les données existantes
+    // On force la re-recherche pour les nouvelles fonctionnalités (previewUrl, hasPreview)
+    if (s.previewUrl === undefined) s.previewUrl = null;
+    if (s.hasPreview === undefined) s.hasPreview = null;
   });
-  save(); syncCovers();
+  save();
+  syncCovers();
 }
+
+let isSyncing = false;
 
 async function syncCovers() {
   if (isSyncing) return;
   isSyncing = true;
   const allSongs = [...data.pool, ...data.tiers.flatMap(t => t.songs)];
-  const missingCovers = allSongs.filter(s => s.cover && (s.cover.includes('via.placeholder.com') || s.cover.includes('ui-avatars.com')) && !s.coverSearched);
+  // Toutes les cartes non encore synchronisées (coverSearched = false ou undefined)
+  const toSync = allSongs.filter(s => !s.coverSearched);
   
-  if(missingCovers.length === 0) { isSyncing = false; return; }
+  if(toSync.length === 0) { isSyncing = false; return; }
 
   let syncBadge = document.getElementById("syncBadge");
   if(!syncBadge) {
@@ -1061,11 +1209,10 @@ async function syncCovers() {
     document.querySelector(".header-btns").prepend(syncBadge);
   }
 
-  for (let i = 0; i < missingCovers.length; i++) {
-    const song = missingCovers[i];
-    syncBadge.innerText = `🔄 Albums : ${i + 1}/${missingCovers.length}`;
+  for (let i = 0; i < toSync.length; i++) {
+    const song = toSync[i];
+    syncBadge.innerText = `🔄 Sync : ${i + 1}/${toSync.length}`;
     try {
-      // FIX : Conversion en minuscule pour l'API Apple
       const appleQuery = (song.artist + " " + song.title).toLowerCase();
       const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(appleQuery)}&entity=song&limit=1`);
       
@@ -1079,37 +1226,52 @@ async function syncCovers() {
       
       const json = await res.json();
       if(json.results && json.results.length > 0) {
-        song.cover = json.results[0].artworkUrl100.replace("100x100", "300x300");
-        if(json.results[0].previewUrl) {
-          song.previewUrl = json.results[0].previewUrl;
+        const result = json.results[0];
+        // Mettre à jour la pochette
+        const newCover = result.artworkUrl100?.replace("100x100", "300x300");
+        if (newCover) song.cover = newCover;
+        // Mettre à jour previewUrl si disponible
+        if(result.previewUrl) {
+          song.previewUrl = result.previewUrl;
           song.hasPreview = true;
         } else {
-          song.hasPreview = false;
+          if (song.hasPreview === null) song.hasPreview = false;
         }
       } else {
-        song.cover = `https://ui-avatars.com/api/?name=${encodeURIComponent(song.artist)}&background=random&color=fff&size=300&font-size=0.33`;
-        song.hasPreview = false;
+        if (!song.cover || song.cover.includes('via.placeholder.com')) {
+          song.cover = `https://ui-avatars.com/api/?name=${encodeURIComponent(song.artist)}&background=random&color=fff&size=300&font-size=0.33`;
+        }
+        if (song.hasPreview === null) song.hasPreview = false;
       }
+
+      // Mettre à jour le DOM de la carte sans la recréer
       const cardEl = document.getElementById(`card-${song.id}`);
       if(cardEl) {
         cardEl.style.backgroundImage = `url(${song.cover})`;
         const playBtn = cardEl.querySelector('.card-play-btn');
-        if(playBtn && song.hasPreview === false) {
-           playBtn.innerHTML = '🔇';
-           playBtn.classList.add('muted-btn');
-           playBtn.title = 'Aucun extrait disponible';
+        if(playBtn) {
+          if (song.hasPreview === false && !playBtn.classList.contains('playing')) {
+            playBtn.innerHTML = '🔇';
+            playBtn.classList.add('muted-btn');
+            playBtn.title = 'Aucun extrait disponible';
+          } else if (song.hasPreview === true && playBtn.classList.contains('muted-btn')) {
+            playBtn.classList.remove('muted-btn');
+            playBtn.innerHTML = '▶';
+            playBtn.title = '';
+          }
         }
       }
-    } catch(e) { console.log("Erreur recherche", song.title); }
+    } catch(e) { console.log("Erreur sync", song.title, e); }
     
     song.coverSearched = true;
     save();
     
-    // DELAI DE SECURITE (3 SECONDES)
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    // Délai anti-spam adaptatif : 3s par défaut, plus court si peu de cartes
+    const delay = toSync.length <= 5 ? 1500 : 3000;
+    await new Promise(resolve => setTimeout(resolve, delay));
   }
 
-  syncBadge.innerText = "✅ Images récupérées !";
+  syncBadge.innerText = "✅ Synchronisation terminée !";
   syncBadge.style.background = "#10b981";
   syncBadge.style.boxShadow = "0 2px 10px rgba(16, 185, 129, 0.4)";
   setTimeout(() => { syncBadge.remove(); isSyncing = false; }, 4000);
@@ -1203,6 +1365,7 @@ function renderSessions() {
       <div class="session-actions" onclick="event.stopPropagation()">
         ${!isActive ? `<button class="session-action-btn btn-primary" onclick="activateSession('${sid}')">Activer</button>` : ''}
         <button class="session-action-btn" onclick="renameSession('${sid}')">✎ Renommer</button>
+        <button class="session-action-btn" onclick="showSessionCards('${sid}')">🎵 Voir les cartes</button>
         ${sessionIds.length > 1 ? `<button class="session-action-btn" onclick="showMergeUI('${sid}')">⊕ Fusionner</button>` : ''}
         ${!isActive ? `<button class="session-action-btn btn-danger" onclick="deleteSession('${sid}')">✕ Supprimer</button>` : ''}
       </div>
@@ -1265,7 +1428,7 @@ function renderSessionDetail(sessionId, stats) {
     stats.top3.forEach((s, i) => {
       html += `<div class="rank-item top" style="padding:6px 8px;">
         <span class="rank-pos" style="font-size:12px;">#${i+1}</span>
-        <span class="rank-name" style="font-size:12px;">${s.artist} — ${s.title}</span>
+        <span class="rank-name artist-clickable" style="font-size:12px;cursor:pointer;" onclick="searchByArtist('${s.artist.toLowerCase()}')" title="Filtrer par cet artiste">${s.artist} — ${s.title}</span>
       </div>`;
     });
   }
@@ -1275,7 +1438,7 @@ function renderSessionDetail(sessionId, stats) {
     stats.flop3.forEach((s, i) => {
       html += `<div class="rank-item flop" style="padding:6px 8px;">
         <span class="rank-pos" style="font-size:12px;">#${i+1}</span>
-        <span class="rank-name" style="font-size:12px;">${s.artist} — ${s.title}</span>
+        <span class="rank-name artist-clickable" style="font-size:12px;cursor:pointer;" onclick="searchByArtist('${s.artist.toLowerCase()}')" title="Filtrer par cet artiste">${s.artist} — ${s.title}</span>
       </div>`;
     });
   }
@@ -1492,7 +1655,7 @@ function showStats() {
       ${top3.length > 0 ? top3.map((r, i) => `
         <div class="rank-item top">
           <span class="rank-pos">#${i+1}</span>
-          <span class="rank-name">${r.name}</span>
+          <span class="rank-name artist-clickable" onclick="searchByArtist('${r.name.toLowerCase()}')" title="Filtrer par cet artiste" style="cursor:pointer;">${r.name}</span>
           <span class="rank-avg">${r.points} / 100</span>
         </div>`).join('') : '<div style="opacity:0.5; font-size:13px">Pas assez de données.</div>'}
     </div>
@@ -1502,13 +1665,29 @@ function showStats() {
       ${flop3.length > 0 ? flop3.map((r, i) => `
         <div class="rank-item flop">
           <span class="rank-pos">#${i+1}</span>
-          <span class="rank-name">${r.name}</span>
+          <span class="rank-name artist-clickable" onclick="searchByArtist('${r.name.toLowerCase()}')" title="Filtrer par cet artiste" style="cursor:pointer;">${r.name}</span>
           <span class="rank-avg">${r.points} / 100</span>
         </div>`).join('') : '<div style="opacity:0.5; font-size:13px">Tout le monde est bon.</div>'}
     </div>
   `;
   body.innerHTML = html;
   modal.style.display = 'flex';
+}
+
+function searchByArtist(artistName) {
+  const searchBar = document.getElementById('searchBar');
+  if (searchBar) {
+    searchBar.value = artistName;
+    filterCards();
+    // Fermer les modals ouverts
+    document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+    // Scroll vers la tier list
+    const tiersEl = document.getElementById('tiers');
+    if (tiersEl) {
+      const y = tiersEl.getBoundingClientRect().top + window.pageYOffset - 80;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  }
 }
 
 function showAllArtists() {
@@ -1523,7 +1702,7 @@ function showAllArtists() {
       let colorClass = i < 3 ? "top" : (i >= rankings.length - 3 && rankings.length > 3 ? "flop" : "");
       html += `<div class="rank-item ${colorClass}" style="margin-bottom:5px;">
         <span class="rank-pos" style="font-size:12px; width:30px; opacity:0.7;">#${i+1}</span>
-        <span class="rank-name">${r.name} <span style="font-size:10px; opacity:0.5; font-weight:normal; margin-left:4px;">(Moy. pure: ${r.avg})</span></span>
+        <span class="rank-name artist-clickable" onclick="searchByArtist('${r.name.toLowerCase()}')" title="Filtrer par cet artiste" style="cursor:pointer;">${r.name} <span style="font-size:10px; opacity:0.5; font-weight:normal; margin-left:4px;">(Moy. pure: ${r.avg})</span></span>
         <span class="rank-avg" style="background:var(--accent-gradient); color:white; min-width: 65px;">${r.points} / 100</span>
         <span style="font-size:11px; opacity:0.6; width:50px; text-align:right;">${r.count} 🎵</span>
       </div>`;
@@ -1534,6 +1713,97 @@ function showAllArtists() {
 }
 
 function closeModal(e) { if(e.target.classList.contains('modal-overlay')) e.target.style.display = 'none'; }
+
+// --- VOIR LES CARTES D'UNE SESSION ---
+function showSessionCards(sessionId) {
+  const modal = document.getElementById('sessionCardsModal');
+  const title = document.getElementById('sessionCardsTitle');
+  const body = document.getElementById('sessionCardsBody');
+  const sess = data.sessions[sessionId];
+  title.textContent = `🎵 Cartes — ${sess ? (sess.name || sessionId) : sessionId}`;
+
+  // Récupérer toutes les chansons de la session avec leur tier
+  const allSongsWithTier = [];
+  data.tiers.forEach(tier => {
+    tier.songs.filter(s => s.sessionId === sessionId).forEach(s => {
+      allSongsWithTier.push({ ...s, tierName: tier.name, tierColor: tier.color });
+    });
+  });
+  data.pool.filter(s => s.sessionId === sessionId).forEach(s => {
+    allSongsWithTier.push({ ...s, tierName: 'Réserve', tierColor: 'var(--text-muted)' });
+  });
+
+  if (allSongsWithTier.length === 0) {
+    body.innerHTML = '<div style="opacity:0.5; text-align:center; padding:30px;">Aucune carte dans cette session.</div>';
+  } else {
+    // Grouper par tier
+    const grouped = {};
+    allSongsWithTier.forEach(s => {
+      const key = s.tierName;
+      if (!grouped[key]) grouped[key] = { color: s.tierColor, songs: [] };
+      grouped[key].songs.push(s);
+    });
+
+    let html = `<div style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">${allSongsWithTier.length} carte(s) au total</div>`;
+    Object.entries(grouped).forEach(([tierName, group]) => {
+      html += `<div style="margin-bottom:18px;">
+        <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:${group.color}; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid ${group.color}44;">${tierName} <span style="opacity:0.6; font-weight:400;">(${group.songs.length})</span></div>
+        <div style="display:flex; flex-wrap:wrap; gap:10px;">`;
+      group.songs.forEach(s => {
+        html += `<div style="display:flex;align-items:center;gap:8px;background:rgba(128,128,128,0.06);border-radius:8px;padding:7px 10px;border:1px solid rgba(128,128,128,0.1);cursor:pointer;" onclick="window.open('${s.youtubeUrl}','_blank')" title="Ouvrir sur YouTube">
+          <div style="width:36px;height:36px;border-radius:6px;background-image:url(${s.cover});background-size:cover;background-position:center;flex-shrink:0;background-color:var(--card-bg);"></div>
+          <div style="min-width:0;">
+            <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;">${s.artist}</div>
+            <div style="font-size:11px;opacity:0.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;">${s.title}</div>
+          </div>
+        </div>`;
+      });
+      html += `</div></div>`;
+    });
+    body.innerHTML = html;
+  }
+  modal.style.display = 'flex';
+}
+
+// --- EXPORT PNG ---
+async function exportPng() {
+  // 1. Scroll to top et désactiver les animations
+  window.scrollTo({ top: 0, behavior: 'instant' });
+  document.body.classList.add('no-animations');
+  await new Promise(r => setTimeout(r, 300));
+
+  // 2. Charger html2canvas dynamiquement si pas déjà chargé
+  if (!window.html2canvas) {
+    await new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
+
+  const tiersEl = document.getElementById('tiers');
+  try {
+    const canvas = await html2canvas(tiersEl, {
+      backgroundColor: getComputedStyle(document.body).getPropertyValue('--bg-color').trim() || '#0f172a',
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      scrollY: -window.scrollY,
+      logging: false
+    });
+    const link = document.createElement('a');
+    link.download = 'ktier_tierlist.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } catch(e) {
+    alert('Erreur lors de l\'export PNG : ' + e.message);
+  }
+
+  // 3. Réactiver les animations
+  document.body.classList.remove('no-animations');
+}
 
 function moveTierUp(id) {
   const index = data.tiers.findIndex(t => t.id === id);
@@ -1801,8 +2071,12 @@ function getInsertionPoint(x, y) {
     if (dist < minDist) { minDist = dist; targetRow = row; }
   }
 
+  // SENSIBILITÉ AMÉLIORÉE : utiliser un seuil de 35% depuis le bord gauche de chaque carte
+  // pour décider si on insère avant ou après (au lieu du simple midX)
+  const THRESHOLD = 0.35; // 35% depuis le bord gauche = zone "insert before"
   for (const snap of targetRow.snaps) {
-    if (x < snap.midX) return snap.el;
+    const insertZone = snap.left + snap.width * THRESHOLD;
+    if (x < insertZone) return snap.el;
   }
 
   const rowIdx = rows.indexOf(targetRow);
@@ -2017,17 +2291,16 @@ function toggleEdit(){
   editMode = !editMode;
   const btn = document.getElementById("editBtn");
   if (!editMode) { selectedIds.forEach(id => { const c = document.getElementById(`card-${id}`); if(c) c.classList.remove('selected'); }); selectedIds.clear(); }
-  if(editMode) { btn.innerHTML = "✅"; btn.style.background = "var(--accent-secondary)"; btn.style.color = "white"; }
-  else { btn.innerHTML = "✏️"; btn.style.background = ""; btn.style.color = ""; }
+  if(editMode) { btn.classList.add('active-state'); }
+  else { btn.classList.remove('active-state'); }
   render();
 }
 
 function toggleCompact(){
   compactMode = !compactMode;
   const btn = document.getElementById("compactBtn");
-  btn.innerHTML = compactMode ? "⊞" : "☰";
-  btn.style.background = compactMode ? "var(--accent-primary)" : "";
-  btn.style.color = compactMode ? "white" : "";
+  if (compactMode) { btn.classList.add('active-state'); }
+  else { btn.classList.remove('active-state'); }
   render();
 }
 
