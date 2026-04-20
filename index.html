@@ -102,7 +102,6 @@ header {
 #searchBar::placeholder { color: var(--text-muted); opacity: 0.7; }
 #clearSearchBtn { position: absolute; right: 10px; cursor: pointer; display: none; color: var(--text-muted); font-size: 14px; }
 
-/* Nouveau design de base des boutons */
 button {
   padding: 8px 16px;
   border-radius: 12px;
@@ -186,12 +185,14 @@ body.dark .btn-group {
   font-family: 'Outfit', sans-serif;
   font-size: 13px;
   font-weight: 700;
-  color: var(--text-main); /* Couleur standard au lieu du violet */
+  color: var(--text-main);
   background: transparent;
   padding: 0 16px;
   border: none;
   cursor: pointer;
   border-right: 1px solid transparent;
+  border-top-left-radius: 20px; /* Force l'arrondi à gauche */
+  border-bottom-left-radius: 20px; /* Force l'arrondi à gauche */
   align-self: stretch;
   display: flex;
   align-items: center;
@@ -245,7 +246,9 @@ body.dark .btn-group {
 }
 .group-btn:last-child { 
   border-right: none; 
-  padding-right: 18px; /* Plus d'espace à la fin de la pilule */
+  padding-right: 18px;
+  border-top-right-radius: 20px; /* Force l'arrondi à droite pour le survol */
+  border-bottom-right-radius: 20px; /* Force l'arrondi à droite pour le survol */
 }
 .group-btn:hover { background: rgba(128,128,128,0.08); color: var(--accent-primary); transform: none; box-shadow: none; }
 .group-btn svg { flex-shrink: 0; opacity: 0.8; }
@@ -461,7 +464,6 @@ body.edit-active .fav-badge { display: none !important; }
   100% { box-shadow: 0 0 25px var(--accent-fav), inset 0 0 15px rgba(236, 72, 153, 0.6); border-color: var(--accent-fav); }
 }
 
-/* FIX DU PLACEHOLDER DRAG & DROP : On retire la carte d'origine du layout pendant qu'on la drag */
 body.is-dragging .card { transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s !important; }
 body.is-dragging .cards { transition: none !important; }
 
@@ -507,7 +509,7 @@ body.is-dragging .cards { transition: none !important; }
   z-index: 25;
   cursor: pointer;
   pointer-events: none;
-  padding-left: 3px; /* optical centering for play icon */
+  padding-left: 3px;
 }
 .card:hover .card-play-btn { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
 body.is-dragging .card .card-play-btn { opacity: 0 !important; pointer-events: none !important; }
@@ -550,7 +552,6 @@ body.compact-active .card:hover .card-overlay { top: auto; bottom: 0; background
 body.compact-active .placeholder { height: 70px; }
 @keyframes pulse { 0%{opacity:0.3} 50%{opacity:0.7} 100%{opacity:0.3} }
 
-/* Désactiver les animations pour l'export PNG */
 body.no-animations *, body.no-animations *::before, body.no-animations *::after {
   animation: none !important;
   transition: none !important;
@@ -2102,7 +2103,7 @@ function updateCounters() {
 }
 
 // =============================================
-// DRAG & DROP — SNAPSHOT APPROACH
+// DRAG & DROP — SNAPSHOT APPROACH (CORRIGÉ ET SYMÉTRIQUE)
 // =============================================
 let cardSnapshot = [];
 let snapshotContainer = null;
@@ -2119,7 +2120,7 @@ function captureSnapshot(container) {
       bottom: box.bottom,
       left: box.left,
       right: box.right,
-      midX: box.left + box.width / 2,
+      midX: box.left + box.width / 2, // Le milieu exact de la carte
       midY: box.top + box.height / 2,
       height: box.height,
       width: box.width
@@ -2149,18 +2150,22 @@ function getInsertionPoint(x, y) {
     if (dist < minDist) { minDist = dist; targetRow = row; }
   }
 
-  const THRESHOLD = 0.35;
+  // NOUVELLE LOGIQUE SYMÉTRIQUE : 
+  // On insère *avant* la carte cible SEULEMENT si notre souris a passé le centre exact (midX) de cette carte.
   for (const snap of targetRow.snaps) {
-    const insertZone = snap.left + snap.width * THRESHOLD;
-    if (x < insertZone) return snap.el;
+    if (x < snap.midX) {
+      return snap.el;
+    }
   }
 
+  // Si on a passé le centre de toutes les cartes de la ligne, on insère à la fin (null = à la fin)
   const rowIdx = rows.indexOf(targetRow);
   const isLastRow = rowIdx === rows.length - 1;
 
   if (isLastRow) {
     return null;
   } else {
+    // Si on est à la fin d'une ligne mais qu'il y a une ligne en dessous, on insère avant le premier élément de la ligne suivante
     return rows[rowIdx + 1].snaps[0].el;
   }
 }
