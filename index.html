@@ -102,6 +102,7 @@ header {
 #searchBar::placeholder { color: var(--text-muted); opacity: 0.7; }
 #clearSearchBtn { position: absolute; right: 10px; cursor: pointer; display: none; color: var(--text-muted); font-size: 14px; }
 
+/* Nouveau design de base des boutons */
 button {
   padding: 8px 16px;
   border-radius: 12px;
@@ -162,23 +163,24 @@ input[type="text"] {
 input[type="text"]:focus { background: rgba(100,100,100,0.05); }
 input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 
-/* --- BUTTON GROUPS (Menu Rétractable Refait à neuf) --- */
+/* --- BUTTON GROUPS (Menu Rétractable) --- */
 .btn-group {
   display: inline-flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.08); /* Effet verre dépoli */
+  background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(128, 128, 128, 0.2);
   border-radius: 20px; /* Forme de pilule */
   overflow: hidden;
+  transform: translateZ(0); /* Hack d'accélération pour forcer l'overflow: hidden sur les bords arrondis lors des transitions */
   flex-shrink: 0;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
 }
 
 body.dark .btn-group {
-  background: rgba(0, 0, 0, 0.2); /* Verre dépoli sombre */
+  background: rgba(0, 0, 0, 0.2); 
 }
 
 .btn-group-label {
@@ -191,8 +193,8 @@ body.dark .btn-group {
   border: none;
   cursor: pointer;
   border-right: 1px solid transparent;
-  border-top-left-radius: 20px; /* Force l'arrondi à gauche */
-  border-bottom-left-radius: 20px; /* Force l'arrondi à gauche */
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
   align-self: stretch;
   display: flex;
   align-items: center;
@@ -246,9 +248,9 @@ body.dark .btn-group {
 }
 .group-btn:last-child { 
   border-right: none; 
-  padding-right: 18px;
-  border-top-right-radius: 20px; /* Force l'arrondi à droite pour le survol */
-  border-bottom-right-radius: 20px; /* Force l'arrondi à droite pour le survol */
+  padding-right: 18px; 
+  border-top-right-radius: 20px; 
+  border-bottom-right-radius: 20px; 
 }
 .group-btn:hover { background: rgba(128,128,128,0.08); color: var(--accent-primary); transform: none; box-shadow: none; }
 .group-btn svg { flex-shrink: 0; opacity: 0.8; }
@@ -467,6 +469,7 @@ body.edit-active .fav-badge { display: none !important; }
 body.is-dragging .card { transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s !important; }
 body.is-dragging .cards { transition: none !important; }
 
+/* La carte originale est rendue invisible pour que le drag reste fluide */
 .card.dragging {
   opacity: 0 !important;
   position: absolute !important;
@@ -509,7 +512,7 @@ body.is-dragging .cards { transition: none !important; }
   z-index: 25;
   cursor: pointer;
   pointer-events: none;
-  padding-left: 3px;
+  padding-left: 3px; 
 }
 .card:hover .card-play-btn { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
 body.is-dragging .card .card-play-btn { opacity: 0 !important; pointer-events: none !important; }
@@ -563,7 +566,7 @@ body.no-animations *, body.no-animations *::before, body.no-animations *::after 
 .pool-header::after { content:''; flex:1; height:1px; background: var(--text-muted); opacity: 0.2; }
 .pool { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; min-height: 150px; scrollbar-width: thin; scrollbar-color: var(--accent-primary) transparent; }
 
-/* --- MINI PLAYER (APPLE MUSIC PREVIEW) --- */
+/* --- MINI PLAYER --- */
 #miniPlayer {
   position: fixed;
   bottom: 0;
@@ -841,7 +844,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
     <h2>Classement & Stats</h2>
     <div class="modal-body-scroll" id="statsBody"></div>
     <div style="margin-top: 15px; text-align: right;">
-      <button onclick="document.getElementById('statsModal').style.display='none'">Fermer</button>
+      <button onclick="closeAllModals()">Fermer</button>
     </div>
   </div>
 </div>
@@ -851,7 +854,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
     <h2>Tous les Artistes</h2>
     <div class="modal-body-scroll" id="allArtistsBody"></div>
     <div style="margin-top: 15px; text-align: right;">
-      <button onclick="document.getElementById('allArtistsModal').style.display='none'">Fermer</button>
+      <button onclick="closeAllModals()">Fermer</button>
     </div>
   </div>
 </div>
@@ -861,7 +864,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
     <h2 style="color:var(--accent-fav); -webkit-text-fill-color: var(--accent-fav);">❤ Mes Favoris</h2>
     <div class="modal-body-scroll" id="favBody" style="min-height: 100px;"></div>
     <div style="margin-top: 15px; text-align: right;">
-      <button onclick="document.getElementById('favModal').style.display='none'">Fermer</button>
+      <button onclick="closeAllModals()">Fermer</button>
     </div>
   </div>
 </div>
@@ -871,7 +874,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
     <h2>📅 Sessions</h2>
     <div class="modal-body-scroll" id="sessionsBody"></div>
     <div style="margin-top: 15px; text-align: right;">
-      <button onclick="document.getElementById('sessionsModal').style.display='none'">Fermer</button>
+      <button onclick="closeAllModals()">Fermer</button>
     </div>
   </div>
 </div>
@@ -881,7 +884,7 @@ body.edit-active .card-tools button { pointer-events: auto; }
     <h2 id="sessionCardsTitle">🎵 Cartes de la session</h2>
     <div class="modal-body-scroll" id="sessionCardsBody"></div>
     <div style="margin-top: 15px; text-align: right;">
-      <button onclick="document.getElementById('sessionCardsModal').style.display='none'">Fermer</button>
+      <button onclick="closeAllModals()">Fermer</button>
     </div>
   </div>
 </div>
@@ -954,7 +957,7 @@ let pollsEnabled = false;
 let currentDragAfter = undefined;
 let selectedIds = new Set();
 
-// --- GESTION MENUS DÉROULANTS (SÉQUENTIELLE) ---
+// --- GESTION MENUS DÉROULANTS ---
 function toggleMenu(groupId, event) {
   event.stopPropagation();
   const targetGroup = document.getElementById(groupId);
@@ -969,12 +972,7 @@ function toggleMenu(groupId, event) {
     targetGroup.classList.toggle('open');
   }
 }
-
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('.btn-group')) {
-    document.querySelectorAll('.btn-group').forEach(group => group.classList.remove('open'));
-  }
-});
+// Suppression du script global "document.addEventListener('click'...)" pour garder les menus ouverts
 
 
 // --- AUDIO PREVIEW ---
@@ -1406,11 +1404,32 @@ function showFavorites() {
   modal.style.display = 'flex';
 }
 
+function closeAllModals() {
+  document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+}
+
+function closeModal(e) { 
+  if(e.target.classList.contains('modal-overlay')) e.target.style.display = 'none'; 
+}
+
 // --- SESSION MANAGEMENT ---
 
 function showSessionsModal() {
   document.getElementById('sessionsModal').style.display = 'flex';
   renderSessions();
+}
+
+function openSessionHistory(sid) {
+  if (sid === '-') return;
+  closeAllModals();
+  showSessionsModal();
+  setTimeout(() => {
+    const detailEl = document.getElementById(`detail-${sid}`);
+    if (detailEl && !detailEl.classList.contains('open')) {
+      detailEl.classList.add('open');
+      detailEl.parentElement.scrollIntoView({behavior: 'smooth', block: 'center'});
+    }
+  }, 100);
 }
 
 function renderSessions() {
@@ -1512,7 +1531,7 @@ function renderSessionDetail(sessionId, stats) {
     stats.top3.forEach((s, i) => {
       html += `<div class="rank-item top" style="padding:6px 8px;">
         <span class="rank-pos" style="font-size:12px;">#${i+1}</span>
-        <span class="rank-name artist-clickable" style="font-size:12px;cursor:pointer;" onclick="searchByArtist('${s.artist.toLowerCase()}')" title="Filtrer par cet artiste">${s.artist} — ${s.title}</span>
+        <span class="rank-name artist-clickable" style="font-size:12px;cursor:pointer;" onclick="searchByArtist('${s.artist.replace(/'/g, "\\'")}')" title="Filtrer par cet artiste">${s.artist} — ${s.title}</span>
       </div>`;
     });
   }
@@ -1522,7 +1541,7 @@ function renderSessionDetail(sessionId, stats) {
     stats.flop3.forEach((s, i) => {
       html += `<div class="rank-item flop" style="padding:6px 8px;">
         <span class="rank-pos" style="font-size:12px;">#${i+1}</span>
-        <span class="rank-name artist-clickable" style="font-size:12px;cursor:pointer;" onclick="searchByArtist('${s.artist.toLowerCase()}')" title="Filtrer par cet artiste">${s.artist} — ${s.title}</span>
+        <span class="rank-name artist-clickable" style="font-size:12px;cursor:pointer;" onclick="searchByArtist('${s.artist.replace(/'/g, "\\'")}')" title="Filtrer par cet artiste">${s.artist} — ${s.title}</span>
       </div>`;
     });
   }
@@ -1720,15 +1739,15 @@ function showStats() {
 
     <div class="stat-section">
       <div class="stat-title">⏱️ Statistiques de Sessions</div>
-      <div class="session-card current-session">
+      <div class="session-card current-session" onclick="openSessionHistory('${activeId}')" title="Cliquez pour voir l'historique">
         <div class="session-date">Session active : ${activeSessionName}</div>
         <div class="session-data">${todayData.count} titres classés (Moyenne : ${todayAvg} / 10)</div>
       </div>
-      <div class="session-card best">
+      <div class="session-card best" onclick="openSessionHistory('${bestSess.id}')" title="Cliquez pour voir l'historique">
         <div class="session-date">Session la plus généreuse</div>
         <div class="session-data">${bestSess.id !== '-' ? getSessionName(bestSess.id) : 'N/A'} : ${bestSess.avg.toFixed ? bestSess.avg.toFixed(1) : bestSess.avg} / 10 <small>(${bestSess.count} titres)</small></div>
       </div>
-      <div class="session-card worst">
+      <div class="session-card worst" onclick="openSessionHistory('${worstSess.id}')" title="Cliquez pour voir l'historique">
         <div class="session-date">Session la plus sévère</div>
         <div class="session-data">${worstSess.id !== '-' ? getSessionName(worstSess.id) : 'N/A'} : ${worstSess.avg.toFixed ? worstSess.avg.toFixed(1) : worstSess.avg} / 10 <small>(${worstSess.count} titres)</small></div>
       </div>
@@ -1739,7 +1758,7 @@ function showStats() {
       ${top3.length > 0 ? top3.map((r, i) => `
         <div class="rank-item top">
           <span class="rank-pos">#${i+1}</span>
-          <span class="rank-name artist-clickable" onclick="searchByArtist('${r.name.toLowerCase()}')" title="Filtrer par cet artiste" style="cursor:pointer;">${r.name}</span>
+          <span class="rank-name artist-clickable" onclick="searchByArtist('${r.name.replace(/'/g, "\\'")}')" title="Filtrer par cet artiste" style="cursor:pointer;">${r.name}</span>
           <span class="rank-avg">${r.points} / 100</span>
         </div>`).join('') : '<div style="opacity:0.5; font-size:13px">Pas assez de données.</div>'}
     </div>
@@ -1749,7 +1768,7 @@ function showStats() {
       ${flop3.length > 0 ? flop3.map((r, i) => `
         <div class="rank-item flop">
           <span class="rank-pos">#${i+1}</span>
-          <span class="rank-name artist-clickable" onclick="searchByArtist('${r.name.toLowerCase()}')" title="Filtrer par cet artiste" style="cursor:pointer;">${r.name}</span>
+          <span class="rank-name artist-clickable" onclick="searchByArtist('${r.name.replace(/'/g, "\\'")}')" title="Filtrer par cet artiste" style="cursor:pointer;">${r.name}</span>
           <span class="rank-avg">${r.points} / 100</span>
         </div>`).join('') : '<div style="opacity:0.5; font-size:13px">Tout le monde est bon.</div>'}
     </div>
@@ -1763,7 +1782,29 @@ function searchByArtist(artistName) {
   if (searchBar) {
     searchBar.value = artistName;
     filterCards();
-    document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+    closeAllModals();
+
+    const lowerTerm = artistName.toLowerCase().trim();
+    let targetTierId = null;
+
+    // Cherche le tier le plus haut qui contient cet artiste
+    for (const tier of data.tiers) {
+      if (tier.songs.some(s => s.artist.toLowerCase().includes(lowerTerm))) {
+        targetTierId = tier.id;
+        break; // Tiers sont déjà ordonnés du haut vers le bas
+      }
+    }
+
+    if (targetTierId) {
+      const targetEl = document.getElementById(`tier-node-${targetTierId}`);
+      if (targetEl) {
+        const y = targetEl.getBoundingClientRect().top + window.pageYOffset - 80;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+        return; // Terminé si trouvé dans un tier
+      }
+    }
+
+    // Comportement de secours (ex: l'artiste est dans la réserve)
     const tiersEl = document.getElementById('tiers');
     if (tiersEl) {
       const y = tiersEl.getBoundingClientRect().top + window.pageYOffset - 80;
@@ -1784,7 +1825,7 @@ function showAllArtists() {
       let colorClass = i < 3 ? "top" : (i >= rankings.length - 3 && rankings.length > 3 ? "flop" : "");
       html += `<div class="rank-item ${colorClass}" style="margin-bottom:5px;">
         <span class="rank-pos" style="font-size:12px; width:30px; opacity:0.7;">#${i+1}</span>
-        <span class="rank-name artist-clickable" onclick="searchByArtist('${r.name.toLowerCase()}')" title="Filtrer par cet artiste" style="cursor:pointer;">${r.name} <span style="font-size:10px; opacity:0.5; font-weight:normal; margin-left:4px;">(Moy. pure: ${r.avg})</span></span>
+        <span class="rank-name artist-clickable" onclick="searchByArtist('${r.name.replace(/'/g, "\\'")}')" title="Filtrer par cet artiste" style="cursor:pointer;">${r.name} <span style="font-size:10px; opacity:0.5; font-weight:normal; margin-left:4px;">(Moy. pure: ${r.avg})</span></span>
         <span class="rank-avg" style="background:var(--accent-gradient); color:white; min-width: 65px;">${r.points} / 100</span>
         <span style="font-size:11px; opacity:0.6; width:50px; text-align:right;">${r.count} 🎵</span>
       </div>`;
@@ -1793,8 +1834,6 @@ function showAllArtists() {
   }
   modal.style.display = 'flex';
 }
-
-function closeModal(e) { if(e.target.classList.contains('modal-overlay')) e.target.style.display = 'none'; }
 
 // --- VOIR LES CARTES D'UNE SESSION ---
 function showSessionCards(sessionId) {
@@ -2018,14 +2057,26 @@ function createCard(song){
     draggedId = song.id;
     document.body.classList.add("is-dragging");
     
-    // Le setTimeout permet au navigateur de "capturer" l'image fantôme de la carte avant de la cacher
+    // Le setTimeout permet d'insérer le placeholder exactement à la place de la carte
+    // AVANT de prendre la photo du layout, pour que les autres cartes ne se décalent pas
     setTimeout(() => {
+      if (!placeholder) {
+        placeholder = document.createElement("div");
+        placeholder.className = "placeholder";
+        if (compactMode) placeholder.style.height = '70px';
+      }
+      card.parentNode.insertBefore(placeholder, card);
+
       selectedIds.forEach(id => {
         const c = document.getElementById(`card-${id}`);
         if(c) c.classList.add("dragging");
       });
+      
       const parentContainer = card.closest('.cards, .pool');
-      if (parentContainer) captureSnapshot(parentContainer);
+      if (parentContainer) {
+        snapshotContainer = null;
+        captureSnapshot(parentContainer);
+      }
     }, 0);
   });
 
@@ -2120,7 +2171,7 @@ function captureSnapshot(container) {
       bottom: box.bottom,
       left: box.left,
       right: box.right,
-      midX: box.left + box.width / 2, // Le milieu exact de la carte
+      midX: box.left + box.width / 2, // Centre parfait
       midY: box.top + box.height / 2,
       height: box.height,
       width: box.width
@@ -2150,22 +2201,20 @@ function getInsertionPoint(x, y) {
     if (dist < minDist) { minDist = dist; targetRow = row; }
   }
 
-  // NOUVELLE LOGIQUE SYMÉTRIQUE : 
-  // On insère *avant* la carte cible SEULEMENT si notre souris a passé le centre exact (midX) de cette carte.
+  // NOUVELLE LOGIQUE SYMÉTRIQUE
+  // On insère *avant* une carte SEULEMENT si la souris a dépassé le milieu (midX) exact de cette carte
   for (const snap of targetRow.snaps) {
     if (x < snap.midX) {
       return snap.el;
     }
   }
 
-  // Si on a passé le centre de toutes les cartes de la ligne, on insère à la fin (null = à la fin)
   const rowIdx = rows.indexOf(targetRow);
   const isLastRow = rowIdx === rows.length - 1;
 
   if (isLastRow) {
     return null;
   } else {
-    // Si on est à la fin d'une ligne mais qu'il y a une ligne en dessous, on insère avant le premier élément de la ligne suivante
     return rows[rowIdx + 1].snaps[0].el;
   }
 }
