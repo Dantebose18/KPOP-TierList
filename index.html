@@ -560,6 +560,11 @@ body.no-animations *, body.no-animations *::before, body.no-animations *::after 
   transition: none !important;
 }
 
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* --- POOL --- */
 .pool-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 1200px; background: var(--card-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 20px; border: var(--card-border); border-radius: var(--radius-lg); box-shadow: 0 -10px 40px rgba(0,0,0,0.1); z-index: 100; }
 .pool-header { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
@@ -956,6 +961,7 @@ let twitchVisible = false;
 let pollsEnabled = false;
 let currentDragAfter = undefined;
 let selectedIds = new Set();
+let sessionFilterId = null; // null = tout afficher, string = filtrer par session
 
 // --- GESTION MENUS DÉROULANTS ---
 function toggleMenu(groupId, event) {
@@ -981,9 +987,13 @@ const audio = document.getElementById('previewAudio');
 const volumeSlider = document.getElementById('volumeSlider');
 audio.volume = 0.15;
 
+// Forcer la mise à jour du fond de la barre dès le chargement
+// (le CSS background-size dépend de --vol-pct, on doit l'initialiser explicitement)
 function updateSliderBg(val) {
   volumeSlider.style.setProperty('--vol-pct', val + '%');
 }
+// Appel immédiat pour synchroniser l'affichage avec la valeur initiale (15)
+updateSliderBg(parseInt(volumeSlider.value));
 
 function setVolume(val) {
   audio.volume = val / 100;
@@ -1328,6 +1338,18 @@ async function syncCovers() {
         if (song.hasPreview === null) song.hasPreview = false;
       }
 
+      // Restaurer le lien YouTube direct si le lien actuel est une simple recherche et qu'on a une clé API
+      if (YOUTUBE_API_KEY && (!song.youtubeUrl || song.youtubeUrl.includes('youtube.com/results'))) {
+        try {
+          const query = `${song.artist} ${song.title} Official MV`;
+          const ytRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
+          const ytJson = await ytRes.json();
+          if (ytJson.items && ytJson.items.length > 0) {
+            song.youtubeUrl = `https://www.youtube.com/watch?v=${ytJson.items[0].id.videoId}`;
+          }
+        } catch(ytErr) { console.log("Erreur YouTube sync:", song.title, ytErr); }
+      }
+
       const cardEl = document.getElementById(`card-${song.id}`);
       if(cardEl) {
         cardEl.style.backgroundImage = `url(${song.cover})`;
@@ -1562,15 +1584,65 @@ function createNewSession() {
   if (!data.sessions) data.sessions = {};
   data.sessions[id] = { id, name, createdAt: Date.now() };
   data.activeSessionId = id;
+  sessionFilterId = id;
   save();
   nameInput.value = '';
-  renderSessions();
+  closeAllModals();
+  render();
+  showSessionFilterBanner(id);
 }
 
 function activateSession(sid) {
   data.activeSessionId = sid;
+  sessionFilterId = sid; // Activer le filtre pour n'afficher que cette session
   save();
-  renderSessions();
+  closeAllModals();
+  render();
+  // Afficher une bannière indiquant le mode filtré
+  showSessionFilterBanner(sid);
+}
+
+function showSessionFilterBanner(sid) {
+  let banner = document.getElementById('sessionFilterBanner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'sessionFilterBanner';
+    banner.style.cssText = `
+      position: sticky; top: 60px; z-index: 500;
+      background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(236,72,153,0.1));
+      border-bottom: 1px solid rgba(99,102,241,0.3);
+      padding: 8px 20px; display: flex; align-items: center; justify-content: space-between;
+      font-size: 13px; font-weight: 600; backdrop-filter: blur(8px);
+      animation: slideDown 0.3s ease;
+    `;
+    // Insérer avant .main
+    const main = document.querySelector('.main');
+    if (main) main.parentNode.insertBefore(banner, main);
+  }
+  const sessName = (data.sessions && data.sessions[sid]) ? (data.sessions[sid].name || sid) : sid;
+  const sessionSongs = [...data.tiers.flatMap(t => t.songs.filter(s => s.sessionId === sid))];
+  banner.innerHTML = `
+    <span>
+      <span style="opacity:0.7;">👁 Vue filtrée :</span>
+      <span style="background:var(--accent-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:0 6px;">${sessName}</span>
+      <span style="opacity:0.6; font-size:11px;">(${sessionSongs.length} carte(s) classée(s))</span>
+    </span>
+    <button onclick="clearSessionFilter()" style="
+      background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:var(--text-main);
+      padding:4px 12px; border-radius:20px; font-size:12px; font-weight:700; cursor:pointer;
+      font-family:'Outfit',sans-serif; display:inline-flex; align-items:center; gap:5px;
+    ">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      Tout afficher
+    </button>
+  `;
+}
+
+function clearSessionFilter() {
+  sessionFilterId = null;
+  const banner = document.getElementById('sessionFilterBanner');
+  if (banner) banner.remove();
+  render();
 }
 
 function renameSession(sid) {
@@ -1991,16 +2063,20 @@ function render(){
     const container = document.createElement("div");
     container.className = "cards";
     setupDrop(container, t.id);
-    t.songs.forEach(s => container.appendChild(createCard(s)));
+    const songsToShow = sessionFilterId
+      ? t.songs.filter(s => s.sessionId === sessionFilterId)
+      : t.songs;
+    songsToShow.forEach(s => container.appendChild(createCard(s)));
     tier.append(container);
     tiersDiv.appendChild(tier);
 
+    const visibleCount = sessionFilterId ? songsToShow.length : t.songs.length;
     if(sommaireList) {
       const somItem = document.createElement("div");
       somItem.className = "sommaire-item";
       somItem.setAttribute("data-tier-id", t.id);
       somItem.style.borderLeftColor = t.color;
-      somItem.innerHTML = `<span>${t.name}</span><span class="sommaire-count">${t.songs.length}</span>`;
+      somItem.innerHTML = `<span>${t.name}</span><span class="sommaire-count">${visibleCount}</span>`;
       somItem.onclick = () => {
         const target = document.getElementById(`tier-node-${t.id}`);
         const y = target.getBoundingClientRect().top + window.pageYOffset - 80;
@@ -2013,7 +2089,10 @@ function render(){
   const pool = document.getElementById("pool");
   pool.innerHTML = "";
   setupDrop(pool, null);
-  data.pool.forEach(s => pool.appendChild(createCard(s)));
+  const poolSongsToShow = sessionFilterId
+    ? data.pool.filter(s => s.sessionId === sessionFilterId)
+    : data.pool;
+  poolSongsToShow.forEach(s => pool.appendChild(createCard(s)));
 
   document.body.classList.toggle("hidden", !editMode);
   filterCards();
@@ -2130,26 +2209,51 @@ function createCard(song){
 function rebuildDataFromDOM() {
   const allSongsMap = {};
   [...data.pool, ...data.tiers.flatMap(t => t.songs)].forEach(s => { allSongsMap[s.id] = s; });
+
   data.tiers.forEach(t => {
     const tierContainer = document.querySelector(`#tier-node-${t.id} .cards`);
     if (tierContainer) {
-      const cardIds = Array.from(tierContainer.querySelectorAll('.card:not(.placeholder)')).map(c => c.id.replace('card-', ''));
-      t.songs = cardIds.map(id => allSongsMap[id]).filter(Boolean);
+      const visibleCardIds = Array.from(tierContainer.querySelectorAll('.card:not(.placeholder)')).map(c => c.id.replace('card-', ''));
+      if (sessionFilterId) {
+        // En mode filtré : remplacer uniquement les cartes de la session active, conserver les autres à leur place
+        const hiddenSongs = t.songs.filter(s => s.sessionId !== sessionFilterId);
+        const visibleSongs = visibleCardIds.map(id => allSongsMap[id]).filter(Boolean);
+        t.songs = [...visibleSongs, ...hiddenSongs];
+      } else {
+        t.songs = visibleCardIds.map(id => allSongsMap[id]).filter(Boolean);
+      }
     }
   });
+
   const poolContainer = document.getElementById('pool');
   if (poolContainer) {
-    const poolCardIds = Array.from(poolContainer.querySelectorAll('.card:not(.placeholder)')).map(c => c.id.replace('card-', ''));
-    data.pool = poolCardIds.map(id => allSongsMap[id]).filter(Boolean);
+    const visiblePoolIds = Array.from(poolContainer.querySelectorAll('.card:not(.placeholder)')).map(c => c.id.replace('card-', ''));
+    if (sessionFilterId) {
+      const hiddenPool = data.pool.filter(s => s.sessionId !== sessionFilterId);
+      const visiblePool = visiblePoolIds.map(id => allSongsMap[id]).filter(Boolean);
+      data.pool = [...visiblePool, ...hiddenPool];
+    } else {
+      data.pool = visiblePoolIds.map(id => allSongsMap[id]).filter(Boolean);
+    }
   }
 }
 
 function updateCounters() {
   data.tiers.forEach(t => {
     const countSpan = document.querySelector(`#tier-node-${t.id} .tier-controls span`);
-    if(countSpan) countSpan.innerText = `(${t.songs.length})`;
+    if(countSpan) {
+      const count = sessionFilterId
+        ? t.songs.filter(s => s.sessionId === sessionFilterId).length
+        : t.songs.length;
+      countSpan.innerText = `(${count})`;
+    }
     const somCount = document.querySelector(`.sommaire-item[data-tier-id="${t.id}"] .sommaire-count`);
-    if(somCount) somCount.innerText = t.songs.length;
+    if(somCount) {
+      const count = sessionFilterId
+        ? t.songs.filter(s => s.sessionId === sessionFilterId).length
+        : t.songs.length;
+      somCount.innerText = count;
+    }
   });
 }
 
