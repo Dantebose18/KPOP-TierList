@@ -25,7 +25,8 @@
   --radius-sm: 8px;
   --radius-md: 16px;
   --radius-lg: 24px;
-  --banner-offset: 0px; /* Utilisé pour décaler les éléments quand la bannière de filtre est active */
+  --header-height: 69px;
+  --banner-offset: 0px; /* Modifié par JS (41px) quand le filtre est actif */
 }
 
 body.dark {
@@ -57,7 +58,7 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--accent-primary); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent-secondary); }
 
-/* --- HEADER --- */
+/* --- HEADER RESTRUCTURÉ --- */
 header {
   position: sticky;
   top: 0;
@@ -71,7 +72,7 @@ header {
   -webkit-backdrop-filter: blur(12px);
   border-bottom: var(--card-border);
   box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
-  height: 69px; /* Fixation de la hauteur pour alignement précis */
+  height: var(--header-height);
 }
 
 .header-left { flex: 1; display: flex; justify-content: flex-start; }
@@ -104,7 +105,7 @@ header {
 #searchBar::placeholder { color: var(--text-muted); opacity: 0.7; }
 #clearSearchBtn { position: absolute; right: 10px; cursor: pointer; display: none; color: var(--text-muted); font-size: 14px; }
 
-/* --- DESIGN DES BOUTONS DE BASE --- */
+/* Nouveau design de base des boutons */
 button {
   padding: 8px 16px;
   border-radius: 12px;
@@ -138,6 +139,34 @@ button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.
 .btn-danger:hover { background: rgba(239, 68, 68, 0.1); }
 .icon-btn { padding: 8px 12px; font-size: 16px; }
 
+.input-section {
+  max-width: 700px;
+  margin: 40px auto 30px auto;
+  display: flex;
+  gap: 10px;
+  padding: 8px;
+  height: 56px; /* Fixation pour alignement calculé */
+  background: var(--card-bg);
+  border: var(--card-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(8px);
+}
+
+input[type="text"] {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 12px 20px;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--text-main);
+  border-radius: var(--radius-sm);
+  transition: background 0.2s;
+}
+input[type="text"]:focus { background: rgba(100,100,100,0.05); }
+input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
+
 /* --- BUTTON GROUPS (Menu Rétractable) --- */
 .btn-group {
   display: inline-flex;
@@ -146,15 +175,17 @@ button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(128, 128, 128, 0.2);
-  border-radius: 20px;
+  border-radius: 20px; 
   overflow: hidden;
-  transform: translateZ(0);
+  transform: translateZ(0); 
   flex-shrink: 0;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
 }
 
-body.dark .btn-group { background: rgba(0, 0, 0, 0.2); }
+body.dark .btn-group {
+  background: rgba(0, 0, 0, 0.2); 
+}
 
 .btn-group-label {
   font-family: 'Outfit', sans-serif;
@@ -177,8 +208,15 @@ body.dark .btn-group { background: rgba(0, 0, 0, 0.2); }
   min-height: 38px;
 }
 
-.btn-group-label:hover { background: rgba(128,128,128,0.1); }
-.btn-group.open .btn-group-label { background: var(--accent-gradient); color: white; border-right-color: rgba(255,255,255,0.2); }
+.btn-group-label:hover {
+  background: rgba(128,128,128,0.1);
+}
+
+.btn-group.open .btn-group-label {
+  background: var(--accent-gradient);
+  color: white;
+  border-right-color: rgba(255,255,255,0.2);
+}
 
 .group-content {
   display: inline-flex;
@@ -189,7 +227,10 @@ body.dark .btn-group { background: rgba(0, 0, 0, 0.2); }
   transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
 }
 
-.btn-group.open .group-content { max-width: 500px; opacity: 1; }
+.btn-group.open .group-content {
+  max-width: 500px;
+  opacity: 1;
+}
 
 .group-btn {
   display: inline-flex;
@@ -209,16 +250,22 @@ body.dark .btn-group { background: rgba(0, 0, 0, 0.2); }
   font-family: 'Outfit', sans-serif;
   white-space: nowrap;
 }
-.group-btn:last-child { border-right: none; padding-right: 18px; border-top-right-radius: 20px; border-bottom-right-radius: 20px; }
+.group-btn:last-child { 
+  border-right: none; 
+  padding-right: 18px; 
+  border-top-right-radius: 20px; 
+  border-bottom-right-radius: 20px; 
+}
 .group-btn:hover { background: rgba(128,128,128,0.08); color: var(--accent-primary); transform: none; box-shadow: none; }
 .group-btn svg { flex-shrink: 0; opacity: 0.8; }
 .group-btn.active-state { background: rgba(99,102,241,0.15); color: var(--accent-primary); }
+
 .btn-group-danger { color: #ef4444 !important; }
 .btn-group-danger:hover { background: rgba(239, 68, 68, 0.1) !important; color: #ef4444 !important; }
 .btn-group-fav { color: var(--accent-fav) !important; }
 .btn-group-fav:hover { background: rgba(236, 72, 153, 0.1) !important; }
 
-/* --- SCROLL TOP BTN --- */
+/* --- SCROLL TOP BTN REDESIGN --- */
 .scroll-top-btn {
   position: fixed;
   bottom: 30px;
@@ -241,33 +288,21 @@ body.dark .btn-group { background: rgba(0, 0, 0, 0.2); }
   visibility: hidden;
   transition: opacity 0.3s, transform 0.3s, visibility 0.3s, box-shadow 0.3s;
   z-index: 2000;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.3px;
 }
 .scroll-top-btn.visible { opacity: 1; visibility: visible; }
 .scroll-top-btn:hover { transform: translateY(-3px) !important; box-shadow: 0 8px 24px rgba(236, 72, 153, 0.5) !important; color: white; }
 
-/* --- LAYOUT WRAPPER (Alignement parfait des colonnes) --- */
-.layout-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  max-width: 1800px;
-  margin: 0 auto;
-  padding: 0 20px;
-  gap: 20px;
-  position: relative;
-}
-
-.main {
-  flex: 1;
-  max-width: 1320px;
-  padding: 0 0 240px 0;
-  min-width: 0;
-}
+.main { max-width: 1320px; margin: auto; padding: 0 20px 240px 20px; }
 
 /* --- SOMMAIRE --- */
 .sommaire-sidebar {
-  position: sticky;
-  top: calc(85px + var(--banner-offset));
+  position: fixed;
+  /* Top calculé pour s'aligner précisément au haut de la première tier. 
+     69(header) + offset + 40(margin-top) + 56(height input) + 30(margin-bottom) = 195px */
+  top: calc(195px + var(--banner-offset));
+  left: max(20px, calc(50vw - 930px)); /* S'adapte au container max-width sans le compresser */
   width: 250px;
   background: var(--card-bg);
   border: var(--card-border);
@@ -277,10 +312,8 @@ body.dark .btn-group { background: rgba(0, 0, 0, 0.2); }
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 100px);
+  max-height: calc(100vh - 215px);
   z-index: 100;
-  margin-top: 128px; /* S'aligne parfaitement avec le premier Tier (#tiers) */
-  flex-shrink: 0;
   transition: top 0.3s ease;
 }
 .sommaire-header { padding: 12px 15px; background: rgba(0, 0, 0, 0.1); border-bottom: var(--card-border); font-weight: 600; font-size: 14px; }
@@ -296,10 +329,11 @@ body.dark .btn-group { background: rgba(0, 0, 0, 0.2); }
 
 /* --- TWITCH SIDEBAR --- */
 .twitch-sidebar {
-  position: sticky;
-  top: calc(85px + var(--banner-offset));
+  position: fixed;
+  top: calc(195px + var(--banner-offset));
+  right: max(20px, calc(50vw - 1000px)); /* S'adapte symétriquement sans comprimer */
   width: 320px;
-  height: calc(100vh - 100px);
+  height: calc(100vh - 215px);
   background: var(--card-bg);
   border: var(--card-border);
   border-radius: var(--radius-md);
@@ -307,11 +341,9 @@ body.dark .btn-group { background: rgba(0, 0, 0, 0.2); }
   display: flex;
   flex-direction: column;
   z-index: 100;
-  margin-top: 128px; /* S'aligne parfaitement avec le premier Tier (#tiers) */
-  flex-shrink: 0;
   transition: opacity 0.3s ease, visibility 0.3s ease, top 0.3s ease;
 }
-.twitch-sidebar.hidden { display: none; }
+.twitch-sidebar.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 .twitch-header {
   border-top-left-radius: var(--radius-md);
   border-top-right-radius: var(--radius-md);
@@ -352,11 +384,12 @@ iframe.twitch-iframe { flex: 1; width: 100%; border: none; border-bottom-left-ra
 /* BANNIERE VUE FILTREE */
 #sessionFilterBanner {
   position: sticky;
-  top: 69px; /* Coller juste en dessous du header */
+  top: var(--header-height);
   z-index: 900;
+  height: 41px; /* Fixation stricte pour le offset */
   background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(236,72,153,0.1));
   border-bottom: 1px solid rgba(99,102,241,0.3);
-  padding: 10px 20px;
+  padding: 0 20px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -372,8 +405,7 @@ iframe.twitch-iframe { flex: 1; width: 100%; border: none; border-bottom-left-ra
   to { opacity: 1; transform: translateY(0); }
 }
 
-@media (max-width: 1750px) { .sommaire-sidebar { display: none !important; } }
-@media (max-width: 1200px) { .twitch-sidebar { display: none !important; } }
+@media (max-width: 1750px) { .twitch-sidebar, .sommaire-sidebar { display: none !important; } }
 @media (max-width: 900px) {
   header { flex-direction: column; gap: 15px; padding: 15px; height: auto; }
   .header-left, .header-center, .header-right { width: 100%; justify-content: center; }
@@ -382,7 +414,7 @@ iframe.twitch-iframe { flex: 1; width: 100%; border: none; border-bottom-left-ra
   .desktop-only { display: none; }
 }
 @media (max-width: 768px) {
-  .input-section { flex-direction: column; margin: 20px auto; }
+  .input-section { flex-direction: column; margin: 20px auto; height: auto; }
   .input-section > div { display: none; }
   .main { padding: 0 10px 240px 10px; }
   .cards { justify-content: flex-start; gap: 10px; padding: 15px; }
@@ -390,34 +422,6 @@ iframe.twitch-iframe { flex: 1; width: 100%; border: none; border-bottom-left-ra
   .pool-container { width: 95%; padding: 10px; bottom: 10px; }
   .scroll-top-btn { bottom: 110px; right: 15px; }
 }
-
-/* --- INPUT SECTION --- */
-.input-section {
-  max-width: 700px;
-  margin: 40px auto 30px auto;
-  display: flex;
-  gap: 10px;
-  padding: 8px;
-  background: var(--card-bg);
-  border: var(--card-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--glass-shadow);
-  backdrop-filter: blur(8px);
-}
-
-input[type="text"] {
-  flex: 1;
-  border: none;
-  background: transparent;
-  padding: 12px 20px;
-  font-family: inherit;
-  font-size: 15px;
-  color: var(--text-main);
-  border-radius: var(--radius-sm);
-  transition: background 0.2s;
-}
-input[type="text"]:focus { background: rgba(100,100,100,0.05); }
-input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 
 /* --- TIERS --- */
 .tier {
@@ -443,7 +447,7 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   text-shadow: 0 2px 4px rgba(0,0,0,0.2);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   position: sticky;
-  top: calc(69px + var(--banner-offset));
+  top: calc(var(--header-height) + var(--banner-offset));
   z-index: 40;
   overflow: hidden;
   transition: top 0.3s ease;
@@ -496,7 +500,6 @@ body.edit-active .fav-badge { display: none !important; }
 body.is-dragging .card { transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s !important; }
 body.is-dragging .cards { transition: none !important; }
 
-/* La carte originale est rendue invisible pour que le drag reste fluide */
 .card.dragging {
   opacity: 0 !important;
   position: absolute !important;
@@ -911,32 +914,27 @@ body.edit-active .card-tools button { pointer-events: auto; }
   <span>Top</span>
 </button>
 
-<div class="layout-wrapper">
-  
-  <div class="sommaire-sidebar" id="sommaireSidebar">
-    <div class="sommaire-header">📑 Sommaire</div>
-    <div id="sommaireList" class="sommaire-list"></div>
-  </div>
+<div class="sommaire-sidebar" id="sommaireSidebar">
+  <div class="sommaire-header">📑 Sommaire</div>
+  <div id="sommaireList" class="sommaire-list"></div>
+</div>
 
-  <div class="main">
-    <div class="input-section">
-      <input type="text" id="artistInput" placeholder="Artiste (ex: NMIXX)">
-      <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
-      <input type="text" id="titleInput" placeholder="Titre (ex: Dash)">
-      <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
-    </div>
-    
-    <div id="tiers"></div>
+<div class="twitch-sidebar hidden" id="twitchSidebar">
+  <div class="twitch-header">
+    <span style="color: #bfdbfe;">🟣 Tchat Twitch</span>
+    <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="Dantebose" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
   </div>
+  <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
+</div>
 
-  <div class="twitch-sidebar hidden" id="twitchSidebar">
-    <div class="twitch-header">
-      <span style="color: #bfdbfe;">🟣 Tchat Twitch</span>
-      <input type="text" id="twitchChannelInput" placeholder="Chaîne..." value="Dantebose" onchange="changeTwitchChannel()" title="Appuyez sur Entrée pour valider">
-    </div>
-    <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
+<div class="main">
+  <div class="input-section">
+    <input type="text" id="artistInput" placeholder="Artiste (ex: NMIXX)">
+    <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
+    <input type="text" id="titleInput" placeholder="Titre (ex: Dash)">
+    <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
   </div>
-
+  <div id="tiers"></div>
 </div>
 
 <div class="pool-container">
@@ -1311,6 +1309,7 @@ async function syncCovers() {
   if(!syncBadge) {
     syncBadge = document.createElement("div");
     syncBadge.id = "syncBadge";
+    // Notification volante en haut à droite, indépendante du header
     syncBadge.style.cssText = "position: fixed; top: 85px; right: 30px; z-index: 2000; font-size: 13px; font-weight: 600; background: var(--accent-secondary); color: white; padding: 8px 16px; border-radius: 20px; box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4); text-align: center; min-width: 180px; transition: all 0.3s;";
     document.body.appendChild(syncBadge);
   }
@@ -1323,7 +1322,7 @@ async function syncCovers() {
       const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(appleQuery)}&entity=song&limit=1`);
       
       if(!res.ok) { 
-        syncBadge.innerText = "⏸️ API Apple en pause (Trop de requêtes)"; 
+        syncBadge.innerText = "⏸️ API Apple en pause"; 
         syncBadge.style.background = "#f59e0b"; 
         isSyncing = false; 
         setTimeout(() => syncBadge.remove(), 5000); 
@@ -1595,17 +1594,18 @@ function createNewSession() {
   data.activeSessionId = id;
   save();
   nameInput.value = '';
-  closeAllModals();
   renderSessions();
 }
 
 function activateSession(sid) {
+  // Active la session MAIS ne cache pas le reste
   data.activeSessionId = sid;
   save();
   renderSessions();
 }
 
 function filterBySession(sid) {
+  // Applique le filtre visuel à la tier list
   sessionFilterId = sid;
   closeAllModals();
   showSessionFilterBanner(sid);
@@ -1617,18 +1617,10 @@ function showSessionFilterBanner(sid) {
   if (!banner) {
     banner = document.createElement('div');
     banner.id = 'sessionFilterBanner';
-    banner.style.cssText = `
-      position: sticky; top: 69px; z-index: 900;
-      background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(236,72,153,0.1));
-      border-bottom: 1px solid rgba(99,102,241,0.3);
-      padding: 10px 20px; display: flex; align-items: center; justify-content: center; gap: 15px;
-      font-size: 13px; font-weight: 600; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-      animation: slideDown 0.3s ease;
-    `;
-    const wrapper = document.querySelector('.layout-wrapper');
-    wrapper.parentNode.insertBefore(banner, wrapper);
+    document.body.appendChild(banner);
   }
-  document.documentElement.style.setProperty('--banner-offset', '40px');
+  
+  document.documentElement.style.setProperty('--banner-offset', '41px');
 
   const sessName = (data.sessions && data.sessions[sid]) ? (data.sessions[sid].name || sid) : sid;
   const sessionSongs = [...data.tiers.flatMap(t => t.songs.filter(s => s.sessionId === sid)), ...data.pool.filter(s => s.sessionId === sid)];
@@ -1870,11 +1862,10 @@ function searchByArtist(artistName) {
     const lowerTerm = artistName.toLowerCase().trim();
     let targetTierId = null;
 
-    // Cherche le tier le plus haut qui contient cet artiste
     for (const tier of data.tiers) {
       if (tier.songs.some(s => s.artist.toLowerCase().includes(lowerTerm))) {
         targetTierId = tier.id;
-        break; // Tiers sont déjà ordonnés du haut vers le bas
+        break; 
       }
     }
 
@@ -1883,11 +1874,10 @@ function searchByArtist(artistName) {
       if (targetEl) {
         const y = targetEl.getBoundingClientRect().top + window.pageYOffset - 80;
         window.scrollTo({ top: y, behavior: 'smooth' });
-        return; // Terminé si trouvé dans un tier
+        return;
       }
     }
 
-    // Comportement de secours (ex: l'artiste est dans la réserve)
     const tiersEl = document.getElementById('tiers');
     if (tiersEl) {
       const y = tiersEl.getBoundingClientRect().top + window.pageYOffset - 80;
@@ -1990,7 +1980,6 @@ function render(){
     const countSpan = document.createElement("span");
     countSpan.style.cssText = "font-size:14px; opacity:0.8; font-weight:600; margin-right: 10px;";
     
-    // Compter seulement ce qui est visible
     const visibleCount = sessionFilterId ? t.songs.filter(s => s.sessionId === sessionFilterId).length : t.songs.length;
     countSpan.innerText = `(${visibleCount})`;
     controls.append(countSpan);
@@ -2136,7 +2125,6 @@ function createCard(song){
     snapshotContainer = null;
   });
 
-  // Play button
   const playBtn = document.createElement("div");
   playBtn.className = "card-play-btn";
   
@@ -2236,7 +2224,7 @@ function captureSnapshot(container) {
       bottom: box.bottom,
       left: box.left,
       right: box.right,
-      midX: box.left + box.width / 2, // Centre parfait
+      midX: box.left + box.width / 2,
       midY: box.top + box.height / 2,
       height: box.height,
       width: box.width
@@ -2266,7 +2254,6 @@ function getInsertionPoint(x, y) {
     if (dist < minDist) { minDist = dist; targetRow = row; }
   }
 
-  // LOGIQUE SYMÉTRIQUE
   for (const snap of targetRow.snaps) {
     if (x < snap.midX) {
       return snap.el;
@@ -2464,7 +2451,6 @@ async function addSong(){
   data.pool.push(newSong);
   save();
 
-  // Si on est en mode filtré et que l'ajout ne correspond pas à la session filtrée, on prévient ou on affiche quand même dans la réserve
   const poolEl = document.getElementById("pool");
   if(poolEl) {
     if (!sessionFilterId || sessionFilterId === sessionId) {
