@@ -26,7 +26,7 @@
   --radius-md: 16px;
   --radius-lg: 24px;
   --header-height: 69px;
-  --banner-offset: 0px; /* Modifié par JS (41px) quand le filtre est actif */
+  --banner-offset: 0px;
 }
 
 body.dark {
@@ -145,7 +145,7 @@ button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.
   display: flex;
   gap: 10px;
   padding: 8px;
-  height: 56px; /* Fixation pour alignement calculé */
+  height: 56px;
   background: var(--card-bg);
   border: var(--card-border);
   border-radius: var(--radius-md);
@@ -299,10 +299,8 @@ body.dark .btn-group {
 /* --- SOMMAIRE --- */
 .sommaire-sidebar {
   position: fixed;
-  /* Top calculé pour s'aligner précisément au haut de la première tier. 
-     69(header) + offset + 40(margin-top) + 56(height input) + 30(margin-bottom) = 195px */
   top: calc(195px + var(--banner-offset));
-  left: max(20px, calc(50vw - 930px)); /* S'adapte au container max-width sans le compresser */
+  left: max(20px, calc(50vw - 930px));
   width: 250px;
   background: var(--card-bg);
   border: var(--card-border);
@@ -331,7 +329,7 @@ body.dark .btn-group {
 .twitch-sidebar {
   position: fixed;
   top: calc(195px + var(--banner-offset));
-  right: max(20px, calc(50vw - 1000px)); /* S'adapte symétriquement sans comprimer */
+  right: max(20px, calc(50vw - 1000px));
   width: 320px;
   height: calc(100vh - 215px);
   background: var(--card-bg);
@@ -1309,7 +1307,6 @@ async function syncCovers() {
   if(!syncBadge) {
     syncBadge = document.createElement("div");
     syncBadge.id = "syncBadge";
-    // Notification volante en haut à droite, indépendante du header
     syncBadge.style.cssText = "position: fixed; top: 85px; right: 30px; z-index: 2000; font-size: 13px; font-weight: 600; background: var(--accent-secondary); color: white; padding: 8px 16px; border-radius: 20px; box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4); text-align: center; min-width: 180px; transition: all 0.3s;";
     document.body.appendChild(syncBadge);
   }
@@ -1598,14 +1595,12 @@ function createNewSession() {
 }
 
 function activateSession(sid) {
-  // Active la session MAIS ne cache pas le reste
   data.activeSessionId = sid;
   save();
   renderSessions();
 }
 
 function filterBySession(sid) {
-  // Applique le filtre visuel à la tier list
   sessionFilterId = sid;
   closeAllModals();
   showSessionFilterBanner(sid);
@@ -1617,7 +1612,7 @@ function showSessionFilterBanner(sid) {
   if (!banner) {
     banner = document.createElement('div');
     banner.id = 'sessionFilterBanner';
-    document.body.appendChild(banner);
+    document.querySelector('header').insertAdjacentElement('afterend', banner);
   }
   
   document.documentElement.style.setProperty('--banner-offset', '41px');
