@@ -72,7 +72,7 @@ header {
   -webkit-backdrop-filter: blur(12px);
   border-bottom: var(--card-border);
   box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
-  height: var(--header-height);
+  /* La hauteur fixe a été retirée pour laisser le JavaScript la calculer dynamiquement */
 }
 
 .header-left { flex: 1; display: flex; justify-content: flex-start; }
@@ -299,7 +299,7 @@ body.dark .btn-group {
 /* --- SOMMAIRE --- */
 .sommaire-sidebar {
   position: fixed;
-  top: calc(195px + var(--banner-offset));
+  top: calc(var(--header-height) + 126px + var(--banner-offset));
   left: max(20px, calc(50vw - 930px));
   width: 250px;
   background: var(--card-bg);
@@ -328,7 +328,7 @@ body.dark .btn-group {
 /* --- TWITCH SIDEBAR --- */
 .twitch-sidebar {
   position: fixed;
-  top: calc(195px + var(--banner-offset));
+  top: calc(var(--header-height) + 126px + var(--banner-offset));
   right: max(20px, calc(50vw - 1000px));
   width: 320px;
   height: calc(100vh - 215px);
@@ -384,7 +384,7 @@ iframe.twitch-iframe { flex: 1; width: 100%; border: none; border-bottom-left-ra
   position: sticky;
   top: var(--header-height);
   z-index: 900;
-  height: 41px; /* Fixation stricte pour le offset */
+  height: 41px;
   background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(236,72,153,0.1));
   border-bottom: 1px solid rgba(99,102,241,0.3);
   padding: 0 20px;
@@ -409,7 +409,17 @@ iframe.twitch-iframe { flex: 1; width: 100%; border: none; border-bottom-left-ra
   .header-left, .header-center, .header-right { width: 100%; justify-content: center; }
   .search-container { width: 100%; max-width: 400px; }
   #searchBar { width: 100% !important; text-align: left; }
-  .desktop-only { display: none; }
+  /* MENU RENDU RESPONSIVE ET SCROLLABLE HORIZONTALEMENT */
+  .header-right { 
+    justify-content: flex-start; 
+    flex-wrap: nowrap; 
+    overflow-x: auto; 
+    padding-bottom: 5px; 
+    -webkit-overflow-scrolling: touch; 
+    scrollbar-width: none; 
+  }
+  .header-right::-webkit-scrollbar { display: none; }
+  .desktop-only { display: inline-flex; } /* Ne plus les cacher sur mobile ! */
 }
 @media (max-width: 768px) {
   .input-section { flex-direction: column; margin: 20px auto; height: auto; }
@@ -907,6 +917,16 @@ body.edit-active .card-tools button { pointer-events: auto; }
   </div>
 </div>
 
+<div id="sessionCardsModal" class="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-content" style="max-width: 680px;">
+    <h2 id="sessionCardsTitle">🎵 Cartes de la session</h2>
+    <div class="modal-body-scroll" id="sessionCardsBody"></div>
+    <div style="margin-top: 15px; text-align: right;">
+      <button onclick="closeAllModals()">Fermer</button>
+    </div>
+  </div>
+</div>
+
 <button id="scrollTopBtn" class="scroll-top-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Remonter tout en haut">
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
   <span>Top</span>
@@ -976,6 +996,15 @@ let currentDragAfter = undefined;
 let selectedIds = new Set();
 let sessionFilterId = null;
 
+// --- DYNAMIC HEADER HEIGHT SCRIPT ---
+function updateHeaderHeight() {
+  const header = document.querySelector('header');
+  if (header) {
+    document.documentElement.style.setProperty('--header-height', header.offsetHeight + 'px');
+  }
+}
+window.addEventListener('resize', updateHeaderHeight);
+
 // --- GESTION MENUS DÉROULANTS ---
 function toggleMenu(groupId, event) {
   event.stopPropagation();
@@ -986,9 +1015,11 @@ function toggleMenu(groupId, event) {
     currentlyOpen.classList.remove('open');
     setTimeout(() => {
       targetGroup.classList.add('open');
+      setTimeout(updateHeaderHeight, 350); // Met à jour la hauteur si le menu s'étend sur une nouvelle ligne
     }, 300);
   } else {
     targetGroup.classList.toggle('open');
+    setTimeout(updateHeaderHeight, 350);
   }
 }
 
@@ -1429,6 +1460,7 @@ function showFavorites() {
     body.innerHTML = html;
   }
   modal.style.display = 'flex';
+  body.scrollTop = 0; // Remet le scroll en haut
 }
 
 function closeAllModals() {
@@ -1443,6 +1475,7 @@ function closeModal(e) {
 
 function showSessionsModal() {
   document.getElementById('sessionsModal').style.display = 'flex';
+  document.getElementById('sessionsBody').scrollTop = 0; // Remet le scroll en haut
   renderSessions();
 }
 
@@ -1845,6 +1878,7 @@ function showStats() {
   `;
   body.innerHTML = html;
   modal.style.display = 'flex';
+  body.scrollTop = 0; // Remet le scroll en haut
 }
 
 function searchByArtist(artistName) {
@@ -1901,6 +1935,57 @@ function showAllArtists() {
     body.innerHTML = html;
   }
   modal.style.display = 'flex';
+  body.scrollTop = 0; // Remet le scroll en haut
+}
+
+// --- VOIR LES CARTES D'UNE SESSION (MODAL) ---
+function showSessionCards(sessionId) {
+  const modal = document.getElementById('sessionCardsModal');
+  const title = document.getElementById('sessionCardsTitle');
+  const body = document.getElementById('sessionCardsBody');
+  const sess = data.sessions[sessionId];
+  title.textContent = `🎵 Cartes — ${sess ? (sess.name || sessionId) : sessionId}`;
+
+  const allSongsWithTier = [];
+  data.tiers.forEach(tier => {
+    tier.songs.filter(s => s.sessionId === sessionId).forEach(s => {
+      allSongsWithTier.push({ ...s, tierName: tier.name, tierColor: tier.color });
+    });
+  });
+  data.pool.filter(s => s.sessionId === sessionId).forEach(s => {
+    allSongsWithTier.push({ ...s, tierName: 'Réserve', tierColor: 'var(--text-muted)' });
+  });
+
+  if (allSongsWithTier.length === 0) {
+    body.innerHTML = '<div style="opacity:0.5; text-align:center; padding:30px;">Aucune carte dans cette session.</div>';
+  } else {
+    const grouped = {};
+    allSongsWithTier.forEach(s => {
+      const key = s.tierName;
+      if (!grouped[key]) grouped[key] = { color: s.tierColor, songs: [] };
+      grouped[key].songs.push(s);
+    });
+
+    let html = `<div style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">${allSongsWithTier.length} carte(s) au total</div>`;
+    Object.entries(grouped).forEach(([tierName, group]) => {
+      html += `<div style="margin-bottom:18px;">
+        <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:${group.color}; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid ${group.color}44;">${tierName} <span style="opacity:0.6; font-weight:400;">(${group.songs.length})</span></div>
+        <div style="display:flex; flex-wrap:wrap; gap:10px;">`;
+      group.songs.forEach(s => {
+        html += `<div style="display:flex;align-items:center;gap:8px;background:rgba(128,128,128,0.06);border-radius:8px;padding:7px 10px;border:1px solid rgba(128,128,128,0.1);cursor:pointer;" onclick="window.open('${s.youtubeUrl}','_blank')" title="Ouvrir sur YouTube">
+          <div style="width:36px;height:36px;border-radius:6px;background-image:url(${s.cover});background-size:cover;background-position:center;flex-shrink:0;background-color:var(--card-bg);"></div>
+          <div style="min-width:0;">
+            <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;">${s.artist}</div>
+            <div style="font-size:11px;opacity:0.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;">${s.title}</div>
+          </div>
+        </div>`;
+      });
+      html += `</div></div>`;
+    });
+    body.innerHTML = html;
+  }
+  modal.style.display = 'flex';
+  body.scrollTop = 0; // Remet le scroll en haut
 }
 
 // --- EXPORT PNG ---
@@ -2516,6 +2601,7 @@ document.addEventListener("dragend", () => {
   if (autoScrollRAF) { cancelAnimationFrame(autoScrollRAF); autoScrollRAF = null; }
 });
 
+updateHeaderHeight(); // Initialisation de la hauteur du header au chargement
 render();
 setTimeout(syncCovers, 1500);
 changeTwitchChannel();
