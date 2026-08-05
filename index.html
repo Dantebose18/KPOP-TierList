@@ -827,6 +827,40 @@ body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
 .profile-avatar-actions .group-btn { border: 1px solid rgba(128,128,128,0.2); border-radius: 20px; padding: 6px 14px; }
 .profile-meta-line { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; }
 .cloud-status-note { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 10px; }
+
+/* ============================================================
+   MODE MULTI (session à deux, temps réel)
+   ============================================================ */
+.duo-code-display {
+  font-family: 'Outfit', monospace; font-size: 34px; font-weight: 800; letter-spacing: 8px;
+  background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin: 10px 0; text-align: center;
+}
+.duo-live-dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block; box-shadow: 0 0 6px #10b981; flex-shrink: 0; }
+.duo-live-dot.pulsing { animation: duoPulse 1.4s infinite; }
+@keyframes duoPulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+.duo-remote-panel {
+  background: var(--card-bg); border: var(--card-border); border-radius: var(--radius-lg);
+  box-shadow: var(--glass-shadow); margin: 0 0 30px 0; overflow: hidden;
+}
+.duo-remote-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid rgba(128,128,128,0.15); flex-wrap: wrap; gap: 10px; }
+.duo-remote-who { display: flex; align-items: center; gap: 12px; }
+.duo-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--accent-gradient); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; overflow: hidden; flex-shrink: 0; }
+.duo-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.duo-remote-who strong { display: block; font-size: 14px; }
+.duo-remote-who small { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 5px; margin-top: 2px; }
+.duo-leave-btn { background: transparent; border: 1px solid rgba(239,68,68,0.35); color: #ef4444; border-radius: 20px; padding: 7px 16px; font-size: 12px; font-weight: 700; }
+.duo-leave-btn:hover { background: rgba(239,68,68,0.1); color: #ef4444; }
+.duo-remote-body { max-height: 480px; overflow-y: auto; padding: 16px; }
+.duo-remote-body::-webkit-scrollbar { width: 6px; }
+.duo-remote-body::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; }
+.duo-remote-body .tier { margin-bottom: 16px; }
+.duo-remote-body .tier-header { position: static; }
+.duo-remote-body .card { width: 100px; height: 100px; cursor: pointer; }
+.duo-remote-body .cards { padding: 12px; gap: 10px; min-height: 90px; }
+.duo-remote-pool-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 800; margin: 6px 0 8px 4px; }
+.duo-empty-note { text-align: center; padding: 30px; color: var(--text-muted); font-size: 13px; }
 </style>
 </head>
 <body class="dark">
@@ -976,6 +1010,13 @@ body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
         </div>
       </div>
     </div>
+
+    <div class="btn-group auth-widget" id="duoWidget">
+      <button class="auth-icon-btn" id="duoIconBtn" onclick="toggleDuoMenu(event)" title="Mode multi">👥</button>
+      <div class="auth-dropdown" id="duoDropdown" style="width:280px;">
+        <div id="duoDropdownContent"></div>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -1104,6 +1145,40 @@ body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
   </div>
 </div>
 
+<div id="duoModal" class="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-content" style="max-width: 420px;">
+    <div class="modal-tabs">
+      <button class="modal-tab" id="duoTabCreate" onclick="switchDuoTab('create')">Créer</button>
+      <button class="modal-tab" id="duoTabJoin" onclick="switchDuoTab('join')">Rejoindre</button>
+    </div>
+
+    <div id="duoCreatePane">
+      <p style="font-size:13px; color:var(--text-muted); margin-top:0;">Génère un code et envoie-le à ton ami : vos deux tier lists s'afficheront ensemble et se mettront à jour en direct.</p>
+      <div id="duoCreateIdle">
+        <button class="btn-primary auth-submit-btn" style="width:100%;" onclick="createDuoSession()">Générer un code</button>
+      </div>
+      <div id="duoCreateWaiting" style="display:none; text-align:center;">
+        <div class="duo-code-display" id="duoCodeDisplay">------</div>
+        <button class="group-btn" style="margin: 0 auto 10px auto; border:1px solid rgba(128,128,128,0.2); border-radius:20px; display:block;" onclick="copyDuoCode()">📋 Copier le code</button>
+        <div class="cloud-status-note" style="justify-content:center;"><span class="duo-live-dot pulsing"></span> En attente que ton ami rejoigne...</div>
+      </div>
+    </div>
+
+    <div id="duoJoinPane" style="display:none;">
+      <p style="font-size:13px; color:var(--text-muted); margin-top:0;">Entre le code que ton ami t'a donné.</p>
+      <form class="auth-form" onsubmit="joinDuoSession(event)">
+        <input type="text" id="duoJoinCodeInput" placeholder="EX: A3F9K2" maxlength="6" style="text-transform:uppercase; text-align:center; letter-spacing:4px; font-weight:800; font-size:18px;" required>
+        <div class="auth-error" id="duoJoinError"></div>
+        <button type="submit" class="btn-primary auth-submit-btn">Rejoindre</button>
+      </form>
+    </div>
+
+    <div style="margin-top: 15px; text-align: right;">
+      <button onclick="closeAllModals()">Fermer</button>
+    </div>
+  </div>
+</div>
+
 <button id="scrollTopBtn" class="scroll-top-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Remonter tout en haut">
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
   <span>Top</span>
@@ -1123,6 +1198,22 @@ body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
 </div>
 
 <div class="main">
+  <div id="duoRemotePanel" class="duo-remote-panel" style="display:none;">
+    <div class="duo-remote-header">
+      <div class="duo-remote-who">
+        <div class="duo-avatar" id="duoPartnerAvatar">👤</div>
+        <div>
+          <strong id="duoPartnerName">Ami</strong>
+          <small><span class="duo-live-dot"></span> En direct</small>
+        </div>
+      </div>
+      <button class="duo-leave-btn" onclick="leaveDuoSession()">Quitter la session</button>
+    </div>
+    <div class="duo-remote-body" id="duoRemoteBody">
+      <div class="duo-empty-note">En attente des données...</div>
+    </div>
+  </div>
+
   <div class="input-section">
     <input type="text" id="artistInput" placeholder="Artiste (ex: NMIXX)">
     <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
@@ -1609,6 +1700,272 @@ async function initAuth() {
   });
 }
 
+// ==========================================
+// MODE MULTI (session à deux, temps réel via Supabase Realtime)
+// ==========================================
+let duoChannel = null;
+let duoCode = null;
+let duoState = 'solo'; // 'solo' | 'waiting' | 'active'
+let duoPresenceKey = null;
+let duoRemoteData = null;
+let duoPartnerName = null;
+let duoBroadcastTimer = null;
+let duoGuestName = null;
+
+function toggleDuoMenu(event) {
+  event.stopPropagation();
+  document.getElementById('duoWidget').classList.toggle('open');
+}
+
+document.addEventListener('click', (e) => {
+  const widget = document.getElementById('duoWidget');
+  if (widget && widget.classList.contains('open') && !widget.contains(e.target)) {
+    widget.classList.remove('open');
+  }
+});
+
+function myDuoName() {
+  if (currentProfile && currentProfile.username) return currentProfile.username;
+  if (currentUser) return currentUser.email.split('@')[0];
+  if (!duoGuestName) duoGuestName = prompt("Choisis un pseudo pour la session multi :", "Invité") || "Invité";
+  return duoGuestName;
+}
+
+function generateRoomCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let out = '';
+  for (let i = 0; i < 6; i++) out += chars[Math.floor(Math.random() * chars.length)];
+  return out;
+}
+
+function openDuoModal() {
+  document.getElementById('duoWidget').classList.remove('open');
+  document.getElementById('duoJoinError').classList.remove('visible');
+  switchDuoTab('create');
+  document.getElementById('duoModal').style.display = 'flex';
+}
+
+function switchDuoTab(tab) {
+  const tabCreate = document.getElementById('duoTabCreate');
+  const tabJoin = document.getElementById('duoTabJoin');
+  const createPane = document.getElementById('duoCreatePane');
+  const joinPane = document.getElementById('duoJoinPane');
+  if (tab === 'create') {
+    tabCreate.classList.add('active'); tabJoin.classList.remove('active');
+    createPane.style.display = 'block'; joinPane.style.display = 'none';
+  } else {
+    tabJoin.classList.add('active'); tabCreate.classList.remove('active');
+    joinPane.style.display = 'block'; createPane.style.display = 'none';
+  }
+}
+
+function createDuoSession() {
+  const code = generateRoomCode();
+  document.getElementById('duoCodeDisplay').textContent = code;
+  document.getElementById('duoCreateIdle').style.display = 'none';
+  document.getElementById('duoCreateWaiting').style.display = 'block';
+  duoState = 'waiting';
+  connectDuoChannel(code);
+  updateDuoWidgetUI();
+}
+
+function joinDuoSession(event) {
+  event.preventDefault();
+  const errorBox = document.getElementById('duoJoinError');
+  errorBox.classList.remove('visible');
+  const code = document.getElementById('duoJoinCodeInput').value.trim().toUpperCase();
+  if (code.length !== 6) {
+    errorBox.textContent = "Le code doit contenir 6 caractères.";
+    errorBox.classList.add('visible');
+    return;
+  }
+  closeAllModals();
+  duoState = 'waiting';
+  connectDuoChannel(code);
+  updateDuoWidgetUI();
+}
+
+function connectDuoChannel(code) {
+  if (!supabaseClient) {
+    alert("La connexion à Supabase n'est pas configurée. Renseigne SUPABASE_URL et SUPABASE_ANON_KEY dans le code.");
+    duoState = 'solo';
+    updateDuoWidgetUI();
+    return;
+  }
+  duoCode = code;
+  duoPresenceKey = currentUser ? currentUser.id : ('guest-' + Math.random().toString(36).slice(2, 10));
+
+  duoChannel = supabaseClient.channel('duo-room-' + code, {
+    config: { presence: { key: duoPresenceKey } }
+  });
+
+  duoChannel.on('presence', { event: 'sync' }, () => handleDuoPresenceSync());
+
+  duoChannel.on('broadcast', { event: 'tierdata' }, ({ payload }) => {
+    if (!payload || payload.from === duoPresenceKey) return;
+    duoRemoteData = payload.data;
+    renderRemoteBoard();
+  });
+
+  duoChannel.subscribe(async (status) => {
+    if (status === 'SUBSCRIBED') {
+      await duoChannel.track({ username: myDuoName(), joinedAt: Date.now() });
+    }
+  });
+}
+
+function handleDuoPresenceSync() {
+  if (!duoChannel) return;
+  const state = duoChannel.presenceState();
+  const entries = Object.entries(state).map(([key, metas]) => ({
+    key, joinedAt: (metas[0] && metas[0].joinedAt) || 0, username: (metas[0] && metas[0].username) || 'Ami'
+  }));
+  entries.sort((a, b) => a.joinedAt - b.joinedAt);
+
+  // Sécurité : max 2 personnes. Un éventuel 3e arrivant est automatiquement refusé.
+  const myRank = entries.findIndex(e => e.key === duoPresenceKey);
+  if (entries.length > 2 && myRank >= 2) {
+    alert("Cette session multi est déjà complète (2/2).");
+    leaveDuoSession();
+    return;
+  }
+
+  const wasActive = (duoState === 'active');
+
+  if (entries.length >= 2) {
+    const partner = entries.find(e => e.key !== duoPresenceKey);
+    duoPartnerName = partner ? partner.username : 'Ami';
+    duoState = 'active';
+    document.getElementById('duoRemotePanel').style.display = 'block';
+    document.getElementById('duoPartnerName').textContent = duoPartnerName;
+    document.getElementById('duoPartnerAvatar').textContent = initials(duoPartnerName);
+    closeAllModals();
+    if (!wasActive) broadcastMyData(); // envoie immédiatement notre état dès que la session devient active
+    updateDuoWidgetUI();
+  } else if (entries.length === 1 && wasActive) {
+    alert("Ton ami a quitté la session multi.");
+    leaveDuoSession();
+  }
+}
+
+function broadcastMyData() {
+  if (!duoChannel || duoState !== 'active') return;
+  duoChannel.send({ type: 'broadcast', event: 'tierdata', payload: { data, from: duoPresenceKey } });
+}
+
+function maybeBroadcastDuo() {
+  if (!duoChannel || duoState !== 'active') return;
+  clearTimeout(duoBroadcastTimer);
+  duoBroadcastTimer = setTimeout(broadcastMyData, 200);
+}
+
+function copyDuoCode() {
+  const code = document.getElementById('duoCodeDisplay').textContent;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(code).then(() => alert("Code copié : " + code)).catch(() => prompt("Copie ce code :", code));
+  } else {
+    prompt("Copie ce code :", code);
+  }
+}
+
+function leaveDuoSession() {
+  if (duoChannel) {
+    try { duoChannel.untrack(); } catch (e) {}
+    try { supabaseClient.removeChannel(duoChannel); } catch (e) {}
+  }
+  duoChannel = null; duoCode = null; duoState = 'solo'; duoRemoteData = null; duoPartnerName = null; duoPresenceKey = null;
+  const panel = document.getElementById('duoRemotePanel');
+  if (panel) panel.style.display = 'none';
+  const idle = document.getElementById('duoCreateIdle');
+  const waiting = document.getElementById('duoCreateWaiting');
+  if (idle) idle.style.display = 'block';
+  if (waiting) waiting.style.display = 'none';
+  updateDuoWidgetUI();
+}
+
+function updateDuoWidgetUI() {
+  const iconBtn = document.getElementById('duoIconBtn');
+  const content = document.getElementById('duoDropdownContent');
+  if (!iconBtn || !content) return;
+
+  if (duoState === 'active') {
+    iconBtn.classList.add('logged-in');
+    content.innerHTML = `
+      <div class="auth-dropdown-header">
+        <div class="auth-avatar-big">👥</div>
+        <div><strong>Session active</strong><span>avec ${duoPartnerName || 'ton ami'}</span></div>
+      </div>
+      <button class="auth-menu-item" onclick="copyDuoCode()">📋 Copier le code (${duoCode || ''})</button>
+      <button class="auth-menu-item btn-group-danger" onclick="leaveDuoSession()">🚪 Quitter la session</button>
+    `;
+  } else if (duoState === 'waiting') {
+    iconBtn.classList.remove('logged-in');
+    content.innerHTML = `
+      <div style="padding:10px 12px; font-size:12.5px; color:var(--text-muted);">En attente de ton ami (code ${duoCode || ''})...</div>
+      <button class="auth-menu-item" onclick="openDuoModal()">👥 Voir le code</button>
+      <button class="auth-menu-item btn-group-danger" onclick="leaveDuoSession()">✕ Annuler</button>
+    `;
+  } else {
+    iconBtn.classList.remove('logged-in');
+    content.innerHTML = `
+      <button class="auth-menu-item" onclick="openDuoModal()">✨ Créer une session</button>
+      <button class="auth-menu-item" onclick="openDuoModal(); switchDuoTab('join');">🔑 Rejoindre une session</button>
+    `;
+  }
+}
+
+function createRemoteCard(song) {
+  const card = document.createElement("div");
+  card.className = "card";
+  if (song.favorite) card.classList.add("is-favorite");
+  card.style.backgroundImage = `url(${song.cover})`;
+  card.title = `${song.artist} - ${song.title}`;
+  if (song.youtubeUrl) card.onclick = () => window.open(song.youtubeUrl, '_blank');
+  card.innerHTML = `
+    <div class="fav-badge">❤</div>
+    <div class="card-overlay">
+      <strong>${song.artist}</strong>
+      <span>${song.title}</span>
+      ${song.chatRating ? `<span style="color:#bfdbfe; font-size:11px; margin-top:2px;">Chat: ${song.chatRating}/10</span>` : ''}
+    </div>
+  `;
+  return card;
+}
+
+function renderRemoteBoard() {
+  const body = document.getElementById('duoRemoteBody');
+  if (!body) return;
+  if (!duoRemoteData) {
+    body.innerHTML = `<div class="duo-empty-note">En attente des données...</div>`;
+    return;
+  }
+  body.innerHTML = '';
+  (duoRemoteData.tiers || []).forEach(t => {
+    const tier = document.createElement('div');
+    tier.className = 'tier';
+    const header = document.createElement('div');
+    header.className = 'tier-header';
+    header.style.background = `linear-gradient(90deg, ${t.color}, ${adjustColor(t.color, -40)})`;
+    header.innerHTML = `<span>${t.name}</span><span style="font-size:13px; opacity:0.85; font-weight:700;">(${t.songs.length})</span>`;
+    tier.appendChild(header);
+    const cards = document.createElement('div');
+    cards.className = 'cards';
+    t.songs.forEach(s => cards.appendChild(createRemoteCard(s)));
+    tier.appendChild(cards);
+    body.appendChild(tier);
+  });
+  if (duoRemoteData.pool && duoRemoteData.pool.length) {
+    const label = document.createElement('div');
+    label.className = 'duo-remote-pool-label';
+    label.textContent = `Réserve (${duoRemoteData.pool.length})`;
+    body.appendChild(label);
+    const poolCards = document.createElement('div');
+    poolCards.className = 'cards';
+    duoRemoteData.pool.forEach(s => poolCards.appendChild(createRemoteCard(s)));
+    body.appendChild(poolCards);
+  }
+}
+
 // --- AUDIO PREVIEW ---
 let currentPlayingId = null;
 const audio = document.getElementById('previewAudio');
@@ -1842,6 +2199,7 @@ function load(){
 function save(){
   localStorage.setItem("tierData", JSON.stringify(data));
   scheduleCloudSync();
+  maybeBroadcastDuo();
 }
 
 function scheduleCloudSync() {
@@ -3212,6 +3570,7 @@ render();
 setTimeout(syncCovers, 1500);
 changeTwitchChannel();
 initAuth();
+updateDuoWidgetUI();
 
 </script>
 </body>
