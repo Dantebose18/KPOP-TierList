@@ -277,7 +277,7 @@ body.dark .btn-group {
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: var(--accent-gradient);
+  background: rgba(128,128,128,0.2);
   border: 2px solid rgba(255,255,255,0.8);
   color: white;
   font-weight: 800;
@@ -286,14 +286,14 @@ body.dark .btn-group {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
   padding: 0;
 }
 
 .user-avatar-btn:hover {
   transform: scale(1.08);
-  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.5);
+  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
 }
 
 .user-dropdown {
@@ -312,7 +312,6 @@ body.dark .btn-group {
   flex-direction: column;
   gap: 8px;
   z-index: 1100;
-  animation: slideDown 0.2s ease-out;
 }
 
 .user-dropdown.open { display: flex; }
@@ -736,7 +735,6 @@ input[type="range"]::-webkit-slider-thumb {
 .modal-body-scroll::-webkit-scrollbar-track { background: rgba(128,128,128,0.1); border-radius: 4px; }
 .modal-body-scroll::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; }
 
-/* TAB MODALE AUTH */
 .auth-tabs { display: flex; border-bottom: 1px solid rgba(128,128,128,0.2); margin-bottom: 15px; }
 .auth-tab { flex: 1; padding: 10px; text-align: center; font-weight: 700; cursor: pointer; color: var(--text-muted); border-bottom: 2px solid transparent; transition: all 0.2s; }
 .auth-tab.active { color: var(--accent-primary); border-bottom-color: var(--accent-primary); }
@@ -973,7 +971,6 @@ body.edit-active .card-tools button { pointer-events: auto; }
   <div class="modal-content" style="max-width: 520px;">
     <h2>Mon Profil</h2>
     <div class="modal-body-scroll" id="profileBody">
-      <!-- Rempli en JS -->
     </div>
     <div style="margin-top: 15px; text-align: right;">
       <button onclick="closeAllModals()">Fermer</button>
@@ -1084,11 +1081,11 @@ body.edit-active .card-tools button { pointer-events: auto; }
 
 <script>
 // ==========================================
-// CONFIGURATION & INITIALISATION CLOUD
+// CONFIGURATION SUPABASE & SYSTEME ACCOUNT
 // ==========================================
 const YOUTUBE_API_KEY = "AIzaSyBzRO4J6W-M8uSt2k9vd1HJHECCwdKdiGM";
 
-// ⚠️ REMPLACEZ AVEC VOS PROPRES ACCÈS SUPABASE (depuis votre dashboard Supabase -> Project Settings -> API)
+// ⚠️ Remplacez ces deux variables par vos accès Supabase (depuis votre dashboard Supabase -> Project Settings -> API)
 const SUPABASE_URL = "https://tjztuqmhfwfplqohpcsj.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_nmsIO1TAfeXWV_EPnm5UZg_F0-xI0-q";
 
@@ -1100,10 +1097,41 @@ try {
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
 } catch (e) {
-  console.warn("Supabase non configuré ou problème de connexion :", e);
+  console.warn("Supabase non initialisé : URL ou clé manquante.", e);
 }
 
-// --- GESTION DE L'AUTHENTIFICATION ---
+// --- GESTION DES MENUS RÉTRACTABLES CORRIGÉE ---
+function toggleMenu(groupId, event) {
+  if (event) event.stopPropagation();
+  const targetGroup = document.getElementById(groupId);
+  const isAlreadyOpen = targetGroup.classList.contains('open');
+
+  // Ferme les autres menus
+  document.querySelectorAll('.btn-group.open').forEach(g => {
+    if (g.id !== groupId) g.classList.remove('open');
+  });
+
+  if (isAlreadyOpen) {
+    targetGroup.classList.remove('open');
+  } else {
+    targetGroup.classList.add('open');
+  }
+  setTimeout(updateHeaderHeight, 350);
+}
+
+// Fermeture au clic extérieur intelligente
+document.addEventListener("click", (e) => {
+  const dd = document.getElementById("userDropdown");
+  if (dd && !e.target.closest('.user-profile-wrapper')) {
+    dd.classList.remove("open");
+  }
+
+  if (!e.target.closest('.btn-group')) {
+    document.querySelectorAll('.btn-group.open').forEach(g => g.classList.remove('open'));
+  }
+});
+
+// --- AUTHENTIFICATION ---
 async function initAuth() {
   if (!supabase) return;
 
@@ -1126,7 +1154,7 @@ async function initAuth() {
       }
     });
   } catch (err) {
-    console.error("Erreur initAuth:", err);
+    console.error("Erreur d'authentification:", err);
   }
 }
 
@@ -1157,11 +1185,6 @@ function toggleUserDropdown(e) {
   dd.classList.toggle("open");
 }
 
-document.addEventListener("click", () => {
-  const dd = document.getElementById("userDropdown");
-  if (dd) dd.classList.remove("open");
-});
-
 function toggleAuthModal() {
   document.getElementById("authModal").style.display = "flex";
   document.getElementById("authError").innerText = "";
@@ -1190,7 +1213,7 @@ function switchAuthTab(tab) {
 
 async function handleLogin() {
   if (!supabase) { 
-    document.getElementById("authError").innerText = "Supabase n'est pas configuré. Entrez votre URL et votre clé anon dans le code."; 
+    document.getElementById("authError").innerText = "Configuration Supabase manquante dans le fichier HTML (SUPABASE_URL et SUPABASE_ANON_KEY)."; 
     return; 
   }
   const email = document.getElementById("loginEmail").value.trim();
@@ -1201,7 +1224,7 @@ async function handleLogin() {
 
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
-    errorDiv.innerText = "Identifiants invalides ou email non confirmé.";
+    errorDiv.innerText = "Identifiants invalides ou compte non vérifié.";
   } else {
     closeAllModals();
   }
@@ -1209,7 +1232,7 @@ async function handleLogin() {
 
 async function handleSignUp() {
   if (!supabase) { 
-    document.getElementById("authError").innerText = "Supabase n'est pas configuré. Entrez votre URL et votre clé anon dans le code."; 
+    document.getElementById("authError").innerText = "Configuration Supabase manquante dans le fichier HTML (SUPABASE_URL et SUPABASE_ANON_KEY)."; 
     return; 
   }
   const email = document.getElementById("signupEmail").value.trim();
@@ -1222,7 +1245,7 @@ async function handleSignUp() {
   if (error) {
     errorDiv.innerText = error.message;
   } else {
-    alert("Compte créé avec succès ! Si la confirmation par mail est activée, validez votre compte pour vous connecter.");
+    alert("Compte créé avec succès ! Si la vérification email est activée sur votre projet Supabase, confirmez-la avant de vous connecter.");
     closeAllModals();
   }
 }
@@ -1300,19 +1323,19 @@ async function openProfileModal() {
       <div style="font-size:11px; color:#10b981; margin-top:6px; font-weight:700;">🟢 ${cloudStatus}</div>
     </div>
 
-    <div class="stat-title">☁️ Tier Lists dans le Cloud</div>
+    <div class="stat-title">☁️ Tier Lists Sauvegardées</div>
     <div style="background:rgba(128,128,128,0.05); padding:15px; border-radius:12px; margin-bottom:15px;">
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <div>
-          <strong style="font-size:14px; display:block;">Tier List Principale</strong>
-          <span style="font-size:12px; color:var(--text-muted);">Dernière synchro : ${lastSyncTime}</span>
+          <strong style="font-size:14px; display:block;">Ma Tier List en Ligne</strong>
+          <span style="font-size:12px; color:var(--text-muted);">Synchro Cloud : ${lastSyncTime}</span>
         </div>
-        <button class="btn-primary" onclick="loadDataFromCloud(); alert('Données Cloud rechargées !');">Recharger</button>
+        <button class="btn-primary" onclick="loadDataFromCloud(); alert('Tier List synchronisée !');">Recharger</button>
       </div>
     </div>
 
     <button style="width:100%; justify-content:center; padding:12px; margin-top:10px;" class="btn-primary" onclick="save(); alert('Sauvegarde Cloud effectuée !');">
-      💾 Sauvegarder ma version actuelle
+      💾 Forcer la sauvegarde Cloud
     </button>
   `;
 
@@ -1340,23 +1363,6 @@ function updateHeaderHeight() {
   }
 }
 window.addEventListener('resize', updateHeaderHeight);
-
-function toggleMenu(groupId, event) {
-  if (event) event.stopPropagation();
-  const targetGroup = document.getElementById(groupId);
-  const currentlyOpen = document.querySelector('.btn-group.open');
-
-  if (currentlyOpen && currentlyOpen.id !== groupId) {
-    currentlyOpen.classList.remove('open');
-    setTimeout(() => {
-      targetGroup.classList.add('open');
-      setTimeout(updateHeaderHeight, 350);
-    }, 300);
-  } else {
-    targetGroup.classList.toggle('open');
-    setTimeout(updateHeaderHeight, 350);
-  }
-}
 
 let currentPlayingId = null;
 const audio = document.getElementById('previewAudio');
