@@ -138,7 +138,6 @@ button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.
 .btn-primary:hover { box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4); background: linear-gradient(135deg, #4f46e5 0%, #db2777 100%); color: white; }
 .btn-danger { color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
 .btn-danger:hover { background: rgba(239, 68, 68, 0.1); }
-.icon-btn { padding: 8px 12px; font-size: 16px; }
 
 .input-section {
   max-width: 700px;
@@ -168,7 +167,7 @@ input[type="text"] {
 input[type="text"]:focus { background: rgba(100,100,100,0.05); }
 input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 
-/* --- BUTTON GROUPS (Menu Rétractable) --- */
+/* --- CORRECTION CSS MENUS RÉTRACTABLES --- */
 .btn-group {
   display: inline-flex;
   align-items: center;
@@ -177,8 +176,6 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(128, 128, 128, 0.2);
   border-radius: 20px; 
-  overflow: hidden;
-  transform: translateZ(0); 
   flex-shrink: 0;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
@@ -194,19 +191,14 @@ body.dark .btn-group {
   font-weight: 700;
   color: var(--text-main);
   background: transparent;
-  padding: 0 16px;
+  padding: 8px 16px;
   border: none;
   cursor: pointer;
-  border-right: 1px solid transparent;
-  border-top-left-radius: 20px;
-  border-bottom-left-radius: 20px;
-  align-self: stretch;
+  border-radius: 20px;
   display: flex;
   align-items: center;
   transition: all 0.2s ease;
   white-space: nowrap;
-  height: 100%;
-  min-height: 38px;
 }
 
 .btn-group-label:hover {
@@ -216,21 +208,17 @@ body.dark .btn-group {
 .btn-group.open .btn-group-label {
   background: var(--accent-gradient);
   color: white;
-  border-right-color: rgba(255,255,255,0.2);
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .group-content {
-  display: inline-flex;
+  display: none;
   align-items: center;
-  max-width: 0;
-  opacity: 0;
-  overflow: hidden;
-  transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
 }
 
 .btn-group.open .group-content {
-  max-width: 500px;
-  opacity: 1;
+  display: inline-flex;
 }
 
 .group-btn {
@@ -253,7 +241,7 @@ body.dark .btn-group {
 }
 .group-btn:last-child { 
   border-right: none; 
-  padding-right: 18px; 
+  padding-right: 16px; 
   border-top-right-radius: 20px; 
   border-bottom-right-radius: 20px; 
 }
@@ -1100,13 +1088,12 @@ try {
   console.warn("Supabase non initialisé : URL ou clé manquante.", e);
 }
 
-// --- GESTION DES MENUS RÉTRACTABLES CORRIGÉE ---
+// --- GESTION DES MENUS RÉTRACTABLES ---
 function toggleMenu(groupId, event) {
   if (event) event.stopPropagation();
   const targetGroup = document.getElementById(groupId);
   const isAlreadyOpen = targetGroup.classList.contains('open');
 
-  // Ferme les autres menus
   document.querySelectorAll('.btn-group.open').forEach(g => {
     if (g.id !== groupId) g.classList.remove('open');
   });
@@ -1119,7 +1106,7 @@ function toggleMenu(groupId, event) {
   setTimeout(updateHeaderHeight, 350);
 }
 
-// Fermeture au clic extérieur intelligente
+// Fermeture au clic extérieur
 document.addEventListener("click", (e) => {
   const dd = document.getElementById("userDropdown");
   if (dd && !e.target.closest('.user-profile-wrapper')) {
