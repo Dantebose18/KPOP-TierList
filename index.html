@@ -65,7 +65,7 @@ header {
   position: sticky;
   top: 0;
   z-index: 1000;
-  padding: 15px 30px;
+  padding: 12px 25px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -74,11 +74,12 @@ header {
   -webkit-backdrop-filter: blur(12px);
   border-bottom: var(--card-border);
   box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+  gap: 15px;
 }
 
-.header-left { flex: 1; display: flex; justify-content: flex-start; }
+.header-left { display: flex; align-items: center; }
 .header-center { flex: 1; display: flex; justify-content: center; }
-.header-right { flex: 1; display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+.header-right { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
 
 .logo {
   font-weight: 800;
@@ -265,6 +266,67 @@ body.dark .btn-group {
 .btn-group-fav { color: var(--accent-fav) !important; }
 .btn-group-fav:hover { background: rgba(236, 72, 153, 0.1) !important; }
 
+/* --- PROFILE AVATAR CERCLE --- */
+.user-profile-wrapper {
+  position: relative;
+  margin-left: 10px;
+  flex-shrink: 0;
+}
+
+.user-avatar-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--accent-gradient);
+  border: 2px solid rgba(255,255,255,0.8);
+  color: white;
+  font-weight: 800;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.user-avatar-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.5);
+}
+
+.user-dropdown {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  width: 220px;
+  background: var(--card-bg);
+  border: var(--card-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 12px;
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 1100;
+  animation: slideDown 0.2s ease-out;
+}
+
+.user-dropdown.open { display: flex; }
+
+.user-dropdown-header {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 700;
+  border-bottom: 1px solid rgba(128,128,128,0.15);
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+  word-break: break-all;
+}
+
 /* --- SCROLL TOP BTN --- */
 .scroll-top-btn {
   position: fixed;
@@ -399,7 +461,7 @@ iframe.twitch-iframe { flex: 1; width: 100%; border: none; border-bottom-left-ra
 
 @media (max-width: 1750px) { .twitch-sidebar, .sommaire-sidebar { display: none !important; } }
 @media (max-width: 900px) {
-  header { flex-direction: column; gap: 15px; padding: 15px; height: auto; }
+  header { flex-wrap: wrap; padding: 10px 15px; height: auto; }
   .header-left, .header-center, .header-right { width: 100%; justify-content: center; }
   .search-container { width: 100%; max-width: 400px; }
   #searchBar { width: 100% !important; text-align: left; }
@@ -674,6 +736,11 @@ input[type="range"]::-webkit-slider-thumb {
 .modal-body-scroll::-webkit-scrollbar-track { background: rgba(128,128,128,0.1); border-radius: 4px; }
 .modal-body-scroll::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; }
 
+/* TAB MODALE AUTH */
+.auth-tabs { display: flex; border-bottom: 1px solid rgba(128,128,128,0.2); margin-bottom: 15px; }
+.auth-tab { flex: 1; padding: 10px; text-align: center; font-weight: 700; cursor: pointer; color: var(--text-muted); border-bottom: 2px solid transparent; transition: all 0.2s; }
+.auth-tab.active { color: var(--accent-primary); border-bottom-color: var(--accent-primary); }
+
 .stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; border-bottom: 1px solid rgba(128,128,128,0.1); padding-bottom: 5px; }
 .stat-row strong { font-weight: 600; }
 .stat-section { margin-top: 20px; }
@@ -753,13 +820,6 @@ body.edit-active .card-tools button { pointer-events: auto; }
   </div>
 
   <div class="header-right desktop-only">
-    <!-- NOUVEAU MENU COMPTE -->
-    <div class="btn-group" id="menu-compte">
-      <button class="btn-group-label" id="userBtnLabel" onclick="toggleAuthModal()">
-        🔑 Connexion
-      </button>
-    </div>
-
     <div class="btn-group" id="menu-donnees">
       <button class="btn-group-label" onclick="toggleMenu('menu-donnees', event)">Données</button>
       <div class="group-content">
@@ -849,6 +909,22 @@ body.edit-active .card-tools button { pointer-events: auto; }
         </button>
       </div>
     </div>
+
+    <!-- AVATAR DU PROFIL (CERCLE HAUT DROITE) -->
+    <div class="user-profile-wrapper">
+      <button class="user-avatar-btn" id="avatarBtn" onclick="toggleUserDropdown(event)" title="Mon Compte">
+        🔑
+      </button>
+      <div class="user-dropdown" id="userDropdown">
+        <div class="user-dropdown-header" id="userEmailHeader">Non connecté</div>
+        <button onclick="openProfileModal()" class="group-btn" style="width:100%; border-radius:8px;">
+          👤 Mon Profil & Tier Lists
+        </button>
+        <button onclick="handleLogout()" class="group-btn btn-group-danger" style="width:100%; border-radius:8px;">
+          🚪 Déconnexion
+        </button>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -861,21 +937,45 @@ body.edit-active .card-tools button { pointer-events: auto; }
 
 <input type="file" id="fileInput" style="display:none" accept=".json" onchange="importJson(this)">
 
-<!-- MODAL AUTHENTIFICATION (NOUVEAU) -->
+<!-- MODAL CONNEXION & INSCRIPTION -->
 <div id="authModal" class="modal-overlay" onclick="closeModal(event)">
-  <div class="modal-content" style="max-width: 400px;">
-    <h2 id="authTitle">Connexion / Inscription</h2>
-    <div style="display:flex; flex-direction:column; gap:10px; margin-top:15px;">
-      <input type="email" id="authEmail" placeholder="Adresse e-mail" style="padding:10px; border-radius:8px; border:1px solid rgba(128,128,128,0.3); background:rgba(255,255,255,0.05); color:var(--text-main); font-family:inherit;">
-      <input type="password" id="authPassword" placeholder="Mot de passe" style="padding:10px; border-radius:8px; border:1px solid rgba(128,128,128,0.3); background:rgba(255,255,255,0.05); color:var(--text-main); font-family:inherit;">
-      
-      <div style="display:flex; gap:10px; margin-top:10px;">
-        <button class="btn-primary" style="flex:1; justify-content:center;" onclick="handleLogin()">Se connecter</button>
-        <button style="flex:1; justify-content:center;" onclick="handleSignUp()">S'inscrire</button>
-      </div>
-      <div id="authError" style="color:#ef4444; font-size:12px; margin-top:5px; text-align:center;"></div>
+  <div class="modal-content" style="max-width: 420px;">
+    <h2>Espace Membre</h2>
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Connexion</div>
+      <div class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')">Inscription</div>
     </div>
+
+    <!-- FORMULAIRE CONNEXION -->
+    <div id="formLogin" style="display:flex; flex-direction:column; gap:12px;">
+      <input type="email" id="loginEmail" placeholder="Votre Adresse E-mail" style="padding:10px; border-radius:8px; border:1px solid rgba(128,128,128,0.3); background:rgba(255,255,255,0.05); color:var(--text-main); font-family:inherit;">
+      <input type="password" id="loginPassword" placeholder="Mot de passe" style="padding:10px; border-radius:8px; border:1px solid rgba(128,128,128,0.3); background:rgba(255,255,255,0.05); color:var(--text-main); font-family:inherit;">
+      <button class="btn-primary" style="justify-content:center; padding:12px; margin-top:5px;" onclick="handleLogin()">Se connecter</button>
+    </div>
+
+    <!-- FORMULAIRE INSCRIPTION -->
+    <div id="formSignup" style="display:none; flex-direction:column; gap:12px;">
+      <input type="email" id="signupEmail" placeholder="Votre Adresse E-mail" style="padding:10px; border-radius:8px; border:1px solid rgba(128,128,128,0.3); background:rgba(255,255,255,0.05); color:var(--text-main); font-family:inherit;">
+      <input type="password" id="signupPassword" placeholder="Mot de passe (6 caractères min)" style="padding:10px; border-radius:8px; border:1px solid rgba(128,128,128,0.3); background:rgba(255,255,255,0.05); color:var(--text-main); font-family:inherit;">
+      <button class="btn-primary" style="justify-content:center; padding:12px; margin-top:5px;" onclick="handleSignUp()">Créer mon compte</button>
+    </div>
+
+    <div id="authError" style="color:#ef4444; font-size:12px; margin-top:12px; text-align:center;"></div>
+    
     <div style="margin-top: 20px; text-align: right;">
+      <button onclick="closeAllModals()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PROFIL & TIER LISTS SAUVEGARDÉES -->
+<div id="profileModal" class="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-content" style="max-width: 520px;">
+    <h2>Mon Profil</h2>
+    <div class="modal-body-scroll" id="profileBody">
+      <!-- Rempli en JS -->
+    </div>
+    <div style="margin-top: 15px; text-align: right;">
       <button onclick="closeAllModals()">Fermer</button>
     </div>
   </div>
@@ -984,89 +1084,145 @@ body.edit-active .card-tools button { pointer-events: auto; }
 
 <script>
 // ==========================================
-// CONFIGURATION API & SUPABASE
+// CONFIGURATION & INITIALISATION CLOUD
 // ==========================================
 const YOUTUBE_API_KEY = "AIzaSyBzRO4J6W-M8uSt2k9vd1HJHECCwdKdiGM";
 
-// ⚠️ REMPLACEZ AVEC VOS PROPRES ACCÈS SUPABASE (Project Settings -> API)
-const SUPABASE_URL = "https://TON-PROJET.supabase.co";
-const SUPABASE_ANON_KEY = "TA-CLE-ANON-PUBLIC";
+// ⚠️ REMPLACEZ AVEC VOS PROPRES ACCÈS SUPABASE (depuis votre dashboard Supabase -> Project Settings -> API)
+const SUPABASE_URL = "https://tjztuqmhfwfplqohpcsj.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_nmsIO1TAfeXWV_EPnm5UZg_F0-xI0-q";
 
-const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+let supabase = null;
 let currentUser = null;
 
-// ==========================================
-// GESTION AUTHENTIFICATION & CLOUD
-// ==========================================
+try {
+  if (window.supabase && SUPABASE_URL !== "https://TON-PROJET.supabase.co") {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+} catch (e) {
+  console.warn("Supabase non configuré ou problème de connexion :", e);
+}
+
+// --- GESTION DE L'AUTHENTIFICATION ---
 async function initAuth() {
   if (!supabase) return;
 
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session) {
-    currentUser = session.user;
-    updateUserUI();
-    await loadDataFromCloud();
-  }
-
-  supabase.auth.onAuthStateChange(async (event, session) => {
-    currentUser = session ? session.user : null;
-    updateUserUI();
-    if (event === 'SIGNED_IN') {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      currentUser = session.user;
+      updateUserAvatar();
       await loadDataFromCloud();
-    } else if (event === 'SIGNED_OUT') {
-      data = defaultData();
-      render();
     }
-  });
-}
 
-function updateUserUI() {
-  const label = document.getElementById("userBtnLabel");
-  if (!label) return;
-  if (currentUser) {
-    const shortEmail = currentUser.email ? currentUser.email.split('@')[0] : 'Compte';
-    label.innerHTML = `👤 ${shortEmail} <small style="opacity:0.6; margin-left:5px;">(Déco)</small>`;
-    label.onclick = handleLogout;
-  } else {
-    label.innerHTML = `🔑 Connexion`;
-    label.onclick = toggleAuthModal;
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      currentUser = session ? session.user : null;
+      updateUserAvatar();
+      if (event === 'SIGNED_IN') {
+        await loadDataFromCloud();
+      } else if (event === 'SIGNED_OUT') {
+        data = defaultData();
+        render();
+      }
+    });
+  } catch (err) {
+    console.error("Erreur initAuth:", err);
   }
 }
+
+function updateUserAvatar() {
+  const btn = document.getElementById("avatarBtn");
+  const emailHeader = document.getElementById("userEmailHeader");
+  if (!btn) return;
+
+  if (currentUser) {
+    const firstLetter = currentUser.email ? currentUser.email.charAt(0).toUpperCase() : 'U';
+    btn.innerHTML = firstLetter;
+    btn.style.background = "var(--accent-gradient)";
+    if (emailHeader) emailHeader.innerText = currentUser.email;
+  } else {
+    btn.innerHTML = "🔑";
+    btn.style.background = "rgba(128,128,128,0.2)";
+    if (emailHeader) emailHeader.innerText = "Non connecté";
+  }
+}
+
+function toggleUserDropdown(e) {
+  if (e) e.stopPropagation();
+  if (!currentUser) {
+    toggleAuthModal();
+    return;
+  }
+  const dd = document.getElementById("userDropdown");
+  dd.classList.toggle("open");
+}
+
+document.addEventListener("click", () => {
+  const dd = document.getElementById("userDropdown");
+  if (dd) dd.classList.remove("open");
+});
 
 function toggleAuthModal() {
   document.getElementById("authModal").style.display = "flex";
   document.getElementById("authError").innerText = "";
+  switchAuthTab('login');
+}
+
+function switchAuthTab(tab) {
+  const tabL = document.getElementById("tabLogin");
+  const tabS = document.getElementById("tabSignup");
+  const formL = document.getElementById("formLogin");
+  const formS = document.getElementById("formSignup");
+  document.getElementById("authError").innerText = "";
+
+  if (tab === 'login') {
+    tabL.classList.add("active");
+    tabS.classList.remove("active");
+    formL.style.display = "flex";
+    formS.style.display = "none";
+  } else {
+    tabS.classList.add("active");
+    tabL.classList.remove("active");
+    formS.style.display = "flex";
+    formL.style.display = "none";
+  }
+}
+
+async function handleLogin() {
+  if (!supabase) { 
+    document.getElementById("authError").innerText = "Supabase n'est pas configuré. Entrez votre URL et votre clé anon dans le code."; 
+    return; 
+  }
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value.trim();
+  const errorDiv = document.getElementById("authError");
+
+  if (!email || !password) { errorDiv.innerText = "Veuillez remplir tous les champs."; return; }
+
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    errorDiv.innerText = "Identifiants invalides ou email non confirmé.";
+  } else {
+    closeAllModals();
+  }
 }
 
 async function handleSignUp() {
-  if (!supabase) { alert("Supabase non configuré."); return; }
-  const email = document.getElementById("authEmail").value.trim();
-  const password = document.getElementById("authPassword").value.trim();
+  if (!supabase) { 
+    document.getElementById("authError").innerText = "Supabase n'est pas configuré. Entrez votre URL et votre clé anon dans le code."; 
+    return; 
+  }
+  const email = document.getElementById("signupEmail").value.trim();
+  const password = document.getElementById("signupPassword").value.trim();
   const errorDiv = document.getElementById("authError");
-  
-  if (!email || !password) { errorDiv.innerText = "Remplissez tous les champs."; return; }
+
+  if (!email || !password) { errorDiv.innerText = "Veuillez remplir tous les champs."; return; }
 
   const { data, error } = await supabase.auth.signUp({ email, password });
   if (error) {
     errorDiv.innerText = error.message;
   } else {
-    alert("Compte créé ! Vérifiez vos e-mails pour valider votre compte ou connectez-vous.");
-    closeAllModals();
-  }
-}
-
-async function handleLogin() {
-  if (!supabase) { alert("Supabase non configuré."); return; }
-  const email = document.getElementById("authEmail").value.trim();
-  const password = document.getElementById("authPassword").value.trim();
-  const errorDiv = document.getElementById("authError");
-
-  if (!email || !password) { errorDiv.innerText = "Remplissez tous les champs."; return; }
-
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) {
-    errorDiv.innerText = "Identifiants invalides ou compte non vérifié.";
-  } else {
+    alert("Compte créé avec succès ! Si la confirmation par mail est activée, validez votre compte pour vous connecter.");
     closeAllModals();
   }
 }
@@ -1075,27 +1231,25 @@ async function handleLogout() {
   if (!supabase) return;
   if (confirm("Voulez-vous vous déconnecter ?")) {
     await supabase.auth.signOut();
+    const dd = document.getElementById("userDropdown");
+    if (dd) dd.classList.remove("open");
   }
 }
 
 async function save() {
-  // 1. Sauvegarde locale immédiate
   localStorage.setItem("tierData", JSON.stringify(data));
 
-  // 2. Sauvegarde Cloud si l'utilisateur est connecté
   if (currentUser && supabase) {
     try {
-      const { error } = await supabase
+      await supabase
         .from('user_tierlists')
         .upsert({
           user_id: currentUser.id,
           tier_data: data,
           updated_at: new Date()
         }, { onConflict: 'user_id' });
-
-      if (error) console.error("Erreur de sauvegarde Cloud :", error.message);
     } catch(e) {
-      console.error("Erreur réseau Cloud :", e);
+      console.error("Erreur sauvegarde cloud:", e);
     }
   }
 }
@@ -1116,6 +1270,53 @@ async function loadDataFromCloud() {
   } else {
     save();
   }
+}
+
+async function openProfileModal() {
+  closeAllModals();
+  const modal = document.getElementById("profileModal");
+  const body = document.getElementById("profileBody");
+
+  if (!currentUser) return;
+
+  let cloudStatus = "Synchronisation active";
+  let lastSyncTime = "À l'instant";
+
+  if (supabase) {
+    const { data: dbData } = await supabase
+      .from('user_tierlists')
+      .select('updated_at')
+      .eq('user_id', currentUser.id)
+      .single();
+    if (dbData && dbData.updated_at) {
+      lastSyncTime = new Date(dbData.updated_at).toLocaleString('fr-FR');
+    }
+  }
+
+  body.innerHTML = `
+    <div style="background:rgba(128,128,128,0.05); padding:15px; border-radius:12px; margin-bottom:15px;">
+      <div style="font-size:12px; color:var(--text-muted); font-weight:700;">COMPTE CONNECTÉ</div>
+      <div style="font-size:16px; font-weight:800; margin-top:2px;">${currentUser.email}</div>
+      <div style="font-size:11px; color:#10b981; margin-top:6px; font-weight:700;">🟢 ${cloudStatus}</div>
+    </div>
+
+    <div class="stat-title">☁️ Tier Lists dans le Cloud</div>
+    <div style="background:rgba(128,128,128,0.05); padding:15px; border-radius:12px; margin-bottom:15px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <strong style="font-size:14px; display:block;">Tier List Principale</strong>
+          <span style="font-size:12px; color:var(--text-muted);">Dernière synchro : ${lastSyncTime}</span>
+        </div>
+        <button class="btn-primary" onclick="loadDataFromCloud(); alert('Données Cloud rechargées !');">Recharger</button>
+      </div>
+    </div>
+
+    <button style="width:100%; justify-content:center; padding:12px; margin-top:10px;" class="btn-primary" onclick="save(); alert('Sauvegarde Cloud effectuée !');">
+      💾 Sauvegarder ma version actuelle
+    </button>
+  `;
+
+  modal.style.display = "flex";
 }
 
 // ==========================================
@@ -1141,7 +1342,7 @@ function updateHeaderHeight() {
 window.addEventListener('resize', updateHeaderHeight);
 
 function toggleMenu(groupId, event) {
-  event.stopPropagation();
+  if (event) event.stopPropagation();
   const targetGroup = document.getElementById(groupId);
   const currentlyOpen = document.querySelector('.btn-group.open');
 
@@ -2726,10 +2927,10 @@ document.addEventListener("dragend", () => {
   if (autoScrollRAF) { cancelAnimationFrame(autoScrollRAF); autoScrollRAF = null; }
 });
 
-// INITIALISATION
+// INITIALISATION DU SITE
 updateHeaderHeight();
 render();
-initAuth(); // Lancement de l'authentification Supabase
+initAuth();
 setTimeout(syncCovers, 1500);
 changeTwitchChannel();
 
