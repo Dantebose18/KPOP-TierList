@@ -7,8 +7,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/tmi.js@1.8.5/dist/tmi.min.js"></script>
-<!-- SDK SUPABASE -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
 <style>
 /* --- VARIABLES & THEME --- */
@@ -65,7 +64,7 @@ header {
   position: sticky;
   top: 0;
   z-index: 1000;
-  padding: 12px 25px;
+  padding: 15px 30px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -74,12 +73,12 @@ header {
   -webkit-backdrop-filter: blur(12px);
   border-bottom: var(--card-border);
   box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
-  gap: 15px;
+  /* La hauteur fixe a été retirée pour laisser le JavaScript la calculer dynamiquement */
 }
 
-.header-left { display: flex; align-items: center; }
+.header-left { flex: 1; display: flex; justify-content: flex-start; }
 .header-center { flex: 1; display: flex; justify-content: center; }
-.header-right { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
+.header-right { flex: 1; display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
 
 .logo {
   font-weight: 800;
@@ -107,6 +106,7 @@ header {
 #searchBar::placeholder { color: var(--text-muted); opacity: 0.7; }
 #clearSearchBtn { position: absolute; right: 10px; cursor: pointer; display: none; color: var(--text-muted); font-size: 14px; }
 
+/* Nouveau design de base des boutons */
 button {
   padding: 8px 16px;
   border-radius: 12px;
@@ -138,6 +138,7 @@ button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.
 .btn-primary:hover { box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4); background: linear-gradient(135deg, #4f46e5 0%, #db2777 100%); color: white; }
 .btn-danger { color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
 .btn-danger:hover { background: rgba(239, 68, 68, 0.1); }
+.icon-btn { padding: 8px 12px; font-size: 16px; }
 
 .input-section {
   max-width: 700px;
@@ -167,7 +168,7 @@ input[type="text"] {
 input[type="text"]:focus { background: rgba(100,100,100,0.05); }
 input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
 
-/* --- CORRECTION CSS MENUS RÉTRACTABLES --- */
+/* --- BUTTON GROUPS (Menu Rétractable) --- */
 .btn-group {
   display: inline-flex;
   align-items: center;
@@ -176,6 +177,8 @@ input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.7; }
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(128, 128, 128, 0.2);
   border-radius: 20px; 
+  overflow: hidden;
+  transform: translateZ(0); 
   flex-shrink: 0;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
@@ -191,14 +194,19 @@ body.dark .btn-group {
   font-weight: 700;
   color: var(--text-main);
   background: transparent;
-  padding: 8px 16px;
+  padding: 0 16px;
   border: none;
   cursor: pointer;
-  border-radius: 20px;
+  border-right: 1px solid transparent;
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
+  align-self: stretch;
   display: flex;
   align-items: center;
   transition: all 0.2s ease;
   white-space: nowrap;
+  height: 100%;
+  min-height: 38px;
 }
 
 .btn-group-label:hover {
@@ -208,17 +216,21 @@ body.dark .btn-group {
 .btn-group.open .btn-group-label {
   background: var(--accent-gradient);
   color: white;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
+  border-right-color: rgba(255,255,255,0.2);
 }
 
 .group-content {
-  display: none;
+  display: inline-flex;
   align-items: center;
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
 }
 
 .btn-group.open .group-content {
-  display: inline-flex;
+  max-width: 500px;
+  opacity: 1;
 }
 
 .group-btn {
@@ -241,7 +253,7 @@ body.dark .btn-group {
 }
 .group-btn:last-child { 
   border-right: none; 
-  padding-right: 16px; 
+  padding-right: 18px; 
   border-top-right-radius: 20px; 
   border-bottom-right-radius: 20px; 
 }
@@ -254,67 +266,7 @@ body.dark .btn-group {
 .btn-group-fav { color: var(--accent-fav) !important; }
 .btn-group-fav:hover { background: rgba(236, 72, 153, 0.1) !important; }
 
-/* --- PROFILE AVATAR CERCLE --- */
-.user-profile-wrapper {
-  position: relative;
-  margin-left: 10px;
-  flex-shrink: 0;
-}
-
-.user-avatar-btn {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: rgba(128,128,128,0.2);
-  border: 2px solid rgba(255,255,255,0.8);
-  color: white;
-  font-weight: 800;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
-  padding: 0;
-}
-
-.user-avatar-btn:hover {
-  transform: scale(1.08);
-  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
-}
-
-.user-dropdown {
-  position: absolute;
-  top: 50px;
-  right: 0;
-  width: 220px;
-  background: var(--card-bg);
-  border: var(--card-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--glass-shadow);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  padding: 12px;
-  display: none;
-  flex-direction: column;
-  gap: 8px;
-  z-index: 1100;
-}
-
-.user-dropdown.open { display: flex; }
-
-.user-dropdown-header {
-  font-size: 12px;
-  color: var(--text-muted);
-  font-weight: 700;
-  border-bottom: 1px solid rgba(128,128,128,0.15);
-  padding-bottom: 8px;
-  margin-bottom: 4px;
-  word-break: break-all;
-}
-
-/* --- SCROLL TOP BTN --- */
+/* --- SCROLL TOP BTN REDESIGN --- */
 .scroll-top-btn {
   position: fixed;
   bottom: 30px;
@@ -428,6 +380,7 @@ iframe.twitch-iframe { flex: 1; width: 100%; border: none; border-bottom-left-ra
 #twitchVoteOverlay button { margin-top: 10px; background: #9146FF; color: white; border: none; width: 100%; justify-content: center; }
 #twitchVoteOverlay button:hover { background: #772ce8; color: white; }
 
+/* BANNIERE VUE FILTREE */
 #sessionFilterBanner {
   position: sticky;
   top: var(--header-height);
@@ -446,12 +399,18 @@ iframe.twitch-iframe { flex: 1; width: 100%; border: none; border-bottom-left-ra
   -webkit-backdrop-filter: blur(12px);
 }
 
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @media (max-width: 1750px) { .twitch-sidebar, .sommaire-sidebar { display: none !important; } }
 @media (max-width: 900px) {
-  header { flex-wrap: wrap; padding: 10px 15px; height: auto; }
+  header { flex-direction: column; gap: 15px; padding: 15px; height: auto; }
   .header-left, .header-center, .header-right { width: 100%; justify-content: center; }
   .search-container { width: 100%; max-width: 400px; }
   #searchBar { width: 100% !important; text-align: left; }
+  /* MENU RENDU RESPONSIVE ET SCROLLABLE HORIZONTALEMENT */
   .header-right { 
     justify-content: flex-start; 
     flex-wrap: nowrap; 
@@ -461,7 +420,7 @@ iframe.twitch-iframe { flex: 1; width: 100%; border: none; border-bottom-left-ra
     scrollbar-width: none; 
   }
   .header-right::-webkit-scrollbar { display: none; }
-  .desktop-only { display: inline-flex; }
+  .desktop-only { display: inline-flex; } /* Ne plus les cacher sur mobile ! */
 }
 @media (max-width: 768px) {
   .input-section { flex-direction: column; margin: 20px auto; height: auto; }
@@ -571,6 +530,7 @@ body.is-dragging .cards { transition: none !important; }
 }
 .card-overlay strong { display: block; font-size: 13px; margin-bottom: 2px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
 
+/* --- PLAY BUTTON ON HOVER --- */
 .card-play-btn {
   position: absolute;
   top: 50%;
@@ -600,6 +560,7 @@ body.edit-active .card-play-btn { display: none; }
 .card-play-btn.muted-btn { background: rgba(0,0,0,0.8); border-color: rgba(255,255,255,0.3); padding-left: 0; cursor: not-allowed; }
 .card-play-btn.muted-btn:hover { background: rgba(0,0,0,0.9); transform: translate(-50%, -50%) scale(1); }
 
+/* --- MODE COMPACT --- */
 body.compact-active .card { height: 70px; }
 body.compact-active .card-overlay { top: 0; padding: 5px; background: rgba(0,0,0,0.7); justify-content: center; gap: 2px; }
 body.compact-active .card-overlay strong { font-size: 12px; margin: 0; white-space: normal; line-height: 1.1; }
@@ -607,6 +568,7 @@ body.compact-active .card-overlay span { font-size: 11px; opacity: 0.9; line-hei
 body.compact-active .card:hover { height: 140px; transform: scale(1.15) translateY(-5px); z-index: 100; }
 body.compact-active .card:hover .card-overlay { top: auto; bottom: 0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%); padding: 40px 10px 10px 10px; justify-content: flex-end; }
 
+/* --- CARD TOOLS --- */
 .card-tools { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 20; }
 .card-tools button { pointer-events: auto; }
 .btn-edit-pos { position: absolute; top: 6px; left: 6px; }
@@ -710,7 +672,7 @@ input[type="range"]::-webkit-slider-thumb {
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
-/* --- MODALS --- */
+/* --- MODAL SYSTEM --- */
 .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 2000; display: none; justify-content: center; align-items: center; padding: 20px; }
 .modal-content {
   background: var(--card-bg); border: var(--card-border); width: 100%; max-width: 540px;
@@ -723,9 +685,11 @@ input[type="range"]::-webkit-slider-thumb {
 .modal-body-scroll::-webkit-scrollbar-track { background: rgba(128,128,128,0.1); border-radius: 4px; }
 .modal-body-scroll::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; }
 
-.auth-tabs { display: flex; border-bottom: 1px solid rgba(128,128,128,0.2); margin-bottom: 15px; }
-.auth-tab { flex: 1; padding: 10px; text-align: center; font-weight: 700; cursor: pointer; color: var(--text-muted); border-bottom: 2px solid transparent; transition: all 0.2s; }
-.auth-tab.active { color: var(--accent-primary); border-bottom-color: var(--accent-primary); }
+/* Modal tabs */
+.modal-tabs { display: flex; gap: 4px; margin-bottom: 16px; background: rgba(128,128,128,0.1); padding: 4px; border-radius: var(--radius-sm); }
+.modal-tab { flex: 1; padding: 8px; border: none; background: transparent; color: var(--text-muted); font-size: 13px; font-weight: 600; border-radius: 6px; cursor: pointer; transition: all 0.2s; box-shadow: none; transform: none !important; }
+.modal-tab:hover { background: rgba(128,128,128,0.15); box-shadow: none; transform: none !important; color: var(--text-main); }
+.modal-tab.active { background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 
 .stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; border-bottom: 1px solid rgba(128,128,128,0.1); padding-bottom: 5px; }
 .stat-row strong { font-weight: 600; }
@@ -743,10 +707,8 @@ input[type="range"]::-webkit-slider-thumb {
 .rank-item.flop .rank-pos { color: #ef4444; }
 .rank-item.flop .rank-avg { background: #ef4444; }
 
-.tier-chart-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px; }
-.tier-chart-bar .bar-label { width: 30px; font-weight: 700; }
-.tier-chart-bar .bar-track { flex: 1; height: 20px; background: rgba(128,128,128,0.15); border-radius: 4px; overflow: hidden; }
-.tier-chart-bar .bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; display: flex; align-items: center; padding-left: 6px; font-size: 11px; color: white; font-weight: 600; }
+.stat-bar-container { width: 100%; height: 6px; background: rgba(128,128,128,0.2); border-radius: 3px; overflow: hidden; margin-top: 4px; display: flex; }
+.stat-bar-fill { height: 100%; }
 
 .fav-list-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(255,255,255,0.05); margin-bottom: 8px; border-radius: 8px; border: 1px solid transparent; }
 .fav-list-item:hover { border-color: var(--accent-fav); background: rgba(236, 72, 153, 0.05); }
@@ -759,6 +721,7 @@ input[type="range"]::-webkit-slider-thumb {
 body.edit-active .card-tools { opacity: 1; pointer-events: none; }
 body.edit-active .card-tools button { pointer-events: auto; }
 
+/* --- SESSION CARDS --- */
 .session-card {
   background: rgba(128,128,128,0.05); border-radius: 10px; padding: 12px 14px;
   margin-bottom: 10px; border-left: 3px solid var(--text-muted);
@@ -773,6 +736,13 @@ body.edit-active .card-tools button { pointer-events: auto; }
 .session-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
 .session-action-btn { font-size: 11px; padding: 4px 10px; border-radius: 20px; }
 
+/* Chart canvas inside modal */
+.tier-chart-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px; }
+.tier-chart-bar .bar-label { width: 30px; font-weight: 700; }
+.tier-chart-bar .bar-track { flex: 1; height: 20px; background: rgba(128,128,128,0.15); border-radius: 4px; overflow: hidden; }
+.tier-chart-bar .bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; display: flex; align-items: center; padding-left: 6px; font-size: 11px; color: white; font-weight: 600; }
+
+/* Session history item */
 .history-session {
   background: rgba(128,128,128,0.05); border: 1px solid rgba(128,128,128,0.1);
   border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; cursor: pointer;
@@ -786,9 +756,77 @@ body.edit-active .card-tools button { pointer-events: auto; }
 .history-session-detail { margin-top: 12px; display: none; border-top: 1px solid rgba(128,128,128,0.1); padding-top: 12px; }
 .history-session-detail.open { display: block; }
 
+/* New session form */
 .new-session-form { background: rgba(99, 102, 241, 0.08); border: 1px dashed var(--accent-primary); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
 .new-session-form input { background: rgba(255,255,255,0.1); border: 1px solid rgba(128,128,128,0.2); border-radius: 8px; padding: 8px 12px; color: var(--text-main); font-family: inherit; font-size: 14px; width: 100%; margin-bottom: 8px; }
 .new-session-form input::placeholder { color: var(--text-muted); }
+
+/* ============================================================
+   COMPTE / AUTHENTIFICATION
+   ============================================================ */
+.auth-widget { position: relative; padding: 0 !important; background: transparent !important; border: none !important; box-shadow: none !important; overflow: visible !important; }
+
+.auth-icon-btn {
+  width: 38px; height: 38px; border-radius: 50%; padding: 0; border: 2px solid rgba(128,128,128,0.25);
+  background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800; color: var(--text-main); overflow: hidden; cursor: pointer;
+  transition: all 0.2s ease; flex-shrink: 0;
+}
+body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
+.auth-icon-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(99,102,241,0.25); }
+.auth-icon-btn.logged-in { border-color: transparent; background: var(--accent-gradient); color: white; }
+.auth-icon-btn img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+.auth-dropdown {
+  position: absolute; top: calc(100% + 12px); right: 0; width: 260px;
+  background: var(--card-bg); border: var(--card-border); border-radius: var(--radius-md);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.25); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  padding: 8px; z-index: 1500; opacity: 0; transform: translateY(-8px) scale(0.98); pointer-events: none;
+  transition: all 0.18s ease;
+}
+.auth-widget.open .auth-dropdown { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+
+.auth-menu-item {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+  padding: 10px 12px; border: none; background: transparent; color: var(--text-main);
+  font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; border-radius: 10px;
+  cursor: pointer; box-shadow: none;
+}
+.auth-menu-item:hover { background: rgba(128,128,128,0.1); transform: none; box-shadow: none; color: var(--accent-primary); }
+.auth-menu-item.btn-group-danger:hover { background: rgba(239,68,68,0.1) !important; }
+
+.auth-dropdown-header { display: flex; align-items: center; gap: 10px; padding: 8px 10px 14px 10px; margin-bottom: 6px; border-bottom: 1px solid rgba(128,128,128,0.15); }
+.auth-avatar-big { width: 42px; height: 42px; border-radius: 50%; background: var(--accent-gradient); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; flex-shrink: 0; overflow: hidden; }
+.auth-avatar-big img { width: 100%; height: 100%; object-fit: cover; }
+.auth-dropdown-header div:last-child { display: flex; flex-direction: column; overflow: hidden; }
+.auth-dropdown-header strong { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.auth-dropdown-header span { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Formulaires (login / inscription / profil) */
+.auth-form { display: flex; flex-direction: column; gap: 10px; }
+.auth-form label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: -4px; }
+.auth-form input[type="text"], .auth-form input[type="email"], .auth-form input[type="password"] {
+  background: rgba(128,128,128,0.08); border: 1px solid rgba(128,128,128,0.2); border-radius: 10px;
+  padding: 11px 14px; color: var(--text-main); font-family: inherit; font-size: 14px; width: 100%;
+}
+.auth-form input::placeholder { color: var(--text-muted); opacity: 0.7; }
+.auth-form input:focus { border-color: var(--accent-primary); }
+.auth-error { font-size: 12.5px; color: #ef4444; background: rgba(239,68,68,0.1); border-radius: 8px; padding: 8px 10px; display: none; }
+.auth-error.visible { display: block; }
+.auth-success { font-size: 12.5px; color: #10b981; background: rgba(16,185,129,0.1); border-radius: 8px; padding: 8px 10px; display: none; }
+.auth-success.visible { display: block; }
+.auth-submit-btn { margin-top: 4px; }
+.auth-switch-line { text-align: center; font-size: 12.5px; color: var(--text-muted); margin-top: 4px; }
+.auth-switch-line a { color: var(--accent-primary); font-weight: 700; cursor: pointer; text-decoration: none; }
+
+/* Modal profil */
+.profile-avatar-row { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+.profile-avatar-big { width: 72px; height: 72px; border-radius: 50%; background: var(--accent-gradient); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 26px; flex-shrink: 0; overflow: hidden; }
+.profile-avatar-big img { width: 100%; height: 100%; object-fit: cover; }
+.profile-avatar-actions { display: flex; flex-direction: column; gap: 6px; }
+.profile-avatar-actions .group-btn { border: 1px solid rgba(128,128,128,0.2); border-radius: 20px; padding: 6px 14px; }
+.profile-meta-line { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; }
+.cloud-status-note { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 10px; }
 </style>
 </head>
 <body class="dark">
@@ -896,19 +934,46 @@ body.edit-active .card-tools button { pointer-events: auto; }
       </div>
     </div>
 
-    <!-- AVATAR DU PROFIL (CERCLE HAUT DROITE) -->
-    <div class="user-profile-wrapper">
-      <button class="user-avatar-btn" id="avatarBtn" onclick="toggleUserDropdown(event)" title="Mon Compte">
-        🔑
+    <div class="btn-group auth-widget" id="authWidget">
+      <button class="auth-icon-btn" id="authIconBtn" onclick="toggleAuthMenu(event)" title="Mon compte">
+        <span id="authIconContent">👤</span>
       </button>
-      <div class="user-dropdown" id="userDropdown">
-        <div class="user-dropdown-header" id="userEmailHeader">Non connecté</div>
-        <button onclick="openProfileModal()" class="group-btn" style="width:100%; border-radius:8px;">
-          👤 Mon Profil & Tier Lists
-        </button>
-        <button onclick="handleLogout()" class="group-btn btn-group-danger" style="width:100%; border-radius:8px;">
-          🚪 Déconnexion
-        </button>
+      <div class="auth-dropdown" id="authDropdown">
+        <div id="authLoggedOut">
+          <button class="auth-menu-item" onclick="openAuthModal('login')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+            Connexion
+          </button>
+          <button class="auth-menu-item" onclick="openAuthModal('signup')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="17" y1="11" x2="23" y2="11"/></svg>
+            Inscription
+          </button>
+        </div>
+        <div id="authLoggedIn" style="display:none;">
+          <div class="auth-dropdown-header">
+            <div class="auth-avatar-big" id="authAvatarBig">👤</div>
+            <div>
+              <strong id="authUsernameLabel">—</strong>
+              <span id="authEmailLabel">—</span>
+            </div>
+          </div>
+          <button class="auth-menu-item" onclick="openProfileModal()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Mon profil
+          </button>
+          <button class="auth-menu-item" onclick="cloudSaveNow()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Sauvegarder dans le cloud
+          </button>
+          <button class="auth-menu-item" onclick="cloudLoadNow()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Charger ma sauvegarde
+          </button>
+          <button class="auth-menu-item btn-group-danger" onclick="logout()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Déconnexion
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -922,49 +987,6 @@ body.edit-active .card-tools button { pointer-events: auto; }
 </div>
 
 <input type="file" id="fileInput" style="display:none" accept=".json" onchange="importJson(this)">
-
-<!-- MODAL CONNEXION & INSCRIPTION -->
-<div id="authModal" class="modal-overlay" onclick="closeModal(event)">
-  <div class="modal-content" style="max-width: 420px;">
-    <h2>Espace Membre</h2>
-    <div class="auth-tabs">
-      <div class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Connexion</div>
-      <div class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')">Inscription</div>
-    </div>
-
-    <!-- FORMULAIRE CONNEXION -->
-    <div id="formLogin" style="display:flex; flex-direction:column; gap:12px;">
-      <input type="email" id="loginEmail" placeholder="Votre Adresse E-mail" style="padding:10px; border-radius:8px; border:1px solid rgba(128,128,128,0.3); background:rgba(255,255,255,0.05); color:var(--text-main); font-family:inherit;">
-      <input type="password" id="loginPassword" placeholder="Mot de passe" style="padding:10px; border-radius:8px; border:1px solid rgba(128,128,128,0.3); background:rgba(255,255,255,0.05); color:var(--text-main); font-family:inherit;">
-      <button class="btn-primary" style="justify-content:center; padding:12px; margin-top:5px;" onclick="handleLogin()">Se connecter</button>
-    </div>
-
-    <!-- FORMULAIRE INSCRIPTION -->
-    <div id="formSignup" style="display:none; flex-direction:column; gap:12px;">
-      <input type="email" id="signupEmail" placeholder="Votre Adresse E-mail" style="padding:10px; border-radius:8px; border:1px solid rgba(128,128,128,0.3); background:rgba(255,255,255,0.05); color:var(--text-main); font-family:inherit;">
-      <input type="password" id="signupPassword" placeholder="Mot de passe (6 caractères min)" style="padding:10px; border-radius:8px; border:1px solid rgba(128,128,128,0.3); background:rgba(255,255,255,0.05); color:var(--text-main); font-family:inherit;">
-      <button class="btn-primary" style="justify-content:center; padding:12px; margin-top:5px;" onclick="handleSignUp()">Créer mon compte</button>
-    </div>
-
-    <div id="authError" style="color:#ef4444; font-size:12px; margin-top:12px; text-align:center;"></div>
-    
-    <div style="margin-top: 20px; text-align: right;">
-      <button onclick="closeAllModals()">Fermer</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL PROFIL & TIER LISTS SAUVEGARDÉES -->
-<div id="profileModal" class="modal-overlay" onclick="closeModal(event)">
-  <div class="modal-content" style="max-width: 520px;">
-    <h2>Mon Profil</h2>
-    <div class="modal-body-scroll" id="profileBody">
-    </div>
-    <div style="margin-top: 15px; text-align: right;">
-      <button onclick="closeAllModals()">Fermer</button>
-    </div>
-  </div>
-</div>
 
 <div id="statsModal" class="modal-overlay" onclick="closeModal(event)">
   <div class="modal-content">
@@ -1011,6 +1033,72 @@ body.edit-active .card-tools button { pointer-events: auto; }
     <h2 id="sessionCardsTitle">🎵 Cartes de la session</h2>
     <div class="modal-body-scroll" id="sessionCardsBody"></div>
     <div style="margin-top: 15px; text-align: right;">
+      <button onclick="closeAllModals()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<div id="authModal" class="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-content" style="max-width: 400px;">
+    <div class="modal-tabs">
+      <button class="modal-tab" id="authTabLogin" onclick="switchAuthTab('login')">Connexion</button>
+      <button class="modal-tab" id="authTabSignup" onclick="switchAuthTab('signup')">Inscription</button>
+    </div>
+
+    <form id="loginForm" class="auth-form" onsubmit="handleLogin(event)">
+      <label>Adresse email</label>
+      <input type="email" id="loginEmail" placeholder="toi@exemple.com" required autocomplete="email">
+      <label>Mot de passe</label>
+      <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+      <div class="auth-error" id="loginError"></div>
+      <button type="submit" class="btn-primary auth-submit-btn">Se connecter</button>
+      <div class="auth-switch-line">Pas encore de compte ? <a onclick="switchAuthTab('signup')">S'inscrire</a></div>
+    </form>
+
+    <form id="signupForm" class="auth-form" style="display:none;" onsubmit="handleSignup(event)">
+      <label>Pseudo</label>
+      <input type="text" id="signupUsername" placeholder="Ton pseudo" required minlength="3" maxlength="24" autocomplete="username">
+      <label>Adresse email</label>
+      <input type="email" id="signupEmail" placeholder="toi@exemple.com" required autocomplete="email">
+      <label>Mot de passe</label>
+      <input type="password" id="signupPassword" placeholder="6 caractères minimum" required minlength="6" autocomplete="new-password">
+      <label>Confirmer le mot de passe</label>
+      <input type="password" id="signupPasswordConfirm" placeholder="••••••••" required minlength="6" autocomplete="new-password">
+      <div class="auth-error" id="signupError"></div>
+      <div class="auth-success" id="signupSuccess"></div>
+      <button type="submit" class="btn-primary auth-submit-btn">Créer mon compte</button>
+      <div class="auth-switch-line">Déjà inscrit ? <a onclick="switchAuthTab('login')">Se connecter</a></div>
+    </form>
+
+    <div style="margin-top: 15px; text-align: right;">
+      <button onclick="closeAllModals()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<div id="profileModal" class="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-content" style="max-width: 460px;">
+    <h2>Mon profil</h2>
+    <div class="profile-avatar-row">
+      <div class="profile-avatar-big" id="profileAvatarBig">👤</div>
+      <div class="profile-avatar-actions">
+        <button class="group-btn" onclick="document.getElementById('avatarFileInput').click()">🖼️ Changer la photo</button>
+        <input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="handleAvatarUpload(this)">
+        <span class="profile-meta-line" id="avatarUploadStatus"></span>
+      </div>
+    </div>
+    <form class="auth-form" onsubmit="saveProfileChanges(event)">
+      <label>Pseudo</label>
+      <input type="text" id="profileUsername" minlength="3" maxlength="24" required>
+      <label>Email</label>
+      <input type="text" id="profileEmail" disabled style="opacity:0.6;">
+      <div class="auth-error" id="profileError"></div>
+      <div class="auth-success" id="profileSuccess"></div>
+      <button type="submit" class="btn-primary auth-submit-btn">Enregistrer les modifications</button>
+    </form>
+    <div class="cloud-status-note" id="profileCloudStatus">☁️ Aucune sauvegarde cloud pour le moment.</div>
+    <div style="margin-top: 18px; text-align: right; display:flex; justify-content: space-between; align-items:center;">
+      <button class="btn-group-danger" style="background:transparent;" onclick="logout(); closeAllModals();">Déconnexion</button>
       <button onclick="closeAllModals()">Fermer</button>
     </div>
   </div>
@@ -1069,269 +1157,23 @@ body.edit-active .card-tools button { pointer-events: auto; }
 
 <script>
 // ==========================================
-// CONFIGURATION SUPABASE & SYSTEME ACCOUNT
+// CONFIGURATION
 // ==========================================
 const YOUTUBE_API_KEY = "AIzaSyBzRO4J6W-M8uSt2k9vd1HJHECCwdKdiGM";
 
-// ⚠️ Remplacez ces deux variables par vos accès Supabase (depuis votre dashboard Supabase -> Project Settings -> API)
-const SUPABASE_URL = "https://tjztuqmhfwfplqohpcsj.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_nmsIO1TAfeXWV_EPnm5UZg_F0-xI0-q";
+// --- SUPABASE (remplace ces deux valeurs par celles de ton projet) ---
+const SUPABASE_URL = "https://VOTRE-PROJET.supabase.co";
+const SUPABASE_ANON_KEY = "VOTRE-CLE-ANON-PUBLIC";
+const supabaseClient = (window.supabase && !SUPABASE_URL.includes('VOTRE-PROJET'))
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+// ==========================================
 
-let supabase = null;
 let currentUser = null;
+let currentProfile = null;
+let cloudSyncTimer = null;
+let hasCloudSave = false;
 
-try {
-  if (window.supabase && SUPABASE_URL !== "https://TON-PROJET.supabase.co") {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  }
-} catch (e) {
-  console.warn("Supabase non initialisé : URL ou clé manquante.", e);
-}
-
-// --- GESTION DES MENUS RÉTRACTABLES ---
-function toggleMenu(groupId, event) {
-  if (event) event.stopPropagation();
-  const targetGroup = document.getElementById(groupId);
-  const isAlreadyOpen = targetGroup.classList.contains('open');
-
-  document.querySelectorAll('.btn-group.open').forEach(g => {
-    if (g.id !== groupId) g.classList.remove('open');
-  });
-
-  if (isAlreadyOpen) {
-    targetGroup.classList.remove('open');
-  } else {
-    targetGroup.classList.add('open');
-  }
-  setTimeout(updateHeaderHeight, 350);
-}
-
-// Fermeture au clic extérieur
-document.addEventListener("click", (e) => {
-  const dd = document.getElementById("userDropdown");
-  if (dd && !e.target.closest('.user-profile-wrapper')) {
-    dd.classList.remove("open");
-  }
-
-  if (!e.target.closest('.btn-group')) {
-    document.querySelectorAll('.btn-group.open').forEach(g => g.classList.remove('open'));
-  }
-});
-
-// --- AUTHENTIFICATION ---
-async function initAuth() {
-  if (!supabase) return;
-
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      currentUser = session.user;
-      updateUserAvatar();
-      await loadDataFromCloud();
-    }
-
-    supabase.auth.onAuthStateChange(async (event, session) => {
-      currentUser = session ? session.user : null;
-      updateUserAvatar();
-      if (event === 'SIGNED_IN') {
-        await loadDataFromCloud();
-      } else if (event === 'SIGNED_OUT') {
-        data = defaultData();
-        render();
-      }
-    });
-  } catch (err) {
-    console.error("Erreur d'authentification:", err);
-  }
-}
-
-function updateUserAvatar() {
-  const btn = document.getElementById("avatarBtn");
-  const emailHeader = document.getElementById("userEmailHeader");
-  if (!btn) return;
-
-  if (currentUser) {
-    const firstLetter = currentUser.email ? currentUser.email.charAt(0).toUpperCase() : 'U';
-    btn.innerHTML = firstLetter;
-    btn.style.background = "var(--accent-gradient)";
-    if (emailHeader) emailHeader.innerText = currentUser.email;
-  } else {
-    btn.innerHTML = "🔑";
-    btn.style.background = "rgba(128,128,128,0.2)";
-    if (emailHeader) emailHeader.innerText = "Non connecté";
-  }
-}
-
-function toggleUserDropdown(e) {
-  if (e) e.stopPropagation();
-  if (!currentUser) {
-    toggleAuthModal();
-    return;
-  }
-  const dd = document.getElementById("userDropdown");
-  dd.classList.toggle("open");
-}
-
-function toggleAuthModal() {
-  document.getElementById("authModal").style.display = "flex";
-  document.getElementById("authError").innerText = "";
-  switchAuthTab('login');
-}
-
-function switchAuthTab(tab) {
-  const tabL = document.getElementById("tabLogin");
-  const tabS = document.getElementById("tabSignup");
-  const formL = document.getElementById("formLogin");
-  const formS = document.getElementById("formSignup");
-  document.getElementById("authError").innerText = "";
-
-  if (tab === 'login') {
-    tabL.classList.add("active");
-    tabS.classList.remove("active");
-    formL.style.display = "flex";
-    formS.style.display = "none";
-  } else {
-    tabS.classList.add("active");
-    tabL.classList.remove("active");
-    formS.style.display = "flex";
-    formL.style.display = "none";
-  }
-}
-
-async function handleLogin() {
-  if (!supabase) { 
-    document.getElementById("authError").innerText = "Configuration Supabase manquante dans le fichier HTML (SUPABASE_URL et SUPABASE_ANON_KEY)."; 
-    return; 
-  }
-  const email = document.getElementById("loginEmail").value.trim();
-  const password = document.getElementById("loginPassword").value.trim();
-  const errorDiv = document.getElementById("authError");
-
-  if (!email || !password) { errorDiv.innerText = "Veuillez remplir tous les champs."; return; }
-
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) {
-    errorDiv.innerText = "Identifiants invalides ou compte non vérifié.";
-  } else {
-    closeAllModals();
-  }
-}
-
-async function handleSignUp() {
-  if (!supabase) { 
-    document.getElementById("authError").innerText = "Configuration Supabase manquante dans le fichier HTML (SUPABASE_URL et SUPABASE_ANON_KEY)."; 
-    return; 
-  }
-  const email = document.getElementById("signupEmail").value.trim();
-  const password = document.getElementById("signupPassword").value.trim();
-  const errorDiv = document.getElementById("authError");
-
-  if (!email || !password) { errorDiv.innerText = "Veuillez remplir tous les champs."; return; }
-
-  const { data, error } = await supabase.auth.signUp({ email, password });
-  if (error) {
-    errorDiv.innerText = error.message;
-  } else {
-    alert("Compte créé avec succès ! Si la vérification email est activée sur votre projet Supabase, confirmez-la avant de vous connecter.");
-    closeAllModals();
-  }
-}
-
-async function handleLogout() {
-  if (!supabase) return;
-  if (confirm("Voulez-vous vous déconnecter ?")) {
-    await supabase.auth.signOut();
-    const dd = document.getElementById("userDropdown");
-    if (dd) dd.classList.remove("open");
-  }
-}
-
-async function save() {
-  localStorage.setItem("tierData", JSON.stringify(data));
-
-  if (currentUser && supabase) {
-    try {
-      await supabase
-        .from('user_tierlists')
-        .upsert({
-          user_id: currentUser.id,
-          tier_data: data,
-          updated_at: new Date()
-        }, { onConflict: 'user_id' });
-    } catch(e) {
-      console.error("Erreur sauvegarde cloud:", e);
-    }
-  }
-}
-
-async function loadDataFromCloud() {
-  if (!currentUser || !supabase) return;
-
-  const { data: dbData, error } = await supabase
-    .from('user_tierlists')
-    .select('tier_data')
-    .eq('user_id', currentUser.id)
-    .single();
-
-  if (dbData && dbData.tier_data) {
-    data = migrateData(dbData.tier_data);
-    localStorage.setItem("tierData", JSON.stringify(data));
-    render();
-  } else {
-    save();
-  }
-}
-
-async function openProfileModal() {
-  closeAllModals();
-  const modal = document.getElementById("profileModal");
-  const body = document.getElementById("profileBody");
-
-  if (!currentUser) return;
-
-  let cloudStatus = "Synchronisation active";
-  let lastSyncTime = "À l'instant";
-
-  if (supabase) {
-    const { data: dbData } = await supabase
-      .from('user_tierlists')
-      .select('updated_at')
-      .eq('user_id', currentUser.id)
-      .single();
-    if (dbData && dbData.updated_at) {
-      lastSyncTime = new Date(dbData.updated_at).toLocaleString('fr-FR');
-    }
-  }
-
-  body.innerHTML = `
-    <div style="background:rgba(128,128,128,0.05); padding:15px; border-radius:12px; margin-bottom:15px;">
-      <div style="font-size:12px; color:var(--text-muted); font-weight:700;">COMPTE CONNECTÉ</div>
-      <div style="font-size:16px; font-weight:800; margin-top:2px;">${currentUser.email}</div>
-      <div style="font-size:11px; color:#10b981; margin-top:6px; font-weight:700;">🟢 ${cloudStatus}</div>
-    </div>
-
-    <div class="stat-title">☁️ Tier Lists Sauvegardées</div>
-    <div style="background:rgba(128,128,128,0.05); padding:15px; border-radius:12px; margin-bottom:15px;">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div>
-          <strong style="font-size:14px; display:block;">Ma Tier List en Ligne</strong>
-          <span style="font-size:12px; color:var(--text-muted);">Synchro Cloud : ${lastSyncTime}</span>
-        </div>
-        <button class="btn-primary" onclick="loadDataFromCloud(); alert('Tier List synchronisée !');">Recharger</button>
-      </div>
-    </div>
-
-    <button style="width:100%; justify-content:center; padding:12px; margin-top:10px;" class="btn-primary" onclick="save(); alert('Sauvegarde Cloud effectuée !');">
-      💾 Forcer la sauvegarde Cloud
-    </button>
-  `;
-
-  modal.style.display = "flex";
-}
-
-// ==========================================
-// LOGIQUE DE L'APPLICATION
-// ==========================================
 let data = load();
 let editMode = false;
 let compactMode = false;
@@ -1343,6 +1185,7 @@ let currentDragAfter = undefined;
 let selectedIds = new Set();
 let sessionFilterId = null;
 
+// --- DYNAMIC HEADER HEIGHT SCRIPT ---
 function updateHeaderHeight() {
   const header = document.querySelector('header');
   if (header) {
@@ -1351,6 +1194,422 @@ function updateHeaderHeight() {
 }
 window.addEventListener('resize', updateHeaderHeight);
 
+// --- GESTION MENUS DÉROULANTS ---
+function toggleMenu(groupId, event) {
+  event.stopPropagation();
+  const targetGroup = document.getElementById(groupId);
+  const currentlyOpen = document.querySelector('.btn-group.open');
+
+  if (currentlyOpen && currentlyOpen.id !== groupId) {
+    currentlyOpen.classList.remove('open');
+    setTimeout(() => {
+      targetGroup.classList.add('open');
+      setTimeout(updateHeaderHeight, 350); // Met à jour la hauteur si le menu s'étend sur une nouvelle ligne
+    }, 300);
+  } else {
+    targetGroup.classList.toggle('open');
+    setTimeout(updateHeaderHeight, 350);
+  }
+}
+
+// ==========================================
+// COMPTE / AUTHENTIFICATION (Supabase)
+// ==========================================
+
+function toggleAuthMenu(event) {
+  event.stopPropagation();
+  document.getElementById('authWidget').classList.toggle('open');
+}
+
+document.addEventListener('click', (e) => {
+  const widget = document.getElementById('authWidget');
+  if (widget && widget.classList.contains('open') && !widget.contains(e.target)) {
+    widget.classList.remove('open');
+  }
+});
+
+function switchAuthTab(tab) {
+  const tabLogin = document.getElementById('authTabLogin');
+  const tabSignup = document.getElementById('authTabSignup');
+  const loginForm = document.getElementById('loginForm');
+  const signupForm = document.getElementById('signupForm');
+  if (tab === 'login') {
+    tabLogin.classList.add('active'); tabSignup.classList.remove('active');
+    loginForm.style.display = 'flex'; signupForm.style.display = 'none';
+  } else {
+    tabSignup.classList.add('active'); tabLogin.classList.remove('active');
+    signupForm.style.display = 'flex'; loginForm.style.display = 'none';
+  }
+}
+
+function openAuthModal(tab) {
+  if (!supabaseClient) {
+    alert("La connexion à Supabase n'est pas configurée. Renseigne SUPABASE_URL et SUPABASE_ANON_KEY dans le code.");
+    return;
+  }
+  document.getElementById('authWidget').classList.remove('open');
+  document.getElementById('loginError').classList.remove('visible');
+  document.getElementById('signupError').classList.remove('visible');
+  document.getElementById('signupSuccess').classList.remove('visible');
+  switchAuthTab(tab || 'login');
+  document.getElementById('authModal').style.display = 'flex';
+}
+
+async function handleLogin(event) {
+  event.preventDefault();
+  const errorBox = document.getElementById('loginError');
+  errorBox.classList.remove('visible');
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const submitBtn = event.target.querySelector('.auth-submit-btn');
+  submitBtn.disabled = true; submitBtn.textContent = "Connexion...";
+  try {
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    closeAllModals();
+    document.getElementById('loginForm').reset();
+  } catch (err) {
+    errorBox.textContent = translateAuthError(err.message);
+    errorBox.classList.add('visible');
+  } finally {
+    submitBtn.disabled = false; submitBtn.textContent = "Se connecter";
+  }
+}
+
+async function handleSignup(event) {
+  event.preventDefault();
+  const errorBox = document.getElementById('signupError');
+  const successBox = document.getElementById('signupSuccess');
+  errorBox.classList.remove('visible'); successBox.classList.remove('visible');
+
+  const username = document.getElementById('signupUsername').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const password = document.getElementById('signupPassword').value;
+  const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
+
+  if (password !== passwordConfirm) {
+    errorBox.textContent = "Les mots de passe ne correspondent pas.";
+    errorBox.classList.add('visible');
+    return;
+  }
+
+  const submitBtn = event.target.querySelector('.auth-submit-btn');
+  submitBtn.disabled = true; submitBtn.textContent = "Création...";
+  try {
+    const { data: signupData, error } = await supabaseClient.auth.signUp({
+      email, password,
+      options: { data: { username } }
+    });
+    if (error) throw error;
+
+    if (signupData.session) {
+      // Confirmation email désactivée côté Supabase : connexion immédiate
+      closeAllModals();
+      document.getElementById('signupForm').reset();
+    } else {
+      successBox.textContent = "Compte créé ! Vérifie ta boîte mail pour confirmer ton inscription avant de te connecter.";
+      successBox.classList.add('visible');
+      document.getElementById('signupForm').reset();
+    }
+  } catch (err) {
+    errorBox.textContent = translateAuthError(err.message);
+    errorBox.classList.add('visible');
+  } finally {
+    submitBtn.disabled = false; submitBtn.textContent = "Créer mon compte";
+  }
+}
+
+function translateAuthError(msg) {
+  if (!msg) return "Une erreur est survenue.";
+  const m = msg.toLowerCase();
+  if (m.includes('invalid login credentials')) return "Email ou mot de passe incorrect.";
+  if (m.includes('user already registered')) return "Un compte existe déjà avec cet email.";
+  if (m.includes('password should be at least')) return "Le mot de passe doit contenir au moins 6 caractères.";
+  if (m.includes('unable to validate email') || m.includes('invalid email')) return "Adresse email invalide.";
+  if (m.includes('email not confirmed')) return "Confirme d'abord ton email avant de te connecter.";
+  return msg;
+}
+
+async function logout() {
+  if (!supabaseClient) return;
+  await supabaseClient.auth.signOut();
+  document.getElementById('authWidget').classList.remove('open');
+  closeAllModals();
+}
+
+function initials(str) {
+  if (!str) return "?";
+  return str.trim().slice(0, 2).toUpperCase();
+}
+
+function updateAuthUI() {
+  const loggedOut = document.getElementById('authLoggedOut');
+  const loggedIn = document.getElementById('authLoggedIn');
+  const iconBtn = document.getElementById('authIconBtn');
+  const iconContent = document.getElementById('authIconContent');
+
+  if (currentUser) {
+    loggedOut.style.display = 'none';
+    loggedIn.style.display = 'block';
+    iconBtn.classList.add('logged-in');
+
+    const label = (currentProfile && currentProfile.username) || currentUser.email;
+    document.getElementById('authUsernameLabel').textContent = label;
+    document.getElementById('authEmailLabel').textContent = currentUser.email;
+
+    const avatarUrl = currentProfile && currentProfile.avatar_url;
+    const avatarColor = (currentProfile && currentProfile.avatar_color) || 'var(--accent-primary)';
+
+    if (avatarUrl) {
+      iconContent.innerHTML = `<img src="${avatarUrl}" alt="avatar">`;
+      document.getElementById('authAvatarBig').innerHTML = `<img src="${avatarUrl}" alt="avatar">`;
+    } else {
+      const ini = initials(label);
+      iconContent.textContent = ini;
+      document.getElementById('authAvatarBig').textContent = ini;
+      document.getElementById('authAvatarBig').style.background = avatarColor;
+    }
+  } else {
+    loggedOut.style.display = 'block';
+    loggedIn.style.display = 'none';
+    iconBtn.classList.remove('logged-in');
+    iconContent.textContent = '👤';
+  }
+}
+
+async function loadProfile() {
+  if (!currentUser || !supabaseClient) { currentProfile = null; return; }
+  try {
+    const { data: profile, error } = await supabaseClient
+      .from('profiles')
+      .select('*')
+      .eq('id', currentUser.id)
+      .maybeSingle();
+    if (error) throw error;
+
+    if (!profile) {
+      // Filet de sécurité si le trigger n'a pas encore créé la ligne
+      const fallbackUsername = currentUser.user_metadata?.username || currentUser.email.split('@')[0];
+      const { data: created } = await supabaseClient
+        .from('profiles')
+        .insert({ id: currentUser.id, username: fallbackUsername })
+        .select()
+        .maybeSingle();
+      currentProfile = created || { id: currentUser.id, username: fallbackUsername };
+    } else {
+      currentProfile = profile;
+    }
+  } catch (err) {
+    console.warn("Erreur de chargement du profil:", err);
+    currentProfile = { id: currentUser.id, username: currentUser.email.split('@')[0] };
+  }
+  updateAuthUI();
+}
+
+function openProfileModal() {
+  if (!currentUser) return;
+  document.getElementById('authWidget').classList.remove('open');
+  document.getElementById('profileUsername').value = (currentProfile && currentProfile.username) || '';
+  document.getElementById('profileEmail').value = currentUser.email;
+  document.getElementById('profileError').classList.remove('visible');
+  document.getElementById('profileSuccess').classList.remove('visible');
+  document.getElementById('avatarUploadStatus').textContent = '';
+
+  const avatarBox = document.getElementById('profileAvatarBig');
+  const avatarUrl = currentProfile && currentProfile.avatar_url;
+  if (avatarUrl) {
+    avatarBox.innerHTML = `<img src="${avatarUrl}" alt="avatar">`;
+    avatarBox.style.background = 'transparent';
+  } else {
+    avatarBox.textContent = initials((currentProfile && currentProfile.username) || currentUser.email);
+    avatarBox.style.background = (currentProfile && currentProfile.avatar_color) || 'var(--accent-primary)';
+  }
+
+  updateCloudStatusNote();
+  document.getElementById('profileModal').style.display = 'flex';
+}
+
+async function updateCloudStatusNote() {
+  const note = document.getElementById('profileCloudStatus');
+  if (!note || !currentUser) return;
+  if (hasCloudSave) {
+    note.textContent = "☁️ Ta tier list est sauvegardée dans le cloud et se synchronise automatiquement.";
+  } else {
+    note.textContent = "☁️ Aucune sauvegarde cloud pour le moment — elle se créera à ta prochaine modification.";
+  }
+}
+
+async function saveProfileChanges(event) {
+  event.preventDefault();
+  const errorBox = document.getElementById('profileError');
+  const successBox = document.getElementById('profileSuccess');
+  errorBox.classList.remove('visible'); successBox.classList.remove('visible');
+
+  const username = document.getElementById('profileUsername').value.trim();
+  const submitBtn = event.target.querySelector('.auth-submit-btn');
+  submitBtn.disabled = true; submitBtn.textContent = "Enregistrement...";
+  try {
+    const { data: updated, error } = await supabaseClient
+      .from('profiles')
+      .update({ username, updated_at: new Date().toISOString() })
+      .eq('id', currentUser.id)
+      .select()
+      .maybeSingle();
+    if (error) throw error;
+    currentProfile = updated || { ...currentProfile, username };
+    updateAuthUI();
+    successBox.textContent = "Profil mis à jour !";
+    successBox.classList.add('visible');
+  } catch (err) {
+    errorBox.textContent = translateAuthError(err.message);
+    errorBox.classList.add('visible');
+  } finally {
+    submitBtn.disabled = false; submitBtn.textContent = "Enregistrer les modifications";
+  }
+}
+
+async function handleAvatarUpload(input) {
+  const file = input.files[0];
+  if (!file || !currentUser) return;
+  const statusEl = document.getElementById('avatarUploadStatus');
+  statusEl.textContent = "Envoi en cours...";
+  try {
+    const ext = file.name.split('.').pop();
+    const path = `${currentUser.id}/avatar.${ext}`;
+    const { error: uploadError } = await supabaseClient.storage
+      .from('avatars')
+      .upload(path, file, { upsert: true });
+    if (uploadError) throw uploadError;
+
+    const { data: urlData } = supabaseClient.storage.from('avatars').getPublicUrl(path);
+    const avatarUrl = urlData.publicUrl + '?t=' + Date.now();
+
+    const { data: updated, error: updateError } = await supabaseClient
+      .from('profiles')
+      .update({ avatar_url: avatarUrl, updated_at: new Date().toISOString() })
+      .eq('id', currentUser.id)
+      .select()
+      .maybeSingle();
+    if (updateError) throw updateError;
+
+    currentProfile = updated || { ...currentProfile, avatar_url: avatarUrl };
+    updateAuthUI();
+    document.getElementById('profileAvatarBig').innerHTML = `<img src="${avatarUrl}" alt="avatar">`;
+    statusEl.textContent = "Photo mise à jour !";
+  } catch (err) {
+    console.warn("Erreur upload avatar:", err);
+    statusEl.textContent = "Échec de l'envoi (bucket 'avatars' configuré ?).";
+  }
+  input.value = '';
+}
+
+async function cloudSaveNow() {
+  if (!currentUser || !supabaseClient) return;
+  document.getElementById('authWidget').classList.remove('open');
+  try {
+    const { error } = await supabaseClient
+      .from('user_tierlists')
+      .upsert({ user_id: currentUser.id, tier_data: data, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+    if (error) throw error;
+    hasCloudSave = true;
+    updateCloudStatusNote();
+    alert("Tier list sauvegardée dans le cloud !");
+  } catch (err) {
+    alert("Erreur lors de la sauvegarde cloud : " + err.message);
+  }
+}
+
+async function cloudLoadNow() {
+  if (!currentUser || !supabaseClient) return;
+  document.getElementById('authWidget').classList.remove('open');
+  try {
+    const { data: row, error } = await supabaseClient
+      .from('user_tierlists')
+      .select('tier_data, updated_at')
+      .eq('user_id', currentUser.id)
+      .maybeSingle();
+    if (error) throw error;
+    if (!row) { alert("Aucune sauvegarde cloud trouvée pour ce compte."); return; }
+    if (!confirm("Charger la sauvegarde cloud va remplacer ta tier list actuelle sur cet appareil. Continuer ?")) return;
+    data = migrateData(row.tier_data);
+    localStorage.setItem("tierData", JSON.stringify(data));
+    render();
+    alert("Sauvegarde cloud chargée !");
+  } catch (err) {
+    alert("Erreur lors du chargement : " + err.message);
+  }
+}
+
+// Après connexion : propose de charger la sauvegarde cloud si elle existe,
+// sinon pousse automatiquement la tier list locale actuelle vers le cloud.
+async function syncOnLogin() {
+  if (!currentUser || !supabaseClient) return;
+  try {
+    const { data: row, error } = await supabaseClient
+      .from('user_tierlists')
+      .select('tier_data, updated_at')
+      .eq('user_id', currentUser.id)
+      .maybeSingle();
+    if (error) throw error;
+
+    if (row) {
+      hasCloudSave = true;
+      const loadIt = confirm("Une sauvegarde cloud existe pour ce compte.\n\nOK = charger la sauvegarde cloud (remplace la version locale de cet appareil)\nAnnuler = garder la version locale et l'envoyer dans le cloud");
+      if (loadIt) {
+        data = migrateData(row.tier_data);
+        localStorage.setItem("tierData", JSON.stringify(data));
+        render();
+      } else {
+        await cloudSaveNowSilent();
+      }
+    } else {
+      await cloudSaveNowSilent();
+    }
+    updateCloudStatusNote();
+  } catch (err) {
+    console.warn("Erreur de synchronisation à la connexion:", err);
+  }
+}
+
+async function cloudSaveNowSilent() {
+  if (!currentUser || !supabaseClient) return;
+  try {
+    const { error } = await supabaseClient
+      .from('user_tierlists')
+      .upsert({ user_id: currentUser.id, tier_data: data, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+    if (error) throw error;
+    hasCloudSave = true;
+  } catch (err) {
+    console.warn("Erreur de sauvegarde cloud initiale:", err);
+  }
+}
+
+async function initAuth() {
+  if (!supabaseClient) { updateAuthUI(); return; }
+
+  const { data: sessionData } = await supabaseClient.auth.getSession();
+  currentUser = sessionData.session ? sessionData.session.user : null;
+  if (currentUser) { await loadProfile(); }
+  updateAuthUI();
+
+  supabaseClient.auth.onAuthStateChange(async (event, session) => {
+    const wasLoggedOut = !currentUser;
+    currentUser = session ? session.user : null;
+
+    if (currentUser && wasLoggedOut) {
+      await loadProfile();
+      await syncOnLogin();
+    } else if (currentUser) {
+      await loadProfile();
+    } else {
+      currentProfile = null;
+      hasCloudSave = false;
+    }
+    updateAuthUI();
+  });
+}
+
+// --- AUDIO PREVIEW ---
 let currentPlayingId = null;
 const audio = document.getElementById('previewAudio');
 const volumeSlider = document.getElementById('volumeSlider');
@@ -1450,6 +1709,7 @@ async function togglePreview(songId, event) {
   }
 }
 
+// --- GESTION TWITCH ---
 let activeTwitchSongId = null;
 let twitchVotes = {};
 let twitchClient = null;
@@ -1514,6 +1774,7 @@ function togglePolls() {
   }
 }
 
+// --- UTILS ---
 function generateUniqueId() { return Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9); }
 
 function getCurrentSessionId() {
@@ -1578,11 +1839,32 @@ function load(){
   } catch(e) { return defaultData(); }
 }
 
+function save(){
+  localStorage.setItem("tierData", JSON.stringify(data));
+  scheduleCloudSync();
+}
+
+function scheduleCloudSync() {
+  if (!currentUser || !supabaseClient) return;
+  clearTimeout(cloudSyncTimer);
+  cloudSyncTimer = setTimeout(async () => {
+    try {
+      const { error } = await supabaseClient
+        .from('user_tierlists')
+        .upsert({ user_id: currentUser.id, tier_data: data, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+      if (error) throw error;
+      hasCloudSave = true;
+      updateCloudStatusNote();
+    } catch (err) {
+      console.warn("Erreur de synchronisation cloud:", err);
+    }
+  }, 1500);
+}
+
 function resetData() {
   if(confirm("Êtes-vous sûr de vouloir tout effacer ? Cette action est irréversible.")) {
     localStorage.removeItem("tierData");
     data = defaultData();
-    save();
     render();
     alert("Tier List réinitialisée !");
   }
@@ -1784,7 +2066,7 @@ function showFavorites() {
     body.innerHTML = html;
   }
   modal.style.display = 'flex';
-  body.scrollTop = 0;
+  body.scrollTop = 0; // Remet le scroll en haut
 }
 
 function closeAllModals() {
@@ -1795,9 +2077,11 @@ function closeModal(e) {
   if(e.target.classList.contains('modal-overlay')) e.target.style.display = 'none'; 
 }
 
+// --- SESSION MANAGEMENT ---
+
 function showSessionsModal() {
   document.getElementById('sessionsModal').style.display = 'flex';
-  document.getElementById('sessionsBody').scrollTop = 0;
+  document.getElementById('sessionsBody').scrollTop = 0; // Remet le scroll en haut
   renderSessions();
 }
 
@@ -2052,6 +2336,7 @@ function showMergeUI(sid) {
   renderSessions();
 }
 
+// --- STATS ---
 function calculateRankings() {
   let totalSongs = 0;
   let placedSongsCount = 0;
@@ -2199,7 +2484,7 @@ function showStats() {
   `;
   body.innerHTML = html;
   modal.style.display = 'flex';
-  body.scrollTop = 0;
+  body.scrollTop = 0; // Remet le scroll en haut
 }
 
 function searchByArtist(artistName) {
@@ -2256,9 +2541,10 @@ function showAllArtists() {
     body.innerHTML = html;
   }
   modal.style.display = 'flex';
-  body.scrollTop = 0;
+  body.scrollTop = 0; // Remet le scroll en haut
 }
 
+// --- VOIR LES CARTES D'UNE SESSION (MODAL) ---
 function showSessionCards(sessionId) {
   const modal = document.getElementById('sessionCardsModal');
   const title = document.getElementById('sessionCardsTitle');
@@ -2305,9 +2591,10 @@ function showSessionCards(sessionId) {
     body.innerHTML = html;
   }
   modal.style.display = 'flex';
-  body.scrollTop = 0;
+  body.scrollTop = 0; // Remet le scroll en haut
 }
 
+// --- EXPORT PNG ---
 async function exportPng() {
   window.scrollTo({ top: 0, behavior: 'instant' });
   document.body.classList.add('no-animations');
@@ -2606,7 +2893,7 @@ function updateCounters() {
 }
 
 // =============================================
-// DRAG & DROP
+// DRAG & DROP — SNAPSHOT APPROACH
 // =============================================
 let cardSnapshot = [];
 let snapshotContainer = null;
@@ -2920,12 +3207,11 @@ document.addEventListener("dragend", () => {
   if (autoScrollRAF) { cancelAnimationFrame(autoScrollRAF); autoScrollRAF = null; }
 });
 
-// INITIALISATION DU SITE
-updateHeaderHeight();
+updateHeaderHeight(); // Initialisation de la hauteur du header au chargement
 render();
-initAuth();
 setTimeout(syncCovers, 1500);
 changeTwitchChannel();
+initAuth();
 
 </script>
 </body>
