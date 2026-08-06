@@ -79,6 +79,7 @@ header {
 .header-left { flex: 1; display: flex; justify-content: flex-start; }
 .header-center { flex: 1; display: flex; justify-content: center; }
 .header-right { flex: 1; display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+.header-accounts { display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-left: 14px; }
 
 .logo {
   font-weight: 800;
@@ -408,6 +409,7 @@ iframe.twitch-iframe { flex: 1; width: 100%; border: none; border-bottom-left-ra
 @media (max-width: 900px) {
   header { flex-direction: column; gap: 15px; padding: 15px; height: auto; }
   .header-left, .header-center, .header-right { width: 100%; justify-content: center; }
+  .header-accounts { width: 100%; justify-content: center; margin-left: 0; }
   .search-container { width: 100%; max-width: 400px; }
   #searchBar { width: 100% !important; text-align: left; }
   /* MENU RENDU RESPONSIVE ET SCROLLABLE HORIZONTALEMENT */
@@ -861,6 +863,29 @@ body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
 .duo-remote-body .cards { padding: 12px; gap: 10px; min-height: 90px; }
 .duo-remote-pool-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 800; margin: 6px 0 8px 4px; }
 .duo-empty-note { text-align: center; padding: 30px; color: var(--text-muted); font-size: 13px; }
+
+#pageColumns { display: block; }
+body.duo-active #pageColumns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 440px);
+  gap: 22px;
+  max-width: 1680px;
+  margin: 0 auto;
+  padding: 0 20px;
+  align-items: start;
+}
+body.duo-active .main { max-width: none; margin: 0; padding: 0 0 240px 0; }
+body.duo-active .duo-remote-panel {
+  position: sticky;
+  top: calc(var(--header-height) + 20px);
+  margin: 0;
+}
+body.duo-active .duo-remote-body { max-height: calc(100vh - var(--header-height) - 150px); }
+@media (max-width: 1150px) {
+  body.duo-active #pageColumns { grid-template-columns: 1fr; max-width: 1320px; }
+  body.duo-active .duo-remote-panel { position: static; margin: 0 0 30px 0; }
+  body.duo-active .duo-remote-body { max-height: 480px; }
+}
 </style>
 </head>
 <body class="dark">
@@ -961,13 +986,19 @@ body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           Sessions
         </button>
+        <button onclick="showTierlistsModal()" title="Mes Tier Lists" class="group-btn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 3h18v4H3z"/><path d="M3 10h18v4H3z"/><path d="M3 17h18v4H3z"/></svg>
+          Mes Tier Lists
+        </button>
         <button onclick="showAllArtists()" title="Tous les Artistes" class="group-btn">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           Artistes
         </button>
       </div>
     </div>
+  </div>
 
+  <div class="header-accounts">
     <div class="btn-group auth-widget" id="authWidget">
       <button class="auth-icon-btn" id="authIconBtn" onclick="toggleAuthMenu(event)" title="Mon compte">
         <span id="authIconContent">👤</span>
@@ -994,14 +1025,6 @@ body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
           <button class="auth-menu-item" onclick="openProfileModal()">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             Mon profil
-          </button>
-          <button class="auth-menu-item" onclick="cloudSaveNow()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Sauvegarder dans le cloud
-          </button>
-          <button class="auth-menu-item" onclick="cloudLoadNow()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Charger ma sauvegarde
           </button>
           <button class="auth-menu-item btn-group-danger" onclick="logout()">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -1063,6 +1086,16 @@ body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
   <div class="modal-content" style="max-width: 600px;">
     <h2>📅 Sessions</h2>
     <div class="modal-body-scroll" id="sessionsBody"></div>
+    <div style="margin-top: 15px; text-align: right;">
+      <button onclick="closeAllModals()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<div id="tierlistsModal" class="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-content" style="max-width: 600px;">
+    <h2>🗂️ Mes Tier Lists</h2>
+    <div class="modal-body-scroll" id="tierlistsBody"></div>
     <div style="margin-top: 15px; text-align: right;">
       <button onclick="closeAllModals()">Fermer</button>
     </div>
@@ -1197,7 +1230,22 @@ body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
   <iframe id="twitchIframe" src="" class="twitch-iframe"></iframe>
 </div>
 
-<div class="main">
+<div id="pageColumns">
+  <div class="main">
+    <div class="input-section">
+      <input type="text" id="artistInput" placeholder="Artiste (ex: NMIXX)">
+      <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
+      <input type="text" id="titleInput" placeholder="Titre (ex: Dash)">
+      <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
+      <button class="group-btn" id="manualLinkToggleBtn" onclick="toggleManualLinkField()" title="La recherche automatique ne trouve pas la chanson ? Donne le lien Apple Music" style="border-radius:20px; padding:8px 14px; border:1px solid rgba(128,128,128,0.2);">🔗</button>
+    </div>
+    <div id="manualLinkRow" style="display:none; max-width:900px; margin:-10px auto 20px auto; padding: 0 20px;">
+      <input type="text" id="manualAppleLinkInput" placeholder="Lien Apple Music du morceau (ex: https://music.apple.com/fr/album/.../123456789?i=987654321)" style="width:100%; background: rgba(128,128,128,0.08); border: 1px solid rgba(128,128,128,0.2); border-radius: 10px; padding: 10px 14px; color: var(--text-main); font-family: inherit; font-size: 13px;">
+      <div style="font-size:11px; color:var(--text-muted); margin-top:6px;">💡 Trouve la chanson sur Apple Music, clique sur "..." → "Copier le lien du titre", colle-le ici, puis clique sur Ajouter.</div>
+    </div>
+    <div id="tiers"></div>
+  </div>
+
   <div id="duoRemotePanel" class="duo-remote-panel" style="display:none;">
     <div class="duo-remote-header">
       <div class="duo-remote-who">
@@ -1207,20 +1255,16 @@ body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
           <small><span class="duo-live-dot"></span> En direct</small>
         </div>
       </div>
-      <button class="duo-leave-btn" onclick="leaveDuoSession()">Quitter la session</button>
+      <div style="display:flex; gap:8px;">
+        <button class="duo-leave-btn" id="duoStatsToggleBtn" style="border-color:rgba(99,102,241,0.35); color:var(--accent-primary);" onclick="toggleDuoView()">📊 Stats</button>
+        <button class="duo-leave-btn" onclick="leaveDuoSession()">Quitter</button>
+      </div>
     </div>
     <div class="duo-remote-body" id="duoRemoteBody">
       <div class="duo-empty-note">En attente des données...</div>
     </div>
+    <div class="duo-remote-body" id="duoStatsBody" style="display:none;"></div>
   </div>
-
-  <div class="input-section">
-    <input type="text" id="artistInput" placeholder="Artiste (ex: NMIXX)">
-    <div style="width:1px; background:var(--text-muted); opacity:0.2; margin: 5px 0;"></div>
-    <input type="text" id="titleInput" placeholder="Titre (ex: Dash)">
-    <button class="btn-primary" onclick="addSong()">Ajouter 🎵</button>
-  </div>
-  <div id="tiers"></div>
 </div>
 
 <div class="pool-container">
@@ -1253,8 +1297,8 @@ body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
 const YOUTUBE_API_KEY = "AIzaSyBzRO4J6W-M8uSt2k9vd1HJHECCwdKdiGM";
 
 // --- SUPABASE (remplace ces deux valeurs par celles de ton projet) ---
-const SUPABASE_URL = "https://tjztuqmhfwfplqohpcsj.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_nmsIO1TAfeXWV_EPnm5UZg_F0-xI0-q";
+const SUPABASE_URL = "https://VOTRE-PROJET.supabase.co";
+const SUPABASE_ANON_KEY = "VOTRE-CLE-ANON-PUBLIC";
 const supabaseClient = (window.supabase && !SUPABASE_URL.includes('VOTRE-PROJET'))
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
@@ -1263,7 +1307,9 @@ const supabaseClient = (window.supabase && !SUPABASE_URL.includes('VOTRE-PROJET'
 let currentUser = null;
 let currentProfile = null;
 let cloudSyncTimer = null;
-let hasCloudSave = false;
+let currentTierlistId = null;
+let currentTierlistName = 'Ma Tier List';
+let myTierlists = [];
 
 let data = load();
 let editMode = false;
@@ -1389,7 +1435,7 @@ async function handleSignup(event) {
   try {
     const { data: signupData, error } = await supabaseClient.auth.signUp({
       email, password,
-      options: { data: { username } }
+      options: { data: { username }, emailRedirectTo: window.location.origin }
     });
     if (error) throw error;
 
@@ -1520,13 +1566,13 @@ function openProfileModal() {
   document.getElementById('profileModal').style.display = 'flex';
 }
 
-async function updateCloudStatusNote() {
+function updateCloudStatusNote() {
   const note = document.getElementById('profileCloudStatus');
   if (!note || !currentUser) return;
-  if (hasCloudSave) {
-    note.textContent = "☁️ Ta tier list est sauvegardée dans le cloud et se synchronise automatiquement.";
+  if (currentTierlistId) {
+    note.innerHTML = `☁️ "${currentTierlistName}" se sauvegarde automatiquement dans le cloud. <a onclick="closeAllModals(); showTierlistsModal();" style="color:var(--accent-primary); cursor:pointer; font-weight:700;">Voir mes tier lists</a>`;
   } else {
-    note.textContent = "☁️ Aucune sauvegarde cloud pour le moment — elle se créera à ta prochaine modification.";
+    note.textContent = "☁️ Synchronisation en cours...";
   }
 }
 
@@ -1594,84 +1640,245 @@ async function handleAvatarUpload(input) {
   input.value = '';
 }
 
-async function cloudSaveNow() {
-  if (!currentUser || !supabaseClient) return;
-  document.getElementById('authWidget').classList.remove('open');
+// Sauvegarde immédiate (non débouncée) de la tier list courante — utilisée avant de
+// changer de tier list ou de quitter, pour ne jamais perdre les toutes dernières modifs.
+async function flushCloudSync() {
+  if (!currentUser || !supabaseClient || !currentTierlistId) return;
+  clearTimeout(cloudSyncTimer);
   try {
-    const { error } = await supabaseClient
+    await supabaseClient
       .from('user_tierlists')
-      .upsert({ user_id: currentUser.id, tier_data: data, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
-    if (error) throw error;
-    hasCloudSave = true;
-    updateCloudStatusNote();
-    alert("Tier list sauvegardée dans le cloud !");
+      .update({ tier_data: data, updated_at: new Date().toISOString() })
+      .eq('id', currentTierlistId);
   } catch (err) {
-    alert("Erreur lors de la sauvegarde cloud : " + err.message);
+    console.warn("Erreur de synchronisation cloud:", err);
   }
 }
 
-async function cloudLoadNow() {
+// Appelée une fois à la connexion : sélectionne silencieusement la bonne tier list
+// (celle utilisée précédemment sur cet appareil, ou la plus récente, ou en crée une
+// à partir des données locales si c'est le tout premier login) — aucun pop-up.
+async function silentCloudSync() {
   if (!currentUser || !supabaseClient) return;
-  document.getElementById('authWidget').classList.remove('open');
+  try {
+    const { data: rows, error } = await supabaseClient
+      .from('user_tierlists')
+      .select('id, name, order_index, updated_at')
+      .eq('user_id', currentUser.id)
+      .order('order_index', { ascending: true });
+    if (error) throw error;
+    myTierlists = rows || [];
+
+    const rememberedId = localStorage.getItem('currentTierlistId_' + currentUser.id);
+    let target = myTierlists.find(t => t.id === rememberedId);
+
+    if (!target && myTierlists.length > 0) {
+      target = [...myTierlists].sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))[0];
+    }
+
+    if (target) {
+      currentTierlistId = target.id;
+      currentTierlistName = target.name;
+      localStorage.setItem('currentTierlistId_' + currentUser.id, target.id);
+
+      const { data: full, error: fullErr } = await supabaseClient
+        .from('user_tierlists')
+        .select('tier_data')
+        .eq('id', target.id)
+        .maybeSingle();
+      if (fullErr) throw fullErr;
+      if (full) {
+        data = migrateData(full.tier_data);
+        localStorage.setItem("tierData", JSON.stringify(data));
+        render();
+      }
+    } else {
+      const { data: created, error: createErr } = await supabaseClient
+        .from('user_tierlists')
+        .insert({ user_id: currentUser.id, name: 'Ma Tier List', tier_data: data, order_index: 0 })
+        .select()
+        .maybeSingle();
+      if (createErr) throw createErr;
+      currentTierlistId = created.id;
+      currentTierlistName = created.name;
+      myTierlists = [created];
+      localStorage.setItem('currentTierlistId_' + currentUser.id, created.id);
+    }
+  } catch (err) {
+    console.warn("Erreur de synchronisation cloud:", err);
+  }
+  updateCloudStatusNote();
+  updateAuthUI();
+}
+
+// ==========================================
+// MES TIER LISTS (plusieurs tier lists par compte)
+// ==========================================
+
+async function showTierlistsModal() {
+  if (!currentUser) {
+    alert("Connecte-toi pour retrouver et gérer tes différentes tier lists.");
+    openAuthModal('login');
+    return;
+  }
+  document.getElementById('tierlistsModal').style.display = 'flex';
+  await refreshTierlistsList();
+}
+
+async function refreshTierlistsList() {
+  const body = document.getElementById('tierlistsBody');
+  body.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:13px;">Chargement...</div>`;
+  try {
+    const { data: rows, error } = await supabaseClient
+      .from('user_tierlists')
+      .select('id, name, order_index, updated_at')
+      .eq('user_id', currentUser.id)
+      .order('order_index', { ascending: true });
+    if (error) throw error;
+    myTierlists = rows || [];
+  } catch (err) {
+    body.innerHTML = `<div class="auth-error visible">Erreur de chargement : ${err.message}</div>`;
+    return;
+  }
+  renderTierlists();
+}
+
+function renderTierlists() {
+  const body = document.getElementById('tierlistsBody');
+  let html = `<div class="new-session-form">
+    <div style="font-weight:700; font-size:13px; margin-bottom:8px; color: var(--accent-primary);">➕ Nouvelle tier list</div>
+    <input type="text" id="newTierlistName" placeholder="Nom (ex: K-Pop 2026, Rap FR...)">
+    <button class="btn-primary" style="width:100%; justify-content:center;" onclick="createNewTierlist()">Créer une tier list vierge</button>
+  </div>`;
+
+  html += `<div class="stat-title" style="margin-top:4px;">Tes tier lists — glisse-dépose pour réordonner</div>`;
+
+  if (myTierlists.length === 0) {
+    html += `<div style="opacity:0.5; font-size:13px; text-align:center; padding:20px;">Aucune tier list trouvée.</div>`;
+  }
+
+  myTierlists.forEach(tl => {
+    const isActive = tl.id === currentTierlistId;
+    const dateStr = tl.updated_at ? new Date(tl.updated_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+    html += `<div class="history-session" draggable="true" data-tlid="${tl.id}"
+        ondragstart="tlDragStart(event)" ondragover="tlDragOver(event)" ondrop="tlDrop(event)" ondragend="tlDragEnd(event)"
+        style="cursor:grab; ${isActive ? 'border-color: var(--accent-primary); background: rgba(99,102,241,0.08);' : ''}">
+      <div class="session-head">
+        <span class="session-name">${isActive ? '▶ ' : ''}${tl.name}</span>
+        ${isActive ? '<span style="font-size:11px; background:var(--accent-gradient); color:white; padding:2px 8px; border-radius:20px;">Ouverte</span>' : ''}
+      </div>
+      <div class="session-meta">Modifiée le ${dateStr}</div>
+      <div class="session-actions">
+        ${!isActive ? `<button class="session-action-btn btn-primary" onclick="switchTierlist('${tl.id}')">Ouvrir</button>` : ''}
+        <button class="session-action-btn" onclick="renameTierlist('${tl.id}')">✎ Renommer</button>
+        ${myTierlists.length > 1 ? `<button class="session-action-btn btn-danger" onclick="deleteTierlist('${tl.id}')">✕ Supprimer</button>` : ''}
+      </div>
+    </div>`;
+  });
+
+  body.innerHTML = html;
+}
+
+let tlDraggedId = null;
+function tlDragStart(e) { tlDraggedId = e.currentTarget.dataset.tlid; e.currentTarget.style.opacity = '0.4'; }
+function tlDragEnd(e) { e.currentTarget.style.opacity = '1'; }
+function tlDragOver(e) {
+  e.preventDefault();
+  const container = e.currentTarget.parentElement;
+  const dragging = container.querySelector(`[data-tlid="${tlDraggedId}"]`);
+  const target = e.currentTarget;
+  if (!dragging || dragging === target) return;
+  const rect = target.getBoundingClientRect();
+  const after = (e.clientY - rect.top) > rect.height / 2;
+  container.insertBefore(dragging, after ? target.nextSibling : target);
+}
+async function tlDrop(e) {
+  e.preventDefault();
+  const container = document.getElementById('tierlistsBody');
+  const orderedIds = [...container.querySelectorAll('[data-tlid]')].map(el => el.dataset.tlid);
+  try {
+    await Promise.all(orderedIds.map((id, index) =>
+      supabaseClient.from('user_tierlists').update({ order_index: index }).eq('id', id)
+    ));
+    myTierlists.sort((a, b) => orderedIds.indexOf(a.id) - orderedIds.indexOf(b.id));
+  } catch (err) {
+    console.warn("Erreur de réordonnancement:", err);
+  }
+}
+
+async function createNewTierlist() {
+  const nameInput = document.getElementById('newTierlistName');
+  const name = nameInput.value.trim() || 'Nouvelle Tier List';
+  try {
+    const maxOrder = myTierlists.reduce((m, t) => Math.max(m, t.order_index || 0), -1);
+    const { data: created, error } = await supabaseClient
+      .from('user_tierlists')
+      .insert({ user_id: currentUser.id, name, tier_data: defaultData(), order_index: maxOrder + 1 })
+      .select()
+      .maybeSingle();
+    if (error) throw error;
+    nameInput.value = '';
+    await switchTierlist(created.id, true);
+    await refreshTierlistsList();
+  } catch (err) {
+    alert("Erreur lors de la création : " + err.message);
+  }
+}
+
+async function switchTierlist(id, skipRefresh) {
+  if (id === currentTierlistId) { closeAllModals(); return; }
+  await flushCloudSync(); // on s'assure que la tier list qu'on quitte est bien sauvegardée
   try {
     const { data: row, error } = await supabaseClient
       .from('user_tierlists')
-      .select('tier_data, updated_at')
-      .eq('user_id', currentUser.id)
+      .select('tier_data, name')
+      .eq('id', id)
       .maybeSingle();
     if (error) throw error;
-    if (!row) { alert("Aucune sauvegarde cloud trouvée pour ce compte."); return; }
-    if (!confirm("Charger la sauvegarde cloud va remplacer ta tier list actuelle sur cet appareil. Continuer ?")) return;
+    if (!row) { alert("Cette tier list est introuvable."); return; }
     data = migrateData(row.tier_data);
     localStorage.setItem("tierData", JSON.stringify(data));
+    currentTierlistId = id;
+    currentTierlistName = row.name;
+    localStorage.setItem('currentTierlistId_' + currentUser.id, id);
     render();
-    alert("Sauvegarde cloud chargée !");
+    updateCloudStatusNote();
+    if (!skipRefresh) await refreshTierlistsList();
+    closeAllModals();
   } catch (err) {
     alert("Erreur lors du chargement : " + err.message);
   }
 }
 
-// Après connexion : propose de charger la sauvegarde cloud si elle existe,
-// sinon pousse automatiquement la tier list locale actuelle vers le cloud.
-async function syncOnLogin() {
-  if (!currentUser || !supabaseClient) return;
+async function renameTierlist(id) {
+  const tl = myTierlists.find(t => t.id === id);
+  const name = prompt("Nom de la tier list :", tl ? tl.name : '');
+  if (!name) return;
   try {
-    const { data: row, error } = await supabaseClient
-      .from('user_tierlists')
-      .select('tier_data, updated_at')
-      .eq('user_id', currentUser.id)
-      .maybeSingle();
-    if (error) throw error;
-
-    if (row) {
-      hasCloudSave = true;
-      const loadIt = confirm("Une sauvegarde cloud existe pour ce compte.\n\nOK = charger la sauvegarde cloud (remplace la version locale de cet appareil)\nAnnuler = garder la version locale et l'envoyer dans le cloud");
-      if (loadIt) {
-        data = migrateData(row.tier_data);
-        localStorage.setItem("tierData", JSON.stringify(data));
-        render();
-      } else {
-        await cloudSaveNowSilent();
-      }
-    } else {
-      await cloudSaveNowSilent();
-    }
-    updateCloudStatusNote();
+    await supabaseClient.from('user_tierlists').update({ name }).eq('id', id);
+    if (id === currentTierlistId) { currentTierlistName = name; updateCloudStatusNote(); }
+    await refreshTierlistsList();
   } catch (err) {
-    console.warn("Erreur de synchronisation à la connexion:", err);
+    alert("Erreur lors du renommage : " + err.message);
   }
 }
 
-async function cloudSaveNowSilent() {
-  if (!currentUser || !supabaseClient) return;
+async function deleteTierlist(id) {
+  const tl = myTierlists.find(t => t.id === id);
+  if (!confirm(`Supprimer définitivement "${tl ? tl.name : ''}" ? Cette action est irréversible.`)) return;
   try {
-    const { error } = await supabaseClient
-      .from('user_tierlists')
-      .upsert({ user_id: currentUser.id, tier_data: data, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
-    if (error) throw error;
-    hasCloudSave = true;
+    await supabaseClient.from('user_tierlists').delete().eq('id', id);
+    if (id === currentTierlistId) {
+      const remaining = myTierlists.filter(t => t.id !== id);
+      if (remaining.length > 0) {
+        await switchTierlist(remaining[0].id, true);
+      } else {
+        currentTierlistId = null;
+      }
+    }
+    await refreshTierlistsList();
   } catch (err) {
-    console.warn("Erreur de sauvegarde cloud initiale:", err);
+    alert("Erreur lors de la suppression : " + err.message);
   }
 }
 
@@ -1680,7 +1887,7 @@ async function initAuth() {
 
   const { data: sessionData } = await supabaseClient.auth.getSession();
   currentUser = sessionData.session ? sessionData.session.user : null;
-  if (currentUser) { await loadProfile(); }
+  if (currentUser) { await loadProfile(); await silentCloudSync(); }
   updateAuthUI();
 
   supabaseClient.auth.onAuthStateChange(async (event, session) => {
@@ -1689,28 +1896,36 @@ async function initAuth() {
 
     if (currentUser && wasLoggedOut) {
       await loadProfile();
-      await syncOnLogin();
+      await silentCloudSync();
     } else if (currentUser) {
       await loadProfile();
     } else {
       currentProfile = null;
-      hasCloudSave = false;
+      currentTierlistId = null;
+      myTierlists = [];
+      leaveDuoSession();
     }
     updateAuthUI();
   });
 }
 
 // ==========================================
-// MODE MULTI (session à deux, temps réel via Supabase Realtime)
+// MODE MULTI (session à deux, fiable même avec de grosses tier lists)
+// Principe : le code ne relie que deux comptes ("poignée de main" dans
+// duo_sessions). Le gros JSON de la tier list ne transite JAMAIS par le
+// canal temps réel — celui-ci ne sert qu'à envoyer un petit "signal" de
+// changement ; les données complètes sont ensuite récupérées via une
+// requête normale (sans limite de taille).
 // ==========================================
 let duoChannel = null;
 let duoCode = null;
 let duoState = 'solo'; // 'solo' | 'waiting' | 'active'
-let duoPresenceKey = null;
-let duoRemoteData = null;
 let duoPartnerName = null;
-let duoBroadcastTimer = null;
-let duoGuestName = null;
+let duoPartnerUserId = null;
+let duoPartnerTierlistId = null;
+let duoMyTierlistId = null;
+let duoRemoteData = null;
+let duoView = 'board'; // 'board' | 'stats'
 
 function toggleDuoMenu(event) {
   event.stopPropagation();
@@ -1724,13 +1939,6 @@ document.addEventListener('click', (e) => {
   }
 });
 
-function myDuoName() {
-  if (currentProfile && currentProfile.username) return currentProfile.username;
-  if (currentUser) return currentUser.email.split('@')[0];
-  if (!duoGuestName) duoGuestName = prompt("Choisis un pseudo pour la session multi :", "Invité") || "Invité";
-  return duoGuestName;
-}
-
 function generateRoomCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let out = '';
@@ -1740,6 +1948,19 @@ function generateRoomCode() {
 
 function openDuoModal() {
   document.getElementById('duoWidget').classList.remove('open');
+  if (!supabaseClient) {
+    alert("La connexion à Supabase n'est pas configurée. Renseigne SUPABASE_URL et SUPABASE_ANON_KEY dans le code.");
+    return;
+  }
+  if (!currentUser) {
+    alert("Le mode multi nécessite d'être connecté (pour partager ta tier list en direct).");
+    openAuthModal('login');
+    return;
+  }
+  if (!currentTierlistId) {
+    alert("Ta tier list est en cours de synchronisation, réessaie dans un instant.");
+    return;
+  }
   document.getElementById('duoJoinError').classList.remove('visible');
   switchDuoTab('create');
   document.getElementById('duoModal').style.display = 'flex';
@@ -1759,17 +1980,28 @@ function switchDuoTab(tab) {
   }
 }
 
-function createDuoSession() {
+async function createDuoSession() {
   const code = generateRoomCode();
+  try {
+    const { error } = await supabaseClient
+      .from('duo_sessions')
+      .insert({ code, user_a: currentUser.id, tierlist_a: currentTierlistId });
+    if (error) throw error;
+  } catch (err) {
+    alert("Erreur lors de la création de la session : " + err.message);
+    return;
+  }
   document.getElementById('duoCodeDisplay').textContent = code;
   document.getElementById('duoCreateIdle').style.display = 'none';
   document.getElementById('duoCreateWaiting').style.display = 'block';
+  duoCode = code;
+  duoMyTierlistId = currentTierlistId;
   duoState = 'waiting';
-  connectDuoChannel(code);
+  listenDuoSession(code);
   updateDuoWidgetUI();
 }
 
-function joinDuoSession(event) {
+async function joinDuoSession(event) {
   event.preventDefault();
   const errorBox = document.getElementById('duoJoinError');
   errorBox.classList.remove('visible');
@@ -1779,84 +2011,118 @@ function joinDuoSession(event) {
     errorBox.classList.add('visible');
     return;
   }
-  closeAllModals();
-  duoState = 'waiting';
-  connectDuoChannel(code);
-  updateDuoWidgetUI();
-}
-
-function connectDuoChannel(code) {
-  if (!supabaseClient) {
-    alert("La connexion à Supabase n'est pas configurée. Renseigne SUPABASE_URL et SUPABASE_ANON_KEY dans le code.");
-    duoState = 'solo';
-    updateDuoWidgetUI();
-    return;
-  }
-  duoCode = code;
-  duoPresenceKey = currentUser ? currentUser.id : ('guest-' + Math.random().toString(36).slice(2, 10));
-
-  duoChannel = supabaseClient.channel('duo-room-' + code, {
-    config: { presence: { key: duoPresenceKey } }
-  });
-
-  duoChannel.on('presence', { event: 'sync' }, () => handleDuoPresenceSync());
-
-  duoChannel.on('broadcast', { event: 'tierdata' }, ({ payload }) => {
-    if (!payload || payload.from === duoPresenceKey) return;
-    duoRemoteData = payload.data;
-    renderRemoteBoard();
-  });
-
-  duoChannel.subscribe(async (status) => {
-    if (status === 'SUBSCRIBED') {
-      await duoChannel.track({ username: myDuoName(), joinedAt: Date.now() });
-    }
-  });
-}
-
-function handleDuoPresenceSync() {
-  if (!duoChannel) return;
-  const state = duoChannel.presenceState();
-  const entries = Object.entries(state).map(([key, metas]) => ({
-    key, joinedAt: (metas[0] && metas[0].joinedAt) || 0, username: (metas[0] && metas[0].username) || 'Ami'
-  }));
-  entries.sort((a, b) => a.joinedAt - b.joinedAt);
-
-  // Sécurité : max 2 personnes. Un éventuel 3e arrivant est automatiquement refusé.
-  const myRank = entries.findIndex(e => e.key === duoPresenceKey);
-  if (entries.length > 2 && myRank >= 2) {
-    alert("Cette session multi est déjà complète (2/2).");
-    leaveDuoSession();
-    return;
-  }
-
-  const wasActive = (duoState === 'active');
-
-  if (entries.length >= 2) {
-    const partner = entries.find(e => e.key !== duoPresenceKey);
-    duoPartnerName = partner ? partner.username : 'Ami';
-    duoState = 'active';
-    document.getElementById('duoRemotePanel').style.display = 'block';
-    document.getElementById('duoPartnerName').textContent = duoPartnerName;
-    document.getElementById('duoPartnerAvatar').textContent = initials(duoPartnerName);
+  try {
+    const { data: session, error } = await supabaseClient.rpc('join_duo_session', {
+      session_code: code, my_tierlist_id: currentTierlistId
+    });
+    if (error) throw error;
+    duoCode = code;
+    duoMyTierlistId = currentTierlistId;
+    duoState = 'waiting';
     closeAllModals();
-    if (!wasActive) broadcastMyData(); // envoie immédiatement notre état dès que la session devient active
+    listenDuoSession(code);
     updateDuoWidgetUI();
-  } else if (entries.length === 1 && wasActive) {
-    alert("Ton ami a quitté la session multi.");
-    leaveDuoSession();
+    await handleDuoSessionRow(session);
+  } catch (err) {
+    errorBox.textContent = "Code invalide, session déjà complète, ou tu es le créateur de cette session.";
+    errorBox.classList.add('visible');
   }
 }
 
-function broadcastMyData() {
-  if (!duoChannel || duoState !== 'active') return;
-  duoChannel.send({ type: 'broadcast', event: 'tierdata', payload: { data, from: duoPresenceKey } });
+function listenDuoSession(code) {
+  duoChannel = supabaseClient.channel('duo-session-' + code);
+
+  duoChannel.on('postgres_changes',
+    { event: 'UPDATE', schema: 'public', table: 'duo_sessions', filter: `code=eq.${code}` },
+    (payload) => handleDuoSessionRow(payload.new)
+  );
+
+  duoChannel.on('postgres_changes',
+    { event: 'DELETE', schema: 'public', table: 'duo_sessions', filter: `code=eq.${code}` },
+    () => {
+      if (duoState === 'active') alert("Ton ami a quitté la session multi.");
+      resetDuoState();
+    }
+  );
+
+  duoChannel.subscribe();
 }
 
-function maybeBroadcastDuo() {
-  if (!duoChannel || duoState !== 'active') return;
-  clearTimeout(duoBroadcastTimer);
-  duoBroadcastTimer = setTimeout(broadcastMyData, 200);
+async function handleDuoSessionRow(row) {
+  if (!row || !row.user_b) return; // personne n'a encore rejoint
+
+  const iAmA = row.user_a === currentUser.id;
+  const partnerUserId = iAmA ? row.user_b : row.user_a;
+  const partnerTierlistId = iAmA ? row.tierlist_b : row.tierlist_a;
+  const wasActive = duoState === 'active';
+
+  duoPartnerUserId = partnerUserId;
+  duoPartnerTierlistId = partnerTierlistId;
+  duoState = 'active';
+
+  if (!wasActive) {
+    try {
+      const { data: prof } = await supabaseClient
+        .from('profiles')
+        .select('username, avatar_url, avatar_color')
+        .eq('id', partnerUserId)
+        .maybeSingle();
+      duoPartnerName = (prof && prof.username) || 'Ami';
+      const avatarEl = document.getElementById('duoPartnerAvatar');
+      if (prof && prof.avatar_url) {
+        avatarEl.innerHTML = `<img src="${prof.avatar_url}" alt="">`;
+      } else {
+        avatarEl.textContent = initials(duoPartnerName);
+        avatarEl.style.background = (prof && prof.avatar_color) || 'var(--accent-primary)';
+      }
+    } catch (e) {
+      duoPartnerName = 'Ami';
+    }
+
+    document.getElementById('duoPartnerName').textContent = duoPartnerName;
+    document.body.classList.add('duo-active');
+    document.getElementById('duoRemotePanel').style.display = 'block';
+    closeAllModals();
+    updateDuoWidgetUI();
+    setTimeout(updateHeaderHeight, 50);
+  }
+
+  await fetchDuoRemoteData();
+}
+
+// Récupère la tier list complète du partenaire via une requête normale
+// (jamais via le canal temps réel, qui ne sert que de signal léger).
+async function fetchDuoRemoteData() {
+  if (!duoPartnerTierlistId) return;
+  try {
+    const { data: row, error } = await supabaseClient
+      .from('user_tierlists')
+      .select('tier_data')
+      .eq('id', duoPartnerTierlistId)
+      .maybeSingle();
+    if (error) throw error;
+    if (row) {
+      duoRemoteData = row.tier_data;
+      renderRemoteBoard();
+      renderDuoStats();
+    }
+  } catch (err) {
+    console.warn("Erreur de récupération de la tier list du partenaire:", err);
+  }
+}
+
+// Signal léger (juste un uuid + un nombre) envoyé après chaque sauvegarde
+// cloud, pour prévenir le partenaire qu'il doit rafraîchir ses données.
+async function pingDuoSession() {
+  if (!duoChannel || !duoCode || !currentUser) return;
+  try {
+    await supabaseClient
+      .from('duo_sessions')
+      .update({ last_change_by: currentUser.id, last_change_at: Date.now() })
+      .eq('code', duoCode);
+  } catch (err) {
+    console.warn("Erreur ping session multi:", err);
+  }
 }
 
 function copyDuoCode() {
@@ -1868,12 +2134,22 @@ function copyDuoCode() {
   }
 }
 
-function leaveDuoSession() {
+async function leaveDuoSession() {
+  const code = duoCode;
   if (duoChannel) {
-    try { duoChannel.untrack(); } catch (e) {}
     try { supabaseClient.removeChannel(duoChannel); } catch (e) {}
   }
-  duoChannel = null; duoCode = null; duoState = 'solo'; duoRemoteData = null; duoPartnerName = null; duoPresenceKey = null;
+  if (code && currentUser && supabaseClient) {
+    try { await supabaseClient.from('duo_sessions').delete().eq('code', code); } catch (e) {}
+  }
+  resetDuoState();
+}
+
+function resetDuoState() {
+  duoChannel = null; duoCode = null; duoState = 'solo'; duoRemoteData = null;
+  duoPartnerName = null; duoPartnerUserId = null; duoPartnerTierlistId = null; duoMyTierlistId = null;
+  duoView = 'board';
+  document.body.classList.remove('duo-active');
   const panel = document.getElementById('duoRemotePanel');
   if (panel) panel.style.display = 'none';
   const idle = document.getElementById('duoCreateIdle');
@@ -1881,6 +2157,24 @@ function leaveDuoSession() {
   if (idle) idle.style.display = 'block';
   if (waiting) waiting.style.display = 'none';
   updateDuoWidgetUI();
+  setTimeout(updateHeaderHeight, 50);
+}
+
+function toggleDuoView() {
+  duoView = duoView === 'board' ? 'stats' : 'board';
+  const boardEl = document.getElementById('duoRemoteBody');
+  const statsEl = document.getElementById('duoStatsBody');
+  const btn = document.getElementById('duoStatsToggleBtn');
+  if (duoView === 'stats') {
+    boardEl.style.display = 'none';
+    statsEl.style.display = 'block';
+    btn.textContent = '🎵 Tier List';
+    renderDuoStats();
+  } else {
+    boardEl.style.display = 'block';
+    statsEl.style.display = 'none';
+    btn.textContent = '📊 Stats';
+  }
 }
 
 function updateDuoWidgetUI() {
@@ -1964,6 +2258,98 @@ function renderRemoteBoard() {
     duoRemoteData.pool.forEach(s => poolCards.appendChild(createRemoteCard(s)));
     body.appendChild(poolCards);
   }
+}
+
+// ==========================================
+// STATS DE COMPARAISON DU DUO
+// ==========================================
+function scoreMapFor(dataset) {
+  const map = {};
+  if (!dataset || !dataset.tiers) return map;
+  const maxScore = Math.max(1, dataset.tiers.length);
+  dataset.tiers.forEach((t, i) => {
+    const score = ((maxScore - i) / maxScore) * 10;
+    (t.songs || []).forEach(s => {
+      const key = (s.artist + '|' + s.title).toLowerCase().trim();
+      map[key] = { score, artist: s.artist, title: s.title };
+    });
+  });
+  return map;
+}
+
+function calcDuoComparison() {
+  if (!duoRemoteData) return null;
+  const myMap = scoreMapFor(data);
+  const theirMap = scoreMapFor(duoRemoteData);
+
+  const myKeys = Object.keys(myMap);
+  const theirKeys = Object.keys(theirMap);
+  const commonKeys = myKeys.filter(k => theirMap[k]);
+
+  const comparisons = commonKeys.map(k => ({
+    artist: myMap[k].artist, title: myMap[k].title,
+    myScore: myMap[k].score, theirScore: theirMap[k].score,
+    diff: Math.abs(myMap[k].score - theirMap[k].score)
+  }));
+
+  const agreements = comparisons.filter(c => c.diff <= 2);
+  const disagreements = [...comparisons].sort((a, b) => b.diff - a.diff).slice(0, 5);
+  const bestAgreements = [...comparisons].filter(c => c.diff <= 1).sort((a, b) => a.diff - b.diff).slice(0, 5);
+
+  const myAvg = myKeys.length ? myKeys.reduce((s, k) => s + myMap[k].score, 0) / myKeys.length : 0;
+  const theirAvg = theirKeys.length ? theirKeys.reduce((s, k) => s + theirMap[k].score, 0) / theirKeys.length : 0;
+  const avgDiff = commonKeys.length ? comparisons.reduce((s, c) => s + c.diff, 0) / commonKeys.length : 0;
+  const agreementPct = commonKeys.length ? Math.round((agreements.length / commonKeys.length) * 100) : 0;
+
+  return {
+    commonCount: commonKeys.length,
+    onlyMine: myKeys.filter(k => !theirMap[k]).length,
+    onlyTheirs: theirKeys.filter(k => !myMap[k]).length,
+    myAvg, theirAvg, avgDiff, agreementPct,
+    disagreements, bestAgreements
+  };
+}
+
+function renderDuoStats() {
+  const el = document.getElementById('duoStatsBody');
+  if (!el || duoState !== 'active') return;
+  const s = calcDuoComparison();
+  if (!s) { el.innerHTML = `<div class="duo-empty-note">En attente des données...</div>`; return; }
+  if (s.commonCount === 0) {
+    el.innerHTML = `<div class="duo-empty-note">Pas encore de chansons en commun entre vos deux tier lists.</div>`;
+    return;
+  }
+
+  let html = `
+    <div class="stat-row"><strong>Chansons en commun :</strong> <span>${s.commonCount}</span></div>
+    <div class="stat-row"><strong>Taux d'accord :</strong> <span>${s.agreementPct}%</span></div>
+    <div class="stat-row"><strong>Ta moyenne :</strong> <span>${s.myAvg.toFixed(1)} / 10</span></div>
+    <div class="stat-row"><strong>Moyenne de ${duoPartnerName || 'ton ami'} :</strong> <span>${s.theirAvg.toFixed(1)} / 10</span></div>
+    <div class="stat-row"><strong>Écart moyen de notation :</strong> <span>${s.avgDiff.toFixed(1)} pts</span></div>
+    <div class="stat-row"><strong>Titres seulement chez toi / lui :</strong> <span>${s.onlyMine} / ${s.onlyTheirs}</span></div>
+  `;
+
+  if (s.bestAgreements.length > 0) {
+    html += `<div class="stat-title" style="margin-top:14px;">🤝 Vous êtes d'accord sur</div>`;
+    s.bestAgreements.forEach(c => {
+      html += `<div class="rank-item top" style="padding:6px 8px;">
+        <span class="rank-name" style="font-size:12px;">${c.artist} — ${c.title}</span>
+        <span class="rank-avg" style="font-size:11px;">${c.myScore.toFixed(1)} / ${c.theirScore.toFixed(1)}</span>
+      </div>`;
+    });
+  }
+
+  if (s.disagreements.length > 0) {
+    html += `<div class="stat-title" style="margin-top:14px;">⚔️ Plus gros désaccords</div>`;
+    s.disagreements.forEach(c => {
+      html += `<div class="rank-item flop" style="padding:6px 8px;">
+        <span class="rank-name" style="font-size:12px;">${c.artist} — ${c.title}</span>
+        <span class="rank-avg" style="font-size:11px;">Toi ${c.myScore.toFixed(1)} / Lui ${c.theirScore.toFixed(1)}</span>
+      </div>`;
+    });
+  }
+
+  el.innerHTML = html;
 }
 
 // --- AUDIO PREVIEW ---
@@ -2199,20 +2585,19 @@ function load(){
 function save(){
   localStorage.setItem("tierData", JSON.stringify(data));
   scheduleCloudSync();
-  maybeBroadcastDuo();
 }
 
 function scheduleCloudSync() {
-  if (!currentUser || !supabaseClient) return;
+  if (!currentUser || !supabaseClient || !currentTierlistId) return;
   clearTimeout(cloudSyncTimer);
   cloudSyncTimer = setTimeout(async () => {
     try {
       const { error } = await supabaseClient
         .from('user_tierlists')
-        .upsert({ user_id: currentUser.id, tier_data: data, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+        .update({ tier_data: data, updated_at: new Date().toISOString() })
+        .eq('id', currentTierlistId);
       if (error) throw error;
-      hasCloudSave = true;
-      updateCloudStatusNote();
+      pingDuoSession();
     } catch (err) {
       console.warn("Erreur de synchronisation cloud:", err);
     }
@@ -2456,10 +2841,43 @@ function openSessionHistory(sid) {
   }, 100);
 }
 
+function ensureSessionOrder() {
+  const sessions = data.sessions || {};
+  const ids = Object.keys(sessions);
+  const missingOrder = ids.some(id => sessions[id].order === undefined);
+  if (missingOrder) {
+    const sorted = [...ids].sort((a, b) => (sessions[b].createdAt || 0) - (sessions[a].createdAt || 0));
+    sorted.forEach((id, idx) => { sessions[id].order = idx; });
+    save();
+  }
+}
+
+let sessDraggedId = null;
+function sessDragStart(e) { sessDraggedId = e.currentTarget.dataset.sid; e.currentTarget.style.opacity = '0.4'; e.stopPropagation(); }
+function sessDragEnd(e) { e.currentTarget.style.opacity = '1'; }
+function sessDragOver(e) {
+  e.preventDefault(); e.stopPropagation();
+  const container = e.currentTarget.parentElement;
+  const dragging = container.querySelector(`[data-sid="${sessDraggedId}"]`);
+  const target = e.currentTarget;
+  if (!dragging || dragging === target) return;
+  const rect = target.getBoundingClientRect();
+  const after = (e.clientY - rect.top) > rect.height / 2;
+  container.insertBefore(dragging, after ? target.nextSibling : target);
+}
+function sessDrop(e) {
+  e.preventDefault(); e.stopPropagation();
+  const container = document.getElementById('sessionsBody');
+  const orderedIds = [...container.querySelectorAll('[data-sid]')].map(el => el.dataset.sid);
+  orderedIds.forEach((id, idx) => { if (data.sessions[id]) data.sessions[id].order = idx; });
+  save();
+}
+
 function renderSessions() {
   const body = document.getElementById('sessionsBody');
   const sessions = data.sessions || {};
   const activeId = data.activeSessionId;
+  ensureSessionOrder();
 
   let html = `<div class="new-session-form">
     <div style="font-weight:700; font-size:13px; margin-bottom:8px; color: var(--accent-primary);">➕ Nouvelle session</div>
@@ -2467,9 +2885,9 @@ function renderSessions() {
     <button class="btn-primary" style="width:100%; justify-content:center;" onclick="createNewSession()">Créer et activer cette session</button>
   </div>`;
 
-  html += `<div class="stat-title" style="margin-top:4px;">Sessions existantes — cliquer pour voir les stats</div>`;
+  html += `<div class="stat-title" style="margin-top:4px;">Sessions existantes — glisse-dépose pour réordonner, clique pour voir les stats</div>`;
 
-  const sessionIds = Object.keys(sessions).sort((a, b) => (sessions[b].createdAt || 0) - (sessions[a].createdAt || 0));
+  const sessionIds = Object.keys(sessions).sort((a, b) => (sessions[a].order ?? 0) - (sessions[b].order ?? 0));
 
   if (sessionIds.length === 0) {
     html += `<div style="opacity:0.5; font-size:13px; text-align:center; padding:20px;">Aucune session trouvée.</div>`;
@@ -2480,7 +2898,9 @@ function renderSessions() {
     const isActive = sid === activeId;
     const stats = calcSessionStats(sid);
 
-    html += `<div class="history-session" style="${isActive ? 'border-color: var(--accent-primary); background: rgba(99,102,241,0.08);' : ''}" onclick="toggleHistoryDetail('detail-${sid}')">
+    html += `<div class="history-session" draggable="true" data-sid="${sid}"
+        ondragstart="sessDragStart(event)" ondragover="sessDragOver(event)" ondrop="sessDrop(event)" ondragend="sessDragEnd(event)"
+        style="cursor:grab; ${isActive ? 'border-color: var(--accent-primary); background: rgba(99,102,241,0.08);' : ''}" onclick="toggleHistoryDetail('detail-${sid}')">
       <div class="session-head">
         <span class="session-name">${isActive ? '▶ ' : ''}${sess.name || sid}</span>
         <div style="display:flex; align-items:center; gap:6px;">
@@ -2749,6 +3169,13 @@ function calculateRankings() {
     return parseFloat(b.avg) - parseFloat(a.avg);
   });
 
+  // Classement façon compétition : deux points identiques => même rang (1, 1, 3 et non 1, 2, 3)
+  let currentRank = 0;
+  rankings.forEach((r, i) => {
+    if (i === 0 || r.points !== rankings[i - 1].points) currentRank = i + 1;
+    r.rank = currentRank;
+  });
+
   return { rankings, totalSongs, uniqueArtists: Object.keys(artistStats).length, sessionStats };
 }
 
@@ -2824,7 +3251,7 @@ function showStats() {
       <div class="stat-title">🔥 TOP 3 - L'ÉLITE</div>
       ${top3.length > 0 ? top3.map((r, i) => `
         <div class="rank-item top">
-          <span class="rank-pos">#${i+1}</span>
+          <span class="rank-pos">#${r.rank}</span>
           <span class="rank-name artist-clickable" onclick="searchByArtist('${r.name.replace(/'/g, "\\'")}')" title="Filtrer par cet artiste" style="cursor:pointer;">${r.name}</span>
           <span class="rank-avg">${r.points} / 100</span>
         </div>`).join('') : '<div style="opacity:0.5; font-size:13px">Pas assez de données.</div>'}
@@ -2890,7 +3317,7 @@ function showAllArtists() {
     rankings.forEach((r, i) => {
       let colorClass = i < 3 ? "top" : (i >= rankings.length - 3 && rankings.length > 3 ? "flop" : "");
       html += `<div class="rank-item ${colorClass}" style="margin-bottom:5px;">
-        <span class="rank-pos" style="font-size:12px; width:30px; opacity:0.7;">#${i+1}</span>
+        <span class="rank-pos" style="font-size:12px; width:30px; opacity:0.7;">#${r.rank}</span>
         <span class="rank-name artist-clickable" onclick="searchByArtist('${r.name.replace(/'/g, "\\'")}')" title="Filtrer par cet artiste" style="cursor:pointer;">${r.name} <span style="font-size:10px; opacity:0.5; font-weight:normal; margin-left:4px;">(Moy. pure: ${r.avg})</span></span>
         <span class="rank-avg" style="background:var(--accent-gradient); color:white; min-width: 65px;">${r.points} / 100</span>
         <span style="font-size:11px; opacity:0.6; width:50px; text-align:right;">${r.count} 🎵</span>
@@ -3098,6 +3525,8 @@ function render(){
     const el = document.getElementById(`card-${id}`);
     if(el) el.classList.add('selected');
   });
+
+  if (typeof duoState !== 'undefined' && duoState === 'active') renderDuoStats();
 }
 
 function adjustColor(color, amount) {
@@ -3424,6 +3853,19 @@ function editSong(id){
   }
 }
 
+function toggleManualLinkField() {
+  const row = document.getElementById('manualLinkRow');
+  const isVisible = row.style.display === 'block';
+  row.style.display = isVisible ? 'none' : 'block';
+  if (!isVisible) document.getElementById('manualAppleLinkInput').focus();
+}
+
+function extractAppleTrackId(url) {
+  if (!url) return null;
+  const m = url.match(/[?&]i=(\d+)/);
+  return m ? m[1] : null;
+}
+
 async function addSong(){
   const rawArtist = document.getElementById("artistInput").value.trim();
   const rawTitle = document.getElementById("titleInput").value.trim();
@@ -3447,10 +3889,19 @@ async function addSong(){
   let previewUrl = null;
   let hasPreview = true;
 
+  const manualLink = document.getElementById("manualAppleLinkInput")?.value.trim();
+  const manualTrackId = extractAppleTrackId(manualLink);
+
   try {
-    const appleQuery = (mainArtist + " " + displayTitle).toLowerCase();
-    const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(appleQuery)}&entity=song&limit=1`);
-    const json = await res.json();
+    let json;
+    if (manualTrackId) {
+      const res = await fetch(`https://itunes.apple.com/lookup?id=${manualTrackId}`);
+      json = await res.json();
+    } else {
+      const appleQuery = (mainArtist + " " + displayTitle).toLowerCase();
+      const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(appleQuery)}&entity=song&limit=1`);
+      json = await res.json();
+    }
     if(json.results && json.results.length > 0) {
       cover = json.results[0].artworkUrl100?.replace("100x100", "300x300") || "";
       previewUrl = json.results[0].previewUrl || null;
@@ -3504,6 +3955,9 @@ async function addSong(){
 
   document.getElementById("artistInput").value = "";
   document.getElementById("titleInput").value = "";
+  const manualInput = document.getElementById("manualAppleLinkInput");
+  if (manualInput) manualInput.value = "";
+  document.getElementById("manualLinkRow").style.display = "none";
   btn.innerText = originalText;
   filterCards();
 
