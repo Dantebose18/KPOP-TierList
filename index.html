@@ -2048,26 +2048,6 @@ function layoutDuoPanel() {
   if (!panel || !main || !body || duoState !== 'active' || panel.style.display === 'none') return;
 
   resetDuoMainWidth();
-  let mainRect = main.getBoundingClientRect();
-  const viewportWidth = window.innerWidth;
-  let available = viewportWidth - mainRect.right - DUO_MAIN_GAP - DUO_EDGE_MARGIN;
-
-  if (available < duoRoughWidthForCards(DUO_MIN_CARDS)) {
-    // Pas assez de place avec la tier list à sa taille normale : on la
-    // réduit juste ce qu'il faut. Comme .main est centrée, réduire sa
-    // largeur de X ne libère que X/2 à droite (l'autre moitié va à gauche) —
-    // il faut donc réduire deux fois plus que le manque constaté.
-    const missingOnRight = duoRoughWidthForCards(DUO_MIN_CARDS) - available;
-    const widthReductionNeeded = missingOnRight * 2;
-    const newMainWidth = Math.max(DUO_MAIN_MIN_WIDTH, mainRect.width - widthReductionNeeded);
-    if (newMainWidth < mainRect.width) {
-      main.style.maxWidth = newMainWidth + 'px';
-      const pool = document.querySelector('.pool-container');
-      if (pool) pool.style.maxWidth = newMainWidth + 'px';
-      mainRect = main.getBoundingClientRect();
-      available = viewportWidth - mainRect.right - DUO_MAIN_GAP - DUO_EDGE_MARGIN;
-    }
-  }
 
   function collapseToStacked() {
     panel.classList.remove('duo-sidebar-mode');
@@ -2076,38 +2056,71 @@ function layoutDuoPanel() {
     resetDuoMainWidth();
   }
 
-  if (available < duoRoughWidthForCards(2)) { collapseToStacked(); return; }
+  // Installe le panneau en sidebar avec une largeur généreuse et MESURE
+  // (dans le vrai DOM, donc scrollbar et bordures comprises) combien de
+  // cartes tiennent réellement à la largeur actuelle de .main.
+  function measureFit() {
+    const mainRect = main.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const available = viewportWidth - mainRect.right - DUO_MAIN_GAP - DUO_EDGE_MARGIN;
+    if (available < 100 + 60) return null; // même pas la place pour 1 carte
 
-  // On installe le panneau en sidebar fixe, avec une largeur généreuse
-  // (tout l'espace dispo) pour pouvoir mesurer précisément la place utile.
-  panel.classList.add('duo-sidebar-mode');
-  panel.style.position = 'fixed';
-  panel.style.left = (mainRect.right + DUO_MAIN_GAP) + 'px';
-  panel.style.right = 'auto';
-  panel.style.top = `calc(var(--header-height) + 126px + var(--banner-offset))`;
+    panel.classList.add('duo-sidebar-mode');
+    panel.style.position = 'fixed';
+    panel.style.left = (mainRect.right + DUO_MAIN_GAP) + 'px';
+    panel.style.right = 'auto';
+    panel.style.top = `calc(var(--header-height) + 126px + var(--banner-offset))`;
+    panel.style.width = Math.min(available, duoRoughWidthForCards(DUO_MAX_CARDS)) + 'px';
 
-  const maxH = `calc(100vh - 215px)`;
-  body.style.maxHeight = `calc(${maxH} - 60px)`;
-  const statsBody = document.getElementById('duoStatsBody');
-  if (statsBody) statsBody.style.maxHeight = `calc(${maxH} - 60px)`;
+    const maxH = `calc(100vh - 215px)`;
+    body.style.maxHeight = `calc(${maxH} - 60px)`;
+    const statsBody = document.getElementById('duoStatsBody');
+    if (statsBody) statsBody.style.maxHeight = `calc(${maxH} - 60px)`;
 
-  const generousWidth = Math.min(available, duoRoughWidthForCards(DUO_MAX_CARDS));
-  panel.style.width = generousWidth + 'px';
+    const cardsAreaWidth = body.clientWidth - 58; // padding body(32) + bordure tier(2) + padding cards(24)
+    let n = 0;
+    while (100 * (n + 1) + 10 * n <= cardsAreaWidth) n++;
 
-  // Mesure réelle (exclut bordures ET scrollbar, contrairement à un calcul théorique).
-  const cardsAreaWidth = body.clientWidth - 58; // padding body(32) + bordure tier(2) + padding cards(24)
-  let n = 0;
-  while (100 * (n + 1) + 10 * n <= cardsAreaWidth) n++;
-  n = Math.max(2, Math.min(n, DUO_MAX_CARDS));
+    const measuredChrome = parseFloat(panel.style.width) - cardsAreaWidth;
+    return { n, mainRect, viewportWidth, measuredChrome };
+  }
 
-  const measuredChrome = generousWidth - cardsAreaWidth;
-  let width = Math.ceil(100 * n + 10 * (n - 1) + measuredChrome);
-  const left = mainRect.right + DUO_MAIN_GAP;
+  let fit = measureFit();
+  if (!fit) { collapseToStacked(); return; }
+
+  if (fit.n < DUO_MIN_CARDS) {
+    // La mesure réelle confirme qu'il manque de la place : on réduit .main
+    // pour viser DUO_MIN_CARDS, en se basant sur la "chrome" réellement
+    // mesurée (précise, scrollbar comprise) plutôt qu'une estimation.
+    const currentAvailable = fit.viewportWidth - fit.mainRect.right - DUO_MAIN_GAP - DUO_EDGE_MARGIN;
+    const neededWidth = 100 * DUO_MIN_CARDS + 10 * (DUO_MIN_CARDS - 1) + fit.measuredChrome;
+    const missingOnRight = neededWidth - currentAvailable;
+    if (missingOnRight > 0) {
+      // .main est centrée : la réduire de X ne libère que X/2 à droite.
+      const widthReductionNeeded = missingOnRight * 2;
+      const newMainWidth = Math.max(DUO_MAIN_MIN_WIDTH, fit.mainRect.width - widthReductionNeeded);
+      if (newMainWidth < fit.mainRect.width) {
+        main.style.maxWidth = newMainWidth + 'px';
+        const pool = document.querySelector('.pool-container');
+        if (pool) pool.style.maxWidth = newMainWidth + 'px';
+        const remeasured = measureFit(); // on remesure avec la tier list réduite
+        if (remeasured) fit = remeasured;
+      }
+    }
+  }
+
+  if (fit.n < 2) { collapseToStacked(); return; }
+
+  let n = Math.min(fit.n, DUO_MAX_CARDS);
+  let width = Math.ceil(100 * n + 10 * (n - 1) + fit.measuredChrome);
+  const mainRectFinal = main.getBoundingClientRect();
+  const left = mainRectFinal.right + DUO_MAIN_GAP;
+  const viewportWidth = window.innerWidth;
 
   // Garde-fou : le panneau ne doit jamais déborder de l'écran, quoi qu'il arrive.
   while (n >= 2 && left + width > viewportWidth - DUO_EDGE_MARGIN) {
     n--;
-    width = Math.ceil(100 * n + 10 * (n - 1) + measuredChrome);
+    width = Math.ceil(100 * n + 10 * (n - 1) + fit.measuredChrome);
   }
   if (n < 2) { collapseToStacked(); return; }
 
