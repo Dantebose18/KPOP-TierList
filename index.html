@@ -893,6 +893,17 @@ body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
 .duo-remote-body .cards { padding: 12px; gap: 10px; min-height: 90px; }
 .duo-remote-pool-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 800; margin: 6px 0 8px 4px; }
 .duo-empty-note { text-align: center; padding: 30px; color: var(--text-muted); font-size: 13px; }
+
+.toast-banner {
+  position: fixed; top: 14px; left: 50%; transform: translateX(-50%) translateY(-30px);
+  background: var(--card-bg); border: var(--card-border); border-radius: 30px;
+  padding: 12px 22px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; color: var(--text-main);
+  z-index: 3000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease, transform 0.3s ease;
+  max-width: 90vw; text-align: center;
+}
+.toast-banner.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
 .duo-copy-btn {
   border: 1px solid rgba(128,128,128,0.2); border-radius: 20px; padding: 8px 16px;
   background: rgba(128,128,128,0.06); color: var(--text-main); font-family:'Outfit',sans-serif;
@@ -900,50 +911,19 @@ body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
 }
 .duo-copy-btn:hover { background: rgba(99,102,241,0.12); border-color: var(--accent-primary); }
 
-/* Par défaut (et sur les écrans pas assez larges) : panneau empilé au-dessus
-   de la tier list, en pleine largeur. .main n'est PAS modifié ici, donc le
-   sommaire et le tchat Twitch restent alignés comme d'habitude. */
+/* Le menu "Multi" est le plus à droite du header : son dropdown doit
+   s'ouvrir aligné sur la droite pour ne jamais déborder de l'écran. */
+#menu-multi .group-content { left: auto; right: 0; }
+
+/* Par défaut (et tant que le JS n'a pas calculé de mode "sidebar") :
+   panneau empilé au-dessus de la tier list, en pleine largeur. .main n'est
+   pas touché, donc le sommaire et le tchat Twitch restent alignés comme
+   d'habitude. Le mode "sidebar" (écran scindé) est entièrement piloté par
+   layoutDuoPanel() en JS, qui calcule une largeur correspondant à un nombre
+   entier de cartes selon la place réellement disponible à l'écran. */
 #pageColumns { display: contents; }
 .duo-remote-panel { margin: 0 0 30px 0; }
-
-/* --- NIVEAU "MOYEN" (1800px à 2299px) ---
-   Pas assez de place pour garder .main à sa taille normale (1320px) ET
-   afficher le panneau à droite avec de vraies marges : on réduit .main et
-   la réserve (qui reste calée sur la même largeur, toujours centrée), et on
-   recalcule aussi la position du sommaire pour garder un espacement de 20px
-   partout — comme entre le sommaire et la tier list habituellement. */
-@media (min-width: 1800px) and (max-width: 2299.98px) {
-  body.duo-active .main { max-width: 1100px; }
-  body.duo-active .pool-container { max-width: 1000px; }
-  body.duo-active .sommaire-sidebar { left: max(20px, calc(50vw - 820px)); }
-  body.duo-active .duo-remote-panel {
-    position: fixed;
-    top: calc(var(--header-height) + 126px + var(--banner-offset));
-    right: max(20px, calc(50vw - 890px));
-    width: 340px;
-    max-height: calc(100vh - 215px);
-    margin: 0;
-    z-index: 110;
-  }
-  body.duo-active .duo-remote-body { max-height: calc(100vh - 215px - 60px); }
-}
-
-/* --- NIVEAU "LARGE" (≥ 2300px) ---
-   Assez de place pour garder .main à sa taille normale (1320px) et afficher
-   un panneau plus large à droite, toujours avec 24px d'espacement de chaque
-   côté (avec la tier list, et avec le bord de l'écran). */
-@media (min-width: 2300px) {
-  body.duo-active .duo-remote-panel {
-    position: fixed;
-    top: calc(var(--header-height) + 126px + var(--banner-offset));
-    right: max(24px, calc(50vw - 1124px));
-    width: 440px;
-    max-height: calc(100vh - 215px);
-    margin: 0;
-    z-index: 110;
-  }
-  body.duo-active .duo-remote-body { max-height: calc(100vh - 215px - 60px); }
-}
+.duo-remote-panel.duo-sidebar-mode { margin: 0; z-index: 110; }
 </style>
 </head>
 <body class="dark">
@@ -1099,6 +1079,8 @@ body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
     </div>
   </div>
 </header>
+
+<div id="toastBanner" class="toast-banner"></div>
 
 <div id="twitchVoteOverlay">
   <div style="font-size:12px; color:#9146FF; font-weight:bold; letter-spacing: 1px; text-transform: uppercase;">Sondage Twitch (!note 0-10)</div>
@@ -1301,7 +1283,7 @@ body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
     </div>
     <div id="manualLinkRow" style="display:none; max-width:900px; margin:-10px auto 20px auto; padding: 0 20px;">
       <input type="text" id="manualAppleLinkInput" placeholder="Lien Apple Music du morceau (ex: https://music.apple.com/fr/album/.../123456789?i=987654321)" style="width:100%; background: rgba(128,128,128,0.08); border: 1px solid rgba(128,128,128,0.2); border-radius: 10px; padding: 10px 14px; color: var(--text-main); font-family: inherit; font-size: 13px;">
-      <div style="font-size:11px; color:var(--text-muted); margin-top:6px;">💡 Colle le lien Apple Music du morceau ("Copier le lien du titre") : l'artiste, le titre et la pochette se remplissent automatiquement.</div>
+      <div style="font-size:11px; color:var(--text-muted); margin-top:6px;">💡 Colle le lien Apple Music du morceau ("Copier le lien du titre") : la carte est créée automatiquement, rien d'autre à faire.</div>
       <div id="manualLinkStatus" style="font-size:12px; margin-top:6px; font-weight:600;"></div>
     </div>
     <div id="tiers"></div>
@@ -1983,6 +1965,111 @@ let duoMyTierlistId = null;
 let duoRemoteData = null;
 let duoView = 'board'; // 'board' | 'stats'
 
+let toastTimer = null;
+function showToast(message, icon) {
+  const el = document.getElementById('toastBanner');
+  if (!el) return;
+  el.innerHTML = `${icon || 'ℹ️'} ${message}`;
+  el.classList.add('visible');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('visible'), 4000);
+}
+
+// ==========================================
+// MISE EN PAGE DYNAMIQUE DU PANNEAU MULTI
+// La largeur du panneau correspond toujours exactement à un nombre entier
+// de cartes (jamais de zone vide ni de carte coupée), calculée à partir de
+// la place réellement disponible à l'écran, avec un espacement constant
+// entre ma tier list et le panneau, et entre le panneau et le bord.
+// ==========================================
+const DUO_CARD_W = 100;
+const DUO_CARD_GAP = 10;
+const DUO_CHROME = 58; // padding .duo-remote-body (16*2) + padding .cards (12*2) + bordure du panneau (2)
+const DUO_MAIN_GAP = 24;  // espace entre ma tier list et le panneau
+const DUO_EDGE_MARGIN = 24; // espace mini entre le panneau et le bord de l'écran
+const DUO_MIN_CARDS = 3; // en dessous, on repasse en mode empilé
+const DUO_MAX_CARDS = 6;
+const DUO_MAIN_MIN_WIDTH = 760; // on ne réduit jamais ma tier list en dessous de ça
+
+function duoWidthForCards(n) {
+  return DUO_CARD_W * n + DUO_CARD_GAP * (n - 1) + DUO_CHROME;
+}
+function duoMaxCardsForWidth(w) {
+  let n = 0;
+  while (duoWidthForCards(n + 1) <= w) n++;
+  return n;
+}
+
+function resetDuoMainWidth() {
+  const main = document.querySelector('.main');
+  const pool = document.querySelector('.pool-container');
+  if (main) main.style.maxWidth = '';
+  if (pool) pool.style.maxWidth = '';
+}
+
+function layoutDuoPanel() {
+  const panel = document.getElementById('duoRemotePanel');
+  const main = document.querySelector('.main');
+  if (!panel || !main || duoState !== 'active' || panel.style.display === 'none') return;
+
+  resetDuoMainWidth();
+  const mainRect = main.getBoundingClientRect();
+  const viewportWidth = window.innerWidth;
+
+  let available = viewportWidth - mainRect.right - DUO_MAIN_GAP - DUO_EDGE_MARGIN;
+  let n = duoMaxCardsForWidth(available);
+
+  if (n < DUO_MIN_CARDS) {
+    // Pas assez de place avec la tier list à sa taille normale : on la
+    // réduit juste ce qu'il faut pour retrouver au moins DUO_MIN_CARDS
+    // cartes de large sur le panneau, sans jamais descendre sous un minimum.
+    const neededAvailable = duoWidthForCards(DUO_MIN_CARDS);
+    const missing = neededAvailable - available;
+    const newMainWidth = Math.max(DUO_MAIN_MIN_WIDTH, mainRect.width - missing);
+    if (newMainWidth < mainRect.width) {
+      main.style.maxWidth = newMainWidth + 'px';
+      const pool = document.querySelector('.pool-container');
+      if (pool) pool.style.maxWidth = newMainWidth + 'px';
+      const shrinkage = mainRect.width - newMainWidth;
+      available += shrinkage;
+      n = duoMaxCardsForWidth(available);
+    }
+  }
+
+  if (n < 2) {
+    // Toujours pas assez de place même réduite au minimum : repli empilé.
+    panel.classList.remove('duo-sidebar-mode');
+    panel.style.position = '';
+    panel.style.left = '';
+    panel.style.right = '';
+    panel.style.width = '';
+    panel.style.top = '';
+    return;
+  }
+
+  n = Math.min(n, DUO_MAX_CARDS);
+  const panelWidth = duoWidthForCards(n);
+  const newMainRect = main.getBoundingClientRect();
+
+  panel.classList.add('duo-sidebar-mode');
+  panel.style.position = 'fixed';
+  panel.style.left = (newMainRect.right + DUO_MAIN_GAP) + 'px';
+  panel.style.right = 'auto';
+  panel.style.width = panelWidth + 'px';
+  panel.style.top = `calc(var(--header-height) + 126px + var(--banner-offset))`;
+  const body = document.getElementById('duoRemoteBody');
+  const statsBody = document.getElementById('duoStatsBody');
+  const maxH = `calc(100vh - 215px)`;
+  if (body) body.style.maxHeight = `calc(${maxH} - 60px)`;
+  if (statsBody) statsBody.style.maxHeight = `calc(${maxH} - 60px)`;
+}
+
+let duoLayoutResizeTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(duoLayoutResizeTimer);
+  duoLayoutResizeTimer = setTimeout(layoutDuoPanel, 150);
+});
+
 function generateRoomCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let out = '';
@@ -2085,7 +2172,7 @@ function listenDuoSession(code) {
   duoChannel.on('postgres_changes',
     { event: 'DELETE', schema: 'public', table: 'duo_sessions', filter: `code=eq.${code}` },
     () => {
-      if (duoState === 'active') alert("Ton ami a quitté la session multi.");
+      if (duoState === 'active') showToast("Ton ami a quitté la session multi.", "👋");
       resetDuoState();
     }
   );
@@ -2130,6 +2217,7 @@ async function handleDuoSessionRow(row) {
     closeAllModals();
     updateDuoWidgetUI();
     setTimeout(updateHeaderHeight, 50);
+    setTimeout(layoutDuoPanel, 60);
   }
 
   await fetchDuoRemoteData();
@@ -2203,7 +2291,16 @@ function resetDuoState() {
   duoView = 'board';
   document.body.classList.remove('duo-active');
   const panel = document.getElementById('duoRemotePanel');
-  if (panel) panel.style.display = 'none';
+  if (panel) {
+    panel.style.display = 'none';
+    panel.classList.remove('duo-sidebar-mode');
+    panel.style.position = '';
+    panel.style.left = '';
+    panel.style.right = '';
+    panel.style.width = '';
+    panel.style.top = '';
+  }
+  resetDuoMainWidth();
   const idle = document.getElementById('duoCreateIdle');
   const waiting = document.getElementById('duoCreateWaiting');
   if (idle) idle.style.display = 'block';
@@ -3918,8 +4015,8 @@ function extractAppleTrackId(url) {
   return null;
 }
 
-// Dès qu'un lien Apple Music valide est collé, on récupère automatiquement
-// l'artiste, le titre et la pochette — plus besoin de les retaper à la main.
+// Dès qu'un lien Apple Music valide est collé, la carte est créée
+// automatiquement (artiste, titre, pochette) — aucune autre action requise.
 let manualLinkLookupToken = 0;
 async function autoFillFromAppleLink() {
   const input = document.getElementById('manualAppleLinkInput');
@@ -3931,16 +4028,38 @@ async function autoFillFromAppleLink() {
     return;
   }
   const token = ++manualLinkLookupToken;
-  if (statusEl) statusEl.textContent = "🔎 Récupération des infos...";
+  if (statusEl) statusEl.textContent = "🔎 Création de la carte...";
   try {
     const res = await fetch(`https://itunes.apple.com/lookup?id=${trackId}`);
     const json = await res.json();
     if (token !== manualLinkLookupToken) return; // une saisie plus récente a pris le dessus
+
     if (json.results && json.results.length > 0) {
       const r = json.results[0];
-      document.getElementById('artistInput').value = r.artistName || '';
-      document.getElementById('titleInput').value = r.trackName || '';
-      if (statusEl) statusEl.textContent = `✅ Trouvé : ${r.artistName} — ${r.trackName}. Tu peux cliquer sur Ajouter.`;
+      let mainArtist = (r.artistName || 'Artiste inconnu').trim();
+      let displayTitle = (r.trackName || 'Titre inconnu').trim();
+
+      const featRegex = /\s+(feat\.?|ft\.?)\s+(.*)/i;
+      const match = mainArtist.match(featRegex);
+      if (match) {
+        mainArtist = mainArtist.substring(0, match.index).trim();
+        displayTitle = displayTitle + ` (feat. ${match[2].trim()})`;
+      }
+
+      const cover = r.artworkUrl100 ? r.artworkUrl100.replace("100x100", "300x300") : "";
+      const previewUrl = r.previewUrl || null;
+      const hasPreview = !!previewUrl;
+
+      await finalizeAndAddSong(mainArtist, displayTitle, cover, previewUrl, hasPreview);
+
+      if (statusEl) statusEl.textContent = `✅ Carte créée : ${mainArtist} — ${displayTitle}`;
+      input.value = '';
+      setTimeout(() => {
+        if (!input.value.trim()) {
+          document.getElementById('manualLinkRow').style.display = 'none';
+          if (statusEl) statusEl.textContent = '';
+        }
+      }, 2200);
     } else if (statusEl) {
       statusEl.textContent = "⚠️ Aucun morceau trouvé avec ce lien.";
     }
@@ -3949,6 +4068,45 @@ async function autoFillFromAppleLink() {
   }
 }
 document.getElementById('manualAppleLinkInput').addEventListener('blur', autoFillFromAppleLink);
+
+// Logique commune de finalisation d'une carte (recherche YouTube, sauvegarde,
+// affichage) — utilisée aussi bien par l'ajout manuel que par le lien Apple Music.
+async function finalizeAndAddSong(mainArtist, displayTitle, cover, previewUrl, hasPreview) {
+  if (!cover) cover = `https://ui-avatars.com/api/?name=${encodeURIComponent(mainArtist)}&background=random&color=fff&size=300&font-size=0.33`;
+
+  let youtubeUrl = "";
+  if (YOUTUBE_API_KEY) {
+    try {
+      const query = `${mainArtist} ${displayTitle} Official MV`;
+      const ytRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
+      const ytJson = await ytRes.json();
+      if (ytJson.items && ytJson.items.length > 0) {
+        youtubeUrl = `https://www.youtube.com/watch?v=${ytJson.items[0].id.videoId}`;
+      } else throw new Error("No video");
+    } catch (e) {
+      youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(mainArtist + " " + displayTitle + " official mv")}`;
+    }
+  } else {
+    youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(mainArtist + " " + displayTitle + " official mv")}`;
+  }
+
+  const sessionId = getCurrentSessionId();
+  const newSong = {
+    id: generateUniqueId(), artist: mainArtist, title: displayTitle, cover, youtubeUrl,
+    favorite: false, sessionId, chatRating: null, previewUrl, hasPreview
+  };
+
+  data.pool.push(newSong);
+  save();
+
+  const poolEl = document.getElementById("pool");
+  if (poolEl && (!sessionFilterId || sessionFilterId === sessionId)) {
+    poolEl.appendChild(createCard(newSong));
+  }
+  filterCards();
+  if (pollsEnabled) startTwitchVote(newSong.id, `${mainArtist} - ${displayTitle}`);
+  return newSong;
+}
 
 async function addSong(){
   const rawArtist = document.getElementById("artistInput").value.trim();
@@ -3973,19 +4131,10 @@ async function addSong(){
   let previewUrl = null;
   let hasPreview = true;
 
-  const manualLink = document.getElementById("manualAppleLinkInput")?.value.trim();
-  const manualTrackId = extractAppleTrackId(manualLink);
-
   try {
-    let json;
-    if (manualTrackId) {
-      const res = await fetch(`https://itunes.apple.com/lookup?id=${manualTrackId}`);
-      json = await res.json();
-    } else {
-      const appleQuery = (mainArtist + " " + displayTitle).toLowerCase();
-      const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(appleQuery)}&entity=song&limit=1`);
-      json = await res.json();
-    }
+    const appleQuery = (mainArtist + " " + displayTitle).toLowerCase();
+    const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(appleQuery)}&entity=song&limit=1`);
+    const json = await res.json();
     if(json.results && json.results.length > 0) {
       cover = json.results[0].artworkUrl100?.replace("100x100", "300x300") || "";
       previewUrl = json.results[0].previewUrl || null;
@@ -3997,57 +4146,11 @@ async function addSong(){
     console.warn("Erreur recherche API:", e);
   }
 
-  if(!cover) cover = `https://ui-avatars.com/api/?name=${encodeURIComponent(mainArtist)}&background=random&color=fff&size=300&font-size=0.33`;
-
-  let youtubeUrl = "";
-  if(YOUTUBE_API_KEY) {
-    try {
-      const query = `${mainArtist} ${displayTitle} Official MV`;
-      const ytRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=1&key=${YOUTUBE_API_KEY}`);
-      const ytJson = await ytRes.json();
-      if(ytJson.items && ytJson.items.length > 0) {
-        youtubeUrl = `https://www.youtube.com/watch?v=${ytJson.items[0].id.videoId}`;
-      } else throw new Error("No video");
-    } catch(e) { youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(mainArtist + " " + displayTitle + " official mv")}`; }
-  } else {
-    youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(mainArtist + " " + displayTitle + " official mv")}`;
-  }
-
-  const sessionId = getCurrentSessionId();
-  const newSong = { 
-    id: generateUniqueId(), 
-    artist: mainArtist, 
-    title: displayTitle, 
-    cover, 
-    youtubeUrl, 
-    favorite: false, 
-    sessionId, 
-    chatRating: null,
-    previewUrl,
-    hasPreview 
-  };
-  
-  data.pool.push(newSong);
-  save();
-
-  const poolEl = document.getElementById("pool");
-  if(poolEl) {
-    if (!sessionFilterId || sessionFilterId === sessionId) {
-      poolEl.appendChild(createCard(newSong));
-    }
-  }
+  await finalizeAndAddSong(mainArtist, displayTitle, cover, previewUrl, hasPreview);
 
   document.getElementById("artistInput").value = "";
   document.getElementById("titleInput").value = "";
-  const manualInput = document.getElementById("manualAppleLinkInput");
-  if (manualInput) manualInput.value = "";
-  const manualStatus = document.getElementById("manualLinkStatus");
-  if (manualStatus) manualStatus.textContent = "";
-  document.getElementById("manualLinkRow").style.display = "none";
   btn.innerText = originalText;
-  filterCards();
-
-  if(pollsEnabled) startTwitchVote(newSong.id, `${mainArtist} - ${displayTitle}`);
 }
 
 function addTier(){
