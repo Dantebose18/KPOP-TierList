@@ -913,6 +913,16 @@ body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
 }
 .duo-copy-btn:hover { background: rgba(99,102,241,0.12); border-color: var(--accent-primary); }
 
+.duo-card-highlight {
+  animation: duoCardPulse 1.2s ease-in-out 2;
+  box-shadow: 0 0 0 3px var(--accent-primary), 0 0 24px rgba(99,102,241,0.65) !important;
+  z-index: 5;
+}
+@keyframes duoCardPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
 /* Le menu "Multi" est le plus à droite du header : son dropdown doit
    s'ouvrir aligné sur la droite pour ne jamais déborder de l'écran. */
 #menu-multi .group-content { left: auto; right: 0; }
@@ -2261,7 +2271,43 @@ function listenDuoSession(code) {
     }
   );
 
+  // Chanson ajoutée par le partenaire : on se l'ajoute automatiquement dans
+  // sa propre réserve (chacun garde le contrôle de ses propres données —
+  // le partenaire ne fait qu'envoyer un "modèle" de carte à recopier).
+  duoChannel.on('broadcast', { event: 'duo-newsong' }, ({ payload }) => {
+    if (!payload || !currentUser || payload.from === currentUser.id) return;
+    addIncomingDuoSong(payload.song);
+  });
+
   duoChannel.subscribe();
+}
+
+// Recopie chez soi une chanson que le partenaire vient d'ajouter de son côté.
+function addIncomingDuoSong(song) {
+  if (!song) return;
+  const already = [...data.pool, ...data.tiers.flatMap(t => t.songs)].some(
+    s => s.artist.toLowerCase() === (song.artist || '').toLowerCase()
+      && s.title.toLowerCase() === (song.title || '').toLowerCase()
+  );
+  if (already) return;
+
+  const newSong = {
+    ...song,
+    id: generateUniqueId(), // un id local à moi, indépendant de celui du partenaire
+    sessionId: getCurrentSessionId(),
+    favorite: false,
+    chatRating: null
+  };
+
+  data.pool.push(newSong);
+  save();
+
+  const poolEl = document.getElementById('pool');
+  if (poolEl && (!sessionFilterId || sessionFilterId === newSong.sessionId)) {
+    poolEl.appendChild(createCard(newSong));
+  }
+  filterCards();
+  showToast(`${duoPartnerName || 'Ton ami'} a ajouté "${song.artist} — ${song.title}" à ta réserve.`, '🎵');
 }
 
 async function handleDuoSessionRow(row) {
@@ -2319,12 +2365,62 @@ async function fetchDuoRemoteData() {
       .maybeSingle();
     if (error) throw error;
     if (row) {
+      const previous = duoRemoteData;
       duoRemoteData = row.tier_data;
       renderRemoteBoard();
       renderDuoStats();
+      highlightDuoChanges(previous, duoRemoteData);
     }
   } catch (err) {
     console.warn("Erreur de récupération de la tier list du partenaire:", err);
+  }
+}
+
+// Repère où se trouve une chanson (quel tier, ou la réserve) dans un état donné.
+function duoSongLocationKey(dataset, songId) {
+  if (!dataset) return null;
+  for (let i = 0; i < (dataset.tiers || []).length; i++) {
+    if (dataset.tiers[i].songs.some(s => s.id === songId)) return 'tier-' + i;
+  }
+  if ((dataset.pool || []).some(s => s.id === songId)) return 'pool';
+  return null;
+}
+
+// Compare l'ancien et le nouvel état de la tier list du partenaire : fait
+// défiler jusqu'à la première carte déplacée et la fait briller quelques
+// secondes, pour qu'on voie tout de suite où il vient de la ranger.
+function highlightDuoChanges(prevData, newData) {
+  if (!prevData || !newData) return; // premier chargement : rien à comparer
+
+  const allIds = new Set();
+  (newData.tiers || []).forEach(t => t.songs.forEach(s => allIds.add(s.id)));
+  (newData.pool || []).forEach(s => allIds.add(s.id));
+
+  const changedIds = [];
+  allIds.forEach(id => {
+    const before = duoSongLocationKey(prevData, id);
+    const after = duoSongLocationKey(newData, id);
+    if (before !== after) changedIds.push(id);
+  });
+  if (changedIds.length === 0) return;
+
+  const body = document.getElementById('duoRemoteBody');
+  if (!body) return;
+
+  let firstCardEl = null;
+  changedIds.forEach(id => {
+    const cardEl = body.querySelector(`[data-remote-song-id="${id}"]`);
+    if (cardEl) {
+      cardEl.classList.add('duo-card-highlight');
+      setTimeout(() => cardEl.classList.remove('duo-card-highlight'), 3000);
+      if (!firstCardEl) firstCardEl = cardEl;
+    }
+  });
+
+  if (firstCardEl && duoView === 'board') {
+    firstCardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } else {
+    showToast(`${duoPartnerName || 'Ton ami'} vient de bouger une carte.`, '🔄');
   }
 }
 
@@ -2443,6 +2539,7 @@ function updateDuoWidgetUI() {
 function createRemoteCard(song) {
   const card = document.createElement("div");
   card.className = "card";
+  card.dataset.remoteSongId = song.id;
   if (song.favorite) card.classList.add("is-favorite");
   card.style.backgroundImage = `url(${song.cover})`;
   card.title = `${song.artist} - ${song.title}`;
@@ -4189,6 +4286,12 @@ async function finalizeAndAddSong(mainArtist, displayTitle, cover, previewUrl, h
   }
   filterCards();
   if (pollsEnabled) startTwitchVote(newSong.id, `${mainArtist} - ${displayTitle}`);
+
+  // En session multi : le partenaire reçoit automatiquement la même carte.
+  if (duoChannel && duoState === 'active' && currentUser) {
+    duoChannel.send({ type: 'broadcast', event: 'duo-newsong', payload: { song: newSong, from: currentUser.id } });
+  }
+
   return newSong;
 }
 
