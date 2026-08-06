@@ -721,7 +721,7 @@ input[type="range"]::-webkit-slider-thumb {
 .modal-tabs { display: flex; gap: 4px; margin-bottom: 16px; background: rgba(128,128,128,0.1); padding: 4px; border-radius: var(--radius-sm); }
 .modal-tab { flex: 1; padding: 8px; border: none; background: transparent; color: var(--text-muted); font-size: 13px; font-weight: 600; border-radius: 6px; cursor: pointer; transition: all 0.2s; box-shadow: none; transform: none !important; }
 .modal-tab:hover { background: rgba(128,128,128,0.15); box-shadow: none; transform: none !important; color: var(--text-main); }
-.modal-tab.active { background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.modal-tab.active { background: var(--accent-gradient); color: white; box-shadow: 0 4px 15px rgba(99,102,241,0.35); }
 
 .stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; border-bottom: 1px solid rgba(128,128,128,0.1); padding-bottom: 5px; }
 .stat-row strong { font-weight: 600; }
@@ -901,20 +901,43 @@ body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
 .duo-copy-btn:hover { background: rgba(99,102,241,0.12); border-color: var(--accent-primary); }
 
 /* Par défaut (et sur les écrans pas assez larges) : panneau empilé au-dessus
-   de la tier list, en pleine largeur. .main n'est JAMAIS modifié, donc le
-   sommaire et le tchat Twitch restent parfaitement alignés comme d'habitude. */
+   de la tier list, en pleine largeur. .main n'est PAS modifié ici, donc le
+   sommaire et le tchat Twitch restent alignés comme d'habitude. */
 #pageColumns { display: contents; }
 .duo-remote-panel { margin: 0 0 30px 0; }
 
-/* Sur les très grands écrans : vrai écran scindé en deux, en sidebar fixe
-   alignée exactement comme le sommaire et le tchat Twitch (même "top",
-   même logique de calcul). .main garde sa largeur et sa position normales. */
-@media (min-width: 1950px) {
+/* --- NIVEAU "MOYEN" (1800px à 2299px) ---
+   Pas assez de place pour garder .main à sa taille normale (1320px) ET
+   afficher le panneau à droite avec de vraies marges : on réduit .main et
+   la réserve (qui reste calée sur la même largeur, toujours centrée), et on
+   recalcule aussi la position du sommaire pour garder un espacement de 20px
+   partout — comme entre le sommaire et la tier list habituellement. */
+@media (min-width: 1800px) and (max-width: 2299.98px) {
+  body.duo-active .main { max-width: 1100px; }
+  body.duo-active .pool-container { max-width: 1000px; }
+  body.duo-active .sommaire-sidebar { left: max(20px, calc(50vw - 820px)); }
   body.duo-active .duo-remote-panel {
     position: fixed;
     top: calc(var(--header-height) + 126px + var(--banner-offset));
-    right: max(20px, calc(50vw - 1000px));
-    width: 360px;
+    right: max(20px, calc(50vw - 890px));
+    width: 340px;
+    max-height: calc(100vh - 215px);
+    margin: 0;
+    z-index: 110;
+  }
+  body.duo-active .duo-remote-body { max-height: calc(100vh - 215px - 60px); }
+}
+
+/* --- NIVEAU "LARGE" (≥ 2300px) ---
+   Assez de place pour garder .main à sa taille normale (1320px) et afficher
+   un panneau plus large à droite, toujours avec 24px d'espacement de chaque
+   côté (avec la tier list, et avec le bord de l'écran). */
+@media (min-width: 2300px) {
+  body.duo-active .duo-remote-panel {
+    position: fixed;
+    top: calc(var(--header-height) + 126px + var(--banner-offset));
+    right: max(24px, calc(50vw - 1124px));
+    width: 440px;
     max-height: calc(100vh - 215px);
     margin: 0;
     z-index: 110;
@@ -1234,7 +1257,10 @@ body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
     <div id="duoJoinPane" style="display:none;">
       <p style="font-size:13px; color:var(--text-muted); margin-top:0;">Entre le code que ton ami t'a donné.</p>
       <form class="auth-form" onsubmit="joinDuoSession(event)">
-        <input type="text" id="duoJoinCodeInput" placeholder="EX: A3F9K2" maxlength="6" style="text-transform:uppercase; text-align:center; letter-spacing:4px; font-weight:800; font-size:18px;" required>
+        <div style="position:relative;">
+          <input type="text" id="duoJoinCodeInput" placeholder="EX: A3F9K2" maxlength="6" style="text-transform:uppercase; text-align:center; letter-spacing:4px; font-weight:800; font-size:18px; padding-right:38px; width:100%;" required>
+          <button type="button" onclick="document.getElementById('duoJoinCodeInput').value=''; document.getElementById('duoJoinCodeInput').focus();" title="Effacer" style="position:absolute; right:6px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:var(--text-muted); font-size:16px; cursor:pointer; width:28px; height:28px; border-radius:50%; box-shadow:none;">✕</button>
+        </div>
         <div class="auth-error" id="duoJoinError"></div>
         <button type="submit" class="btn-primary auth-submit-btn">Rejoindre</button>
       </form>
@@ -1275,7 +1301,8 @@ body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
     </div>
     <div id="manualLinkRow" style="display:none; max-width:900px; margin:-10px auto 20px auto; padding: 0 20px;">
       <input type="text" id="manualAppleLinkInput" placeholder="Lien Apple Music du morceau (ex: https://music.apple.com/fr/album/.../123456789?i=987654321)" style="width:100%; background: rgba(128,128,128,0.08); border: 1px solid rgba(128,128,128,0.2); border-radius: 10px; padding: 10px 14px; color: var(--text-main); font-family: inherit; font-size: 13px;">
-      <div style="font-size:11px; color:var(--text-muted); margin-top:6px;">💡 Trouve la chanson sur Apple Music, clique sur "..." → "Copier le lien du titre", colle-le ici, puis clique sur Ajouter.</div>
+      <div style="font-size:11px; color:var(--text-muted); margin-top:6px;">💡 Colle le lien Apple Music du morceau ("Copier le lien du titre") : l'artiste, le titre et la pochette se remplissent automatiquement.</div>
+      <div id="manualLinkStatus" style="font-size:12px; margin-top:6px; font-weight:600;"></div>
     </div>
     <div id="tiers"></div>
   </div>
@@ -1373,15 +1400,17 @@ function toggleMenu(groupId, event) {
 
   if (currentlyOpen && currentlyOpen.id !== groupId) {
     currentlyOpen.classList.remove('open');
-    setTimeout(() => {
-      targetGroup.classList.add('open');
-      setTimeout(updateHeaderHeight, 350); // Met à jour la hauteur si le menu s'étend sur une nouvelle ligne
-    }, 300);
-  } else {
-    targetGroup.classList.toggle('open');
-    setTimeout(updateHeaderHeight, 350);
   }
+  targetGroup.classList.toggle('open');
 }
+
+// Ferme n'importe quel menu déroulant (menus du header ET compte/multi)
+// dès qu'on clique en dehors de celui-ci.
+document.addEventListener('click', (e) => {
+  document.querySelectorAll('.btn-group.open').forEach(group => {
+    if (!group.contains(e.target)) group.classList.remove('open');
+  });
+});
 
 // ==========================================
 // COMPTE / AUTHENTIFICATION (Supabase)
@@ -1391,13 +1420,6 @@ function toggleAuthMenu(event) {
   event.stopPropagation();
   document.getElementById('authWidget').classList.toggle('open');
 }
-
-document.addEventListener('click', (e) => {
-  const widget = document.getElementById('authWidget');
-  if (widget && widget.classList.contains('open') && !widget.contains(e.target)) {
-    widget.classList.remove('open');
-  }
-});
 
 function switchAuthTab(tab) {
   const tabLogin = document.getElementById('authTabLogin');
@@ -3896,6 +3918,38 @@ function extractAppleTrackId(url) {
   return null;
 }
 
+// Dès qu'un lien Apple Music valide est collé, on récupère automatiquement
+// l'artiste, le titre et la pochette — plus besoin de les retaper à la main.
+let manualLinkLookupToken = 0;
+async function autoFillFromAppleLink() {
+  const input = document.getElementById('manualAppleLinkInput');
+  const statusEl = document.getElementById('manualLinkStatus');
+  const url = input.value.trim();
+  const trackId = extractAppleTrackId(url);
+  if (!trackId) {
+    if (statusEl) statusEl.textContent = url ? "⚠️ Lien non reconnu — vérifie qu'il s'agit bien d'un lien vers un morceau." : "";
+    return;
+  }
+  const token = ++manualLinkLookupToken;
+  if (statusEl) statusEl.textContent = "🔎 Récupération des infos...";
+  try {
+    const res = await fetch(`https://itunes.apple.com/lookup?id=${trackId}`);
+    const json = await res.json();
+    if (token !== manualLinkLookupToken) return; // une saisie plus récente a pris le dessus
+    if (json.results && json.results.length > 0) {
+      const r = json.results[0];
+      document.getElementById('artistInput').value = r.artistName || '';
+      document.getElementById('titleInput').value = r.trackName || '';
+      if (statusEl) statusEl.textContent = `✅ Trouvé : ${r.artistName} — ${r.trackName}. Tu peux cliquer sur Ajouter.`;
+    } else if (statusEl) {
+      statusEl.textContent = "⚠️ Aucun morceau trouvé avec ce lien.";
+    }
+  } catch (e) {
+    if (statusEl) statusEl.textContent = "⚠️ Erreur lors de la récupération des infos.";
+  }
+}
+document.getElementById('manualAppleLinkInput').addEventListener('blur', autoFillFromAppleLink);
+
 async function addSong(){
   const rawArtist = document.getElementById("artistInput").value.trim();
   const rawTitle = document.getElementById("titleInput").value.trim();
@@ -3987,6 +4041,8 @@ async function addSong(){
   document.getElementById("titleInput").value = "";
   const manualInput = document.getElementById("manualAppleLinkInput");
   if (manualInput) manualInput.value = "";
+  const manualStatus = document.getElementById("manualLinkStatus");
+  if (manualStatus) manualStatus.textContent = "";
   document.getElementById("manualLinkRow").style.display = "none";
   btn.innerText = originalText;
   filterCards();
