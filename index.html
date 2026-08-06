@@ -135,6 +135,8 @@ button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.
   box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
   padding: 10px 18px;
   font-size: 14px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .btn-primary:hover { box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4); background: linear-gradient(135deg, #4f46e5 0%, #db2777 100%); color: white; }
 .btn-danger { color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
@@ -2049,6 +2051,12 @@ function layoutDuoPanel() {
 
   resetDuoMainWidth();
 
+  function setMainWidth(w) {
+    main.style.setProperty('max-width', w + 'px', 'important');
+    const pool = document.querySelector('.pool-container');
+    if (pool) pool.style.setProperty('max-width', w + 'px', 'important');
+  }
+
   function collapseToStacked() {
     panel.classList.remove('duo-sidebar-mode');
     panel.style.position = ''; panel.style.left = ''; panel.style.right = '';
@@ -2088,25 +2096,22 @@ function layoutDuoPanel() {
   let fit = measureFit();
   if (!fit) { collapseToStacked(); return; }
 
-  if (fit.n < DUO_MIN_CARDS) {
-    // La mesure réelle confirme qu'il manque de la place : on réduit .main
-    // pour viser DUO_MIN_CARDS, en se basant sur la "chrome" réellement
-    // mesurée (précise, scrollbar comprise) plutôt qu'une estimation.
+  // On réduit .main pas à pas, en RE-MESURANT à chaque étape (donc ça
+  // converge même si une estimation intermédiaire est imprécise), jusqu'à
+  // obtenir au moins DUO_MIN_CARDS cartes ou avoir atteint le minimum.
+  let attempts = 0;
+  while (fit.n < DUO_MIN_CARDS && fit.mainRect.width > DUO_MAIN_MIN_WIDTH && attempts < 8) {
     const currentAvailable = fit.viewportWidth - fit.mainRect.right - DUO_MAIN_GAP - DUO_EDGE_MARGIN;
     const neededWidth = 100 * DUO_MIN_CARDS + 10 * (DUO_MIN_CARDS - 1) + fit.measuredChrome;
-    const missingOnRight = neededWidth - currentAvailable;
-    if (missingOnRight > 0) {
-      // .main est centrée : la réduire de X ne libère que X/2 à droite.
-      const widthReductionNeeded = missingOnRight * 2;
-      const newMainWidth = Math.max(DUO_MAIN_MIN_WIDTH, fit.mainRect.width - widthReductionNeeded);
-      if (newMainWidth < fit.mainRect.width) {
-        main.style.maxWidth = newMainWidth + 'px';
-        const pool = document.querySelector('.pool-container');
-        if (pool) pool.style.maxWidth = newMainWidth + 'px';
-        const remeasured = measureFit(); // on remesure avec la tier list réduite
-        if (remeasured) fit = remeasured;
-      }
-    }
+    const missingOnRight = Math.max(15, neededWidth - currentAvailable); // toujours progresser un minimum
+    const widthReductionNeeded = missingOnRight * 2;
+    const newMainWidth = Math.max(DUO_MAIN_MIN_WIDTH, fit.mainRect.width - widthReductionNeeded);
+
+    setMainWidth(newMainWidth);
+    const remeasured = measureFit();
+    if (!remeasured) { collapseToStacked(); return; }
+    fit = remeasured;
+    attempts++;
   }
 
   if (fit.n < 2) { collapseToStacked(); return; }
