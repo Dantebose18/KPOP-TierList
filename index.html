@@ -2093,8 +2093,6 @@ function layoutDuoPanel() {
   const viewportWidth = window.innerWidth;
   let available = viewportWidth - mainRect0.right - DUO_MAIN_GAP - DUO_EDGE_MARGIN;
 
-  if (available < duoWidthForCards(2, chrome)) { collapseToStacked(); return; }
-
   if (available < duoWidthForCards(DUO_MIN_CARDS, chrome)) {
     // Pas assez de place avec la tier list à sa taille normale : on la
     // réduit à une largeur qui tombe pile sur un nombre entier de SES
