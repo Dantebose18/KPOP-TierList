@@ -1925,7 +1925,11 @@ async function initAuth() {
 
   const { data: sessionData } = await supabaseClient.auth.getSession();
   currentUser = sessionData.session ? sessionData.session.user : null;
-  if (currentUser) { await loadProfile(); await silentCloudSync(); }
+  if (currentUser) {
+    await loadProfile();
+    await silentCloudSync();
+    await restoreDuoSessionIfAny();
+  }
   updateAuthUI();
 
   supabaseClient.auth.onAuthStateChange(async (event, session) => {
@@ -1945,6 +1949,43 @@ async function initAuth() {
     }
     updateAuthUI();
   });
+}
+
+// Si une session multi existait déjà pour ce compte (ex: après un
+// rafraîchissement de page, la connexion temps réel est perdue mais la
+// session elle-même reste ouverte côté serveur), on la retrouve et on
+// réaffiche le panneau automatiquement, sans que rien n'ait besoin d'être refait.
+async function restoreDuoSessionIfAny() {
+  if (!currentUser || !supabaseClient) return;
+  try {
+    const { data: rows, error } = await supabaseClient
+      .from('duo_sessions')
+      .select('*')
+      .or(`user_a.eq.${currentUser.id},user_b.eq.${currentUser.id}`)
+      .limit(1);
+    if (error) throw error;
+    if (!rows || rows.length === 0) return;
+
+    const row = rows[0];
+    duoCode = row.code;
+    duoMyTierlistId = (row.user_a === currentUser.id) ? row.tierlist_a : row.tierlist_b;
+    listenDuoSession(row.code);
+
+    if (row.user_b) {
+      await handleDuoSessionRow(row);
+    } else {
+      duoState = 'waiting';
+      const codeDisplay = document.getElementById('duoCodeDisplay');
+      if (codeDisplay) codeDisplay.textContent = row.code;
+      const idle = document.getElementById('duoCreateIdle');
+      const waiting = document.getElementById('duoCreateWaiting');
+      if (idle) idle.style.display = 'none';
+      if (waiting) waiting.style.display = 'block';
+      updateDuoWidgetUI();
+    }
+  } catch (err) {
+    console.warn("Erreur de reprise de session multi:", err);
+  }
 }
 
 // ==========================================
@@ -1978,27 +2019,20 @@ function showToast(message, icon) {
 // ==========================================
 // MISE EN PAGE DYNAMIQUE DU PANNEAU MULTI
 // La largeur du panneau correspond toujours exactement à un nombre entier
-// de cartes (jamais de zone vide ni de carte coupée), calculée à partir de
-// la place réellement disponible à l'écran, avec un espacement constant
-// entre ma tier list et le panneau, et entre le panneau et le bord.
+// de cartes (jamais de zone vide ni de carte coupée). Au lieu de deviner les
+// marges/bordures/scrollbar en théorie, on MESURE la place réellement
+// disponible directement dans le DOM une fois le panneau rendu, puis on
+// ajuste sa largeur exacte pour ce nombre de cartes précis.
 // ==========================================
-const DUO_CARD_W = 100;
-const DUO_CARD_GAP = 10;
-const DUO_CHROME = 58; // padding .duo-remote-body (16*2) + padding .cards (12*2) + bordure du panneau (2)
 const DUO_MAIN_GAP = 24;  // espace entre ma tier list et le panneau
 const DUO_EDGE_MARGIN = 24; // espace mini entre le panneau et le bord de l'écran
 const DUO_MIN_CARDS = 3; // en dessous, on repasse en mode empilé
 const DUO_MAX_CARDS = 6;
 const DUO_MAIN_MIN_WIDTH = 760; // on ne réduit jamais ma tier list en dessous de ça
 
-function duoWidthForCards(n) {
-  return DUO_CARD_W * n + DUO_CARD_GAP * (n - 1) + DUO_CHROME;
-}
-function duoMaxCardsForWidth(w) {
-  let n = 0;
-  while (duoWidthForCards(n + 1) <= w) n++;
-  return n;
-}
+// Estimation grossière (juste pour les décisions de rétrécissement, pas pour
+// la largeur finale qui est mesurée précisément ensuite).
+function duoRoughWidthForCards(n) { return 100 * n + 10 * (n - 1) + 60; }
 
 function resetDuoMainWidth() {
   const main = document.querySelector('.main');
@@ -2010,58 +2044,75 @@ function resetDuoMainWidth() {
 function layoutDuoPanel() {
   const panel = document.getElementById('duoRemotePanel');
   const main = document.querySelector('.main');
-  if (!panel || !main || duoState !== 'active' || panel.style.display === 'none') return;
+  const body = document.getElementById('duoRemoteBody');
+  if (!panel || !main || !body || duoState !== 'active' || panel.style.display === 'none') return;
 
   resetDuoMainWidth();
-  const mainRect = main.getBoundingClientRect();
+  let mainRect = main.getBoundingClientRect();
   const viewportWidth = window.innerWidth;
-
   let available = viewportWidth - mainRect.right - DUO_MAIN_GAP - DUO_EDGE_MARGIN;
-  let n = duoMaxCardsForWidth(available);
 
-  if (n < DUO_MIN_CARDS) {
+  if (available < duoRoughWidthForCards(DUO_MIN_CARDS)) {
     // Pas assez de place avec la tier list à sa taille normale : on la
-    // réduit juste ce qu'il faut pour retrouver au moins DUO_MIN_CARDS
-    // cartes de large sur le panneau, sans jamais descendre sous un minimum.
-    const neededAvailable = duoWidthForCards(DUO_MIN_CARDS);
-    const missing = neededAvailable - available;
-    const newMainWidth = Math.max(DUO_MAIN_MIN_WIDTH, mainRect.width - missing);
+    // réduit juste ce qu'il faut. Comme .main est centrée, réduire sa
+    // largeur de X ne libère que X/2 à droite (l'autre moitié va à gauche) —
+    // il faut donc réduire deux fois plus que le manque constaté.
+    const missingOnRight = duoRoughWidthForCards(DUO_MIN_CARDS) - available;
+    const widthReductionNeeded = missingOnRight * 2;
+    const newMainWidth = Math.max(DUO_MAIN_MIN_WIDTH, mainRect.width - widthReductionNeeded);
     if (newMainWidth < mainRect.width) {
       main.style.maxWidth = newMainWidth + 'px';
       const pool = document.querySelector('.pool-container');
       if (pool) pool.style.maxWidth = newMainWidth + 'px';
-      const shrinkage = mainRect.width - newMainWidth;
-      available += shrinkage;
-      n = duoMaxCardsForWidth(available);
+      mainRect = main.getBoundingClientRect();
+      available = viewportWidth - mainRect.right - DUO_MAIN_GAP - DUO_EDGE_MARGIN;
     }
   }
 
-  if (n < 2) {
-    // Toujours pas assez de place même réduite au minimum : repli empilé.
+  function collapseToStacked() {
     panel.classList.remove('duo-sidebar-mode');
-    panel.style.position = '';
-    panel.style.left = '';
-    panel.style.right = '';
-    panel.style.width = '';
-    panel.style.top = '';
-    return;
+    panel.style.position = ''; panel.style.left = ''; panel.style.right = '';
+    panel.style.width = ''; panel.style.top = '';
+    resetDuoMainWidth();
   }
 
-  n = Math.min(n, DUO_MAX_CARDS);
-  const panelWidth = duoWidthForCards(n);
-  const newMainRect = main.getBoundingClientRect();
+  if (available < duoRoughWidthForCards(2)) { collapseToStacked(); return; }
 
+  // On installe le panneau en sidebar fixe, avec une largeur généreuse
+  // (tout l'espace dispo) pour pouvoir mesurer précisément la place utile.
   panel.classList.add('duo-sidebar-mode');
   panel.style.position = 'fixed';
-  panel.style.left = (newMainRect.right + DUO_MAIN_GAP) + 'px';
+  panel.style.left = (mainRect.right + DUO_MAIN_GAP) + 'px';
   panel.style.right = 'auto';
-  panel.style.width = panelWidth + 'px';
   panel.style.top = `calc(var(--header-height) + 126px + var(--banner-offset))`;
-  const body = document.getElementById('duoRemoteBody');
-  const statsBody = document.getElementById('duoStatsBody');
+
   const maxH = `calc(100vh - 215px)`;
-  if (body) body.style.maxHeight = `calc(${maxH} - 60px)`;
+  body.style.maxHeight = `calc(${maxH} - 60px)`;
+  const statsBody = document.getElementById('duoStatsBody');
   if (statsBody) statsBody.style.maxHeight = `calc(${maxH} - 60px)`;
+
+  const generousWidth = Math.min(available, duoRoughWidthForCards(DUO_MAX_CARDS));
+  panel.style.width = generousWidth + 'px';
+
+  // Mesure réelle (exclut bordures ET scrollbar, contrairement à un calcul théorique).
+  const cardsAreaWidth = body.clientWidth - 58; // padding body(32) + bordure tier(2) + padding cards(24)
+  let n = 0;
+  while (100 * (n + 1) + 10 * n <= cardsAreaWidth) n++;
+  n = Math.max(2, Math.min(n, DUO_MAX_CARDS));
+
+  const measuredChrome = generousWidth - cardsAreaWidth;
+  let width = Math.ceil(100 * n + 10 * (n - 1) + measuredChrome);
+  const left = mainRect.right + DUO_MAIN_GAP;
+
+  // Garde-fou : le panneau ne doit jamais déborder de l'écran, quoi qu'il arrive.
+  while (n >= 2 && left + width > viewportWidth - DUO_EDGE_MARGIN) {
+    n--;
+    width = Math.ceil(100 * n + 10 * (n - 1) + measuredChrome);
+  }
+  if (n < 2) { collapseToStacked(); return; }
+
+  panel.style.left = left + 'px';
+  panel.style.width = width + 'px';
 }
 
 let duoLayoutResizeTimer = null;
