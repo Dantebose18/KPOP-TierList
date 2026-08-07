@@ -2957,10 +2957,13 @@ const savedTwitchChannel = localStorage.getItem('twitchChannelName') || 'Dantebo
 
 try {
   if (typeof tmi !== 'undefined') {
-    twitchClient = new tmi.Client({ channels: [savedTwitchChannel] });
-    twitchClient.connect().catch(e => console.log('Erreur de connexion Twitch:', e));
-    twitchClient.on('connected', () => { twitchConnected = true; });
-    twitchClient.on('disconnected', () => { twitchConnected = false; });
+    twitchClient = new tmi.Client({
+      connection: { secure: true, reconnect: true },
+      channels: [savedTwitchChannel]
+    });
+    twitchClient.connect().catch(e => console.warn('Erreur de connexion Twitch:', e));
+    twitchClient.on('connected', () => { twitchConnected = true; console.log('Twitch chat connecté sur', savedTwitchChannel); });
+    twitchClient.on('disconnected', (reason) => { twitchConnected = false; console.warn('Twitch chat déconnecté:', reason); });
     twitchClient.on('message', (channel, tags, message, self) => {
       if (self || !activeTwitchSongId) return;
       if (message.toLowerCase().startsWith('!note ')) {
