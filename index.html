@@ -314,6 +314,33 @@ body.dark .btn-group {
 .scroll-top-btn.visible { opacity: 1; visibility: visible; }
 .scroll-top-btn:hover { transform: translateY(-3px) !important; box-shadow: 0 8px 24px rgba(236, 72, 153, 0.5) !important; color: white; }
 
+.edit-fab {
+  position: fixed;
+  bottom: 30px;
+  left: 30px;
+  height: 46px;
+  border-radius: 24px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--card-bg);
+  border: var(--card-border);
+  color: var(--text-main);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 2000;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: 'Outfit', sans-serif;
+}
+.edit-fab:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+.edit-fab.active-state { background: var(--accent-gradient); color: white; box-shadow: 0 6px 24px rgba(99,102,241,0.5); border-color: transparent; }
+@media (max-width: 768px) { .edit-fab { bottom: 100px; left: 15px; padding: 0 14px; height: 42px; } }
+
 .main { max-width: 1320px; margin: auto; padding: 0 20px 240px 20px; }
 
 /* --- SOMMAIRE --- */
@@ -362,6 +389,13 @@ body.dark .btn-group {
   transition: opacity 0.3s ease, visibility 0.3s ease, top 0.3s ease;
 }
 .twitch-sidebar.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+/* En mode multi, le panneau partenaire occupe la droite : le tchat Twitch
+   passe donc à gauche du sommaire au lieu de se superposer au panneau. */
+body.duo-active .twitch-sidebar {
+  left: max(20px, calc(50vw - 1270px));
+  right: auto;
+}
 .twitch-header {
   border-top-left-radius: var(--radius-md);
   border-top-right-radius: var(--radius-md);
@@ -858,8 +892,22 @@ body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
 .profile-avatar-big { width: 72px; height: 72px; border-radius: 50%; background: var(--accent-gradient); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 26px; flex-shrink: 0; overflow: hidden; }
 .profile-avatar-big img { width: 100%; height: 100%; object-fit: cover; }
 .profile-avatar-actions { display: flex; flex-direction: column; gap: 6px; }
-.profile-avatar-actions .group-btn { border: 1px solid rgba(128,128,128,0.2); border-radius: 20px; padding: 6px 14px; }
+.profile-avatar-btn {
+  border: 1px solid rgba(128,128,128,0.2); border-radius: 20px; padding: 6px 14px;
+  background: rgba(128,128,128,0.06); color: var(--text-main); font-family: 'Outfit', sans-serif;
+  font-size: 12.5px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap;
+}
+.profile-avatar-btn:hover { background: rgba(99,102,241,0.12); border-color: var(--accent-primary); }
 .profile-meta-line { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; }
+.profile-tierlists-btn {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px; margin-bottom: 18px; border-radius: 14px; border: 1px dashed rgba(99,102,241,0.4);
+  background: rgba(99,102,241,0.06); color: var(--accent-primary); font-family: 'Outfit', sans-serif;
+  font-size: 13.5px; font-weight: 700; cursor: pointer; transition: all 0.2s ease;
+}
+.profile-tierlists-btn:hover { background: rgba(99,102,241,0.14); transform: translateY(-1px); }
+.profile-divider { height: 1px; background: rgba(128,128,128,0.15); margin: 18px 0; }
 .cloud-status-note { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 10px; }
 
 /* ============================================================
@@ -1207,23 +1255,51 @@ body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
     <div class="profile-avatar-row">
       <div class="profile-avatar-big" id="profileAvatarBig">👤</div>
       <div class="profile-avatar-actions">
-        <button class="group-btn" onclick="document.getElementById('avatarFileInput').click()">🖼️ Changer la photo</button>
+        <button class="profile-avatar-btn" onclick="document.getElementById('avatarFileInput').click()">🖼️ Changer la photo</button>
+        <button class="profile-avatar-btn" id="removeAvatarBtn" style="display:none;" onclick="removeMyAvatar()">🗑️ Supprimer la photo</button>
         <input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="handleAvatarUpload(this)">
         <span class="profile-meta-line" id="avatarUploadStatus"></span>
       </div>
     </div>
+
+    <button class="profile-tierlists-btn" onclick="closeAllModals(); showTierlistsModal();">
+      🗂️ Voir mes tier lists
+    </button>
+
     <form class="auth-form" onsubmit="saveProfileChanges(event)">
       <label>Pseudo</label>
       <input type="text" id="profileUsername" minlength="3" maxlength="24" required>
-      <label>Email</label>
-      <input type="text" id="profileEmail" disabled style="opacity:0.6;">
+      <label>Bio</label>
+      <input type="text" id="profileBio" maxlength="120" placeholder="Un petit mot sur toi (optionnel)">
       <div class="auth-error" id="profileError"></div>
       <div class="auth-success" id="profileSuccess"></div>
       <button type="submit" class="btn-primary auth-submit-btn">Enregistrer les modifications</button>
     </form>
-    <div class="cloud-status-note" id="profileCloudStatus">☁️ Aucune sauvegarde cloud pour le moment.</div>
-    <div style="margin-top: 18px; text-align: right; display:flex; justify-content: space-between; align-items:center;">
+
+    <div class="profile-divider"></div>
+
+    <form class="auth-form" onsubmit="changeMyEmail(event)">
+      <label>Adresse email</label>
+      <div style="display:flex; gap:8px;">
+        <input type="email" id="profileEmail" style="flex:1;">
+        <button type="submit" class="profile-avatar-btn" style="flex-shrink:0;">Changer</button>
+      </div>
+      <div class="profile-meta-line" style="margin-top:-6px;">Un email de confirmation sera envoyé, le changement ne sera effectif qu'une fois validé.</div>
+      <div class="auth-error" id="emailChangeError"></div>
+      <div class="auth-success" id="emailChangeSuccess"></div>
+    </form>
+
+    <div class="profile-meta-line" id="profileMemberSince" style="margin-top:14px;"></div>
+
+    <div class="profile-divider"></div>
+
+    <div style="display:flex; justify-content: space-between; align-items:center;">
       <button class="btn-group-danger" style="background:transparent;" onclick="logout(); closeAllModals();">Déconnexion</button>
+      <button class="btn-group-danger" style="background:transparent; border-color: rgba(239,68,68,0.3);" onclick="deleteMyAccount()">Supprimer mon compte</button>
+    </div>
+
+    <div class="cloud-status-note" id="profileCloudStatus" style="margin-top:16px; font-size:11px; opacity:0.7;">☁️ Sauvegarde automatique...</div>
+    <div style="margin-top: 10px; text-align: right;">
       <button onclick="closeAllModals()">Fermer</button>
     </div>
   </div>
@@ -1269,6 +1345,11 @@ body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
 <button id="scrollTopBtn" class="scroll-top-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Remonter tout en haut">
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
   <span>Top</span>
+</button>
+
+<button id="editFab" class="edit-fab" onclick="toggleEdit()" title="Activer/Désactiver le mode édition">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+  <span>Édition</span>
 </button>
 
 <div class="sommaire-sidebar" id="sommaireSidebar">
@@ -1597,19 +1678,36 @@ function openProfileModal() {
   if (!currentUser) return;
   document.getElementById('authWidget').classList.remove('open');
   document.getElementById('profileUsername').value = (currentProfile && currentProfile.username) || '';
+  document.getElementById('profileBio').value = (currentProfile && currentProfile.bio) || '';
   document.getElementById('profileEmail').value = currentUser.email;
   document.getElementById('profileError').classList.remove('visible');
   document.getElementById('profileSuccess').classList.remove('visible');
+  document.getElementById('emailChangeError').classList.remove('visible');
+  document.getElementById('emailChangeSuccess').classList.remove('visible');
   document.getElementById('avatarUploadStatus').textContent = '';
 
   const avatarBox = document.getElementById('profileAvatarBig');
   const avatarUrl = currentProfile && currentProfile.avatar_url;
+  const removeBtn = document.getElementById('removeAvatarBtn');
   if (avatarUrl) {
     avatarBox.innerHTML = `<img src="${avatarUrl}" alt="avatar">`;
     avatarBox.style.background = 'transparent';
+    if (removeBtn) removeBtn.style.display = 'inline-flex';
   } else {
     avatarBox.textContent = initials((currentProfile && currentProfile.username) || currentUser.email);
     avatarBox.style.background = (currentProfile && currentProfile.avatar_color) || 'var(--accent-primary)';
+    if (removeBtn) removeBtn.style.display = 'none';
+  }
+
+  const memberSince = document.getElementById('profileMemberSince');
+  if (memberSince) {
+    const created = (currentProfile && currentProfile.created_at) || currentUser.created_at;
+    if (created) {
+      const dateStr = new Date(created).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+      memberSince.textContent = `Membre depuis le ${dateStr}`;
+    } else {
+      memberSince.textContent = '';
+    }
   }
 
   updateCloudStatusNote();
@@ -1620,7 +1718,7 @@ function updateCloudStatusNote() {
   const note = document.getElementById('profileCloudStatus');
   if (!note || !currentUser) return;
   if (currentTierlistId) {
-    note.innerHTML = `☁️ "${currentTierlistName}" se sauvegarde automatiquement dans le cloud. <a onclick="closeAllModals(); showTierlistsModal();" style="color:var(--accent-primary); cursor:pointer; font-weight:700;">Voir mes tier lists</a>`;
+    note.textContent = `☁️ "${currentTierlistName}" se sauvegarde automatiquement dans le cloud.`;
   } else {
     note.textContent = "☁️ Synchronisation en cours...";
   }
@@ -1633,17 +1731,18 @@ async function saveProfileChanges(event) {
   errorBox.classList.remove('visible'); successBox.classList.remove('visible');
 
   const username = document.getElementById('profileUsername').value.trim();
+  const bio = document.getElementById('profileBio').value.trim();
   const submitBtn = event.target.querySelector('.auth-submit-btn');
   submitBtn.disabled = true; submitBtn.textContent = "Enregistrement...";
   try {
     const { data: updated, error } = await supabaseClient
       .from('profiles')
-      .update({ username, updated_at: new Date().toISOString() })
+      .update({ username, bio, updated_at: new Date().toISOString() })
       .eq('id', currentUser.id)
       .select()
       .maybeSingle();
     if (error) throw error;
-    currentProfile = updated || { ...currentProfile, username };
+    currentProfile = updated || { ...currentProfile, username, bio };
     updateAuthUI();
     successBox.textContent = "Profil mis à jour !";
     successBox.classList.add('visible');
@@ -1652,6 +1751,72 @@ async function saveProfileChanges(event) {
     errorBox.classList.add('visible');
   } finally {
     submitBtn.disabled = false; submitBtn.textContent = "Enregistrer les modifications";
+  }
+}
+
+async function changeMyEmail(event) {
+  event.preventDefault();
+  const errorBox = document.getElementById('emailChangeError');
+  const successBox = document.getElementById('emailChangeSuccess');
+  errorBox.classList.remove('visible'); successBox.classList.remove('visible');
+
+  const newEmail = document.getElementById('profileEmail').value.trim();
+  if (!newEmail || newEmail === currentUser.email) return;
+
+  const submitBtn = event.target.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  try {
+    const { error } = await supabaseClient.auth.updateUser(
+      { email: newEmail },
+      { emailRedirectTo: window.location.origin }
+    );
+    if (error) throw error;
+    successBox.textContent = "Vérifie ta boîte mail (ancienne et nouvelle adresse) pour confirmer ce changement.";
+    successBox.classList.add('visible');
+  } catch (err) {
+    errorBox.textContent = translateAuthError(err.message);
+    errorBox.classList.add('visible');
+  } finally {
+    submitBtn.disabled = false;
+  }
+}
+
+async function removeMyAvatar() {
+  if (!currentUser) return;
+  try {
+    const { data: updated, error } = await supabaseClient
+      .from('profiles')
+      .update({ avatar_url: null, updated_at: new Date().toISOString() })
+      .eq('id', currentUser.id)
+      .select()
+      .maybeSingle();
+    if (error) throw error;
+    currentProfile = updated || { ...currentProfile, avatar_url: null };
+    updateAuthUI();
+
+    const avatarBox = document.getElementById('profileAvatarBig');
+    const ini = initials((currentProfile && currentProfile.username) || currentUser.email);
+    avatarBox.innerHTML = '';
+    avatarBox.textContent = ini;
+    avatarBox.style.background = (currentProfile && currentProfile.avatar_color) || 'var(--accent-primary)';
+    document.getElementById('removeAvatarBtn').style.display = 'none';
+    document.getElementById('avatarUploadStatus').textContent = "Photo supprimée.";
+  } catch (err) {
+    alert("Erreur lors de la suppression de la photo : " + err.message);
+  }
+}
+
+async function deleteMyAccount() {
+  if (!currentUser) return;
+  if (!confirm("Supprimer définitivement ton compte ? Toutes tes tier lists et ton profil seront perdus. Cette action est irréversible.")) return;
+  if (!confirm("Vraiment sûr ? Il n'y a aucun moyen de revenir en arrière après ça.")) return;
+  try {
+    const { error } = await supabaseClient.rpc('delete_own_account');
+    if (error) throw error;
+    await supabaseClient.auth.signOut();
+    location.reload();
+  } catch (err) {
+    alert("Erreur lors de la suppression du compte : " + err.message);
   }
 }
 
@@ -1682,6 +1847,7 @@ async function handleAvatarUpload(input) {
     currentProfile = updated || { ...currentProfile, avatar_url: avatarUrl };
     updateAuthUI();
     document.getElementById('profileAvatarBig').innerHTML = `<img src="${avatarUrl}" alt="avatar">`;
+    document.getElementById('removeAvatarBtn').style.display = 'inline-flex';
     statusEl.textContent = "Photo mise à jour !";
   } catch (err) {
     console.warn("Erreur upload avatar:", err);
@@ -2785,10 +2951,11 @@ async function togglePreview(songId, event) {
 let activeTwitchSongId = null;
 let twitchVotes = {};
 let twitchClient = null;
+const savedTwitchChannel = localStorage.getItem('twitchChannelName') || 'Dantebose';
 
 try {
   if (typeof tmi !== 'undefined') {
-    twitchClient = new tmi.Client({ channels: ['Dantebose'] });
+    twitchClient = new tmi.Client({ channels: [savedTwitchChannel] });
     twitchClient.connect().catch(e => console.log('Erreur de connexion Twitch:', e));
     twitchClient.on('message', (channel, tags, message, self) => {
       if (self || !activeTwitchSongId) return;
@@ -2983,6 +3150,7 @@ function changeTwitchChannel() {
   const channel = document.getElementById("twitchChannelInput").value.trim();
   const iframe = document.getElementById("twitchIframe");
   if(!channel) { iframe.src = ""; return; }
+  localStorage.setItem('twitchChannelName', channel);
   if(twitchClient) {
     twitchClient.getChannels().forEach(ch => twitchClient.part(ch));
     twitchClient.join(channel).catch(e => console.log('Erreur join:', e));
@@ -4348,9 +4516,10 @@ function addTier(){
 function toggleEdit(){
   editMode = !editMode;
   const btn = document.getElementById("editBtn");
+  const fab = document.getElementById("editFab");
   if (!editMode) { selectedIds.forEach(id => { const c = document.getElementById(`card-${id}`); if(c) c.classList.remove('selected'); }); selectedIds.clear(); }
-  if(editMode) { btn.classList.add('active-state'); }
-  else { btn.classList.remove('active-state'); }
+  if(editMode) { btn.classList.add('active-state'); if (fab) fab.classList.add('active-state'); }
+  else { btn.classList.remove('active-state'); if (fab) fab.classList.remove('active-state'); }
   render();
 }
 
@@ -4398,6 +4567,7 @@ document.addEventListener("dragend", () => {
 updateHeaderHeight(); // Initialisation de la hauteur du header au chargement
 render();
 setTimeout(syncCovers, 1500);
+document.getElementById("twitchChannelInput").value = savedTwitchChannel;
 changeTwitchChannel();
 initAuth();
 updateDuoWidgetUI();
