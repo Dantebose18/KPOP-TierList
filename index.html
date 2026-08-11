@@ -965,20 +965,41 @@ body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
 
 .duo-toggle-row {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 9px 12px; font-size: 13px; font-weight: 600; color: var(--text-main);
+  padding: 10px 12px; font-size: 13px; font-weight: 600; color: var(--text-main);
+  border-radius: 10px; cursor: pointer; transition: background 0.15s ease;
 }
-.duo-toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
-.duo-toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+.duo-toggle-row:hover { background: rgba(128,128,128,0.1); }
+.duo-toggle-switch { position: relative; display: inline-block; width: 38px; height: 21px; flex-shrink: 0; }
+.duo-toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; pointer-events: none; }
 .duo-toggle-slider {
-  position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-  background-color: rgba(128,128,128,0.35); transition: 0.25s; border-radius: 22px;
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(128,128,128,0.28); transition: background 0.25s ease; border-radius: 22px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.15);
 }
 .duo-toggle-slider::before {
-  position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px;
-  background-color: white; transition: 0.25s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  position: absolute; content: ""; height: 15px; width: 15px; left: 3px; top: 3px;
+  background-color: white; transition: transform 0.25s ease; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.35);
 }
-.duo-toggle-switch input:checked + .duo-toggle-slider { background: var(--accent-gradient); }
-.duo-toggle-switch input:checked + .duo-toggle-slider::before { transform: translateX(18px); }
+.duo-toggle-switch input:checked + .duo-toggle-slider { background: var(--accent-gradient); box-shadow: none; }
+.duo-toggle-switch input:checked + .duo-toggle-slider::before { transform: translateX(17px); }
+
+.duo-pyramid-legend { display: flex; gap: 16px; font-size: 11px; color: var(--text-muted); margin: 4px 0 10px 0; }
+.duo-pyramid-legend span { display: flex; align-items: center; gap: 5px; }
+.duo-pyramid-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.duo-pyramid { display: flex; flex-direction: column; gap: 6px; }
+.duo-pyramid-row { display: flex; align-items: center; height: 26px; }
+.duo-pyramid-side { flex: 1; display: flex; align-items: center; height: 100%; min-width: 0; }
+.duo-pyramid-side.left { justify-content: flex-end; }
+.duo-pyramid-side.right { justify-content: flex-start; }
+.duo-pyramid-bar { height: 16px; min-width: 3px; transition: width 0.4s ease; }
+.duo-pyramid-side.left .duo-pyramid-bar { border-radius: 4px 0 0 4px; background: var(--accent-primary); }
+.duo-pyramid-side.right .duo-pyramid-bar { border-radius: 0 4px 4px 0; background: #f97316; }
+.duo-pyramid-count { font-size: 10.5px; font-weight: 700; padding: 0 6px; color: var(--text-muted); white-space: nowrap; }
+.duo-pyramid-center {
+  width: 74px; flex-shrink: 0; text-align: center; font-size: 10.5px; font-weight: 800;
+  border-left: 2px solid; border-right: 2px solid; padding: 3px 2px; line-height: 1.2;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 
 .duo-card-highlight {
   animation: duoCardPulse 1.2s ease-in-out 2;
@@ -2735,20 +2756,20 @@ function updateDuoWidgetUI() {
         Session active avec <strong style="color:var(--text-main);">${duoPartnerName || 'ton ami'}</strong>
       </div>
       <button class="group-btn" onclick="copyDuoCode(this)">📋 Copier le code (${duoCode || ''})</button>
-      <div class="duo-toggle-row">
+      <label class="duo-toggle-row">
         <span>Ajout auto des cartes</span>
-        <label class="duo-toggle-switch">
+        <span class="duo-toggle-switch">
           <input type="checkbox" ${duoAutoAddEnabled ? 'checked' : ''} onchange="toggleDuoAutoAdd()">
           <span class="duo-toggle-slider"></span>
-        </label>
-      </div>
-      <div class="duo-toggle-row">
+        </span>
+      </label>
+      <label class="duo-toggle-row">
         <span>Écoute synchronisée</span>
-        <label class="duo-toggle-switch">
+        <span class="duo-toggle-switch">
           <input type="checkbox" ${duoAudioSyncEnabled ? 'checked' : ''} onchange="toggleDuoAudioSync()">
           <span class="duo-toggle-slider"></span>
-        </label>
-      </div>
+        </span>
+      </label>
       <button class="group-btn btn-group-danger" onclick="leaveDuoSession()">🚪 Quitter la session</button>
     `;
   } else if (duoState === 'waiting') {
@@ -2931,7 +2952,57 @@ function renderDuoStats() {
     html += `<div class="profile-meta-line" style="margin-top:10px;">😌 Aucun vrai désaccord pour l'instant.</div>`;
   }
 
+  html += renderDuoDistributionChart();
+
   el.innerHTML = html;
+}
+
+// Graphique "pyramide des âges" : une ligne centrale par tier (le nom du
+// tier = l'axe zéro), ma répartition qui s'étend vers la gauche, celle du
+// partenaire qui s'étend vers la droite.
+function renderDuoDistributionChart() {
+  if (!duoRemoteData) return '';
+  const myTiers = data.tiers || [];
+  const theirTiers = duoRemoteData.tiers || [];
+  if (myTiers.length === 0) return '';
+
+  const myPoolCount = (data.pool || []).length;
+  const theirPoolCount = (duoRemoteData.pool || []).length;
+
+  const rows = myTiers.map((t, i) => {
+    const theirMatch = theirTiers.find(tt => tt.name === t.name) || theirTiers[i];
+    return { name: t.name, color: t.color, mine: t.songs.length, theirs: theirMatch ? theirMatch.songs.length : 0 };
+  });
+  rows.push({ name: 'Réserve', color: '#6b7280', mine: myPoolCount, theirs: theirPoolCount });
+
+  const maxCount = Math.max(1, ...rows.map(r => r.mine), ...rows.map(r => r.theirs));
+
+  let html = `<div class="stat-title" style="margin-top:16px;">📊 Répartition par tier</div>
+    <div class="duo-pyramid-legend">
+      <span><span class="duo-pyramid-dot" style="background:var(--accent-primary);"></span>Toi</span>
+      <span><span class="duo-pyramid-dot" style="background:#f97316;"></span>${duoPartnerName || 'Ton ami'}</span>
+    </div>
+    <div class="duo-pyramid">`;
+
+  rows.forEach(r => {
+    const myPct = (r.mine / maxCount) * 100;
+    const theirPct = (r.theirs / maxCount) * 100;
+    html += `
+      <div class="duo-pyramid-row">
+        <div class="duo-pyramid-side left">
+          <span class="duo-pyramid-count">${r.mine}</span>
+          <div class="duo-pyramid-bar mine" style="width:${myPct}%;"></div>
+        </div>
+        <div class="duo-pyramid-center" style="border-color:${r.color};">${r.name}</div>
+        <div class="duo-pyramid-side right">
+          <div class="duo-pyramid-bar theirs" style="width:${theirPct}%;"></div>
+          <span class="duo-pyramid-count">${r.theirs}</span>
+        </div>
+      </div>`;
+  });
+
+  html += `</div>`;
+  return html;
 }
 
 // --- AUDIO PREVIEW ---
@@ -3076,15 +3147,23 @@ let twitchConnected = false;
 let twitchLibLoadFailed = false;
 const savedTwitchChannel = localStorage.getItem('twitchChannelName') || 'Dantebose';
 
+console.log('[K-TIER Twitch] Démarrage. typeof tmi =', typeof tmi, '| chaîne =', savedTwitchChannel);
+
 try {
   if (typeof tmi !== 'undefined') {
     twitchClient = new tmi.Client({
       connection: { secure: true, reconnect: true },
       channels: [savedTwitchChannel]
     });
-    twitchClient.connect().catch(e => console.warn('Erreur de connexion Twitch:', e));
-    twitchClient.on('connected', () => { twitchConnected = true; console.log('Twitch chat connecté sur', savedTwitchChannel); });
-    twitchClient.on('disconnected', (reason) => { twitchConnected = false; console.warn('Twitch chat déconnecté:', reason); });
+    console.log('[K-TIER Twitch] Client tmi.js créé, tentative de connexion...');
+    twitchClient.connect()
+      .then(() => console.log('[K-TIER Twitch] connect() résolu avec succès.'))
+      .catch(e => console.warn('[K-TIER Twitch] connect() a échoué:', e));
+    twitchClient.on('connected', () => { twitchConnected = true; console.log('[K-TIER Twitch] Événement "connected" reçu sur', savedTwitchChannel); });
+    twitchClient.on('disconnected', (reason) => { twitchConnected = false; console.warn('[K-TIER Twitch] Événement "disconnected":', reason); });
+    setTimeout(() => {
+      if (!twitchConnected) console.warn('[K-TIER Twitch] Toujours pas connecté après 8 secondes. État brut du client:', twitchClient.readyState ? twitchClient.readyState() : 'inconnu');
+    }, 8000);
     twitchClient.on('message', (channel, tags, message, self) => {
       if (self || !activeTwitchSongId) return;
       if (message.toLowerCase().startsWith('!note ')) {
@@ -3104,8 +3183,9 @@ try {
     });
   } else {
     twitchLibLoadFailed = true;
+    console.warn('[K-TIER Twitch] tmi est undefined : la librairie ne s\'est pas chargée.');
   }
-} catch (e) { console.warn("Erreur Twitch:", e); twitchLibLoadFailed = true; }
+} catch (e) { console.warn("[K-TIER Twitch] Exception lors de l'initialisation:", e); twitchLibLoadFailed = true; }
 
 function startTwitchVote(songId, title) {
   activeTwitchSongId = songId;
