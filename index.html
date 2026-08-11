@@ -144,14 +144,12 @@ button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.
 .icon-btn { padding: 8px 12px; font-size: 16px; }
 
 .input-section {
-  max-width: 700px;
+  max-width: 780px;
   margin: 40px auto 30px auto;
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
   gap: 10px;
   padding: 8px;
-  min-height: 56px;
+  height: 56px;
   background: var(--card-bg);
   border: var(--card-border);
   border-radius: var(--radius-md);
@@ -342,7 +340,6 @@ body.dark .btn-group {
 .edit-fab:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
 .edit-fab.active-state { background: var(--accent-gradient); color: white; box-shadow: 0 6px 24px rgba(99,102,241,0.5); border-color: transparent; }
 @media (max-width: 768px) { .edit-fab { bottom: 100px; left: 15px; padding: 0 14px; height: 42px; } }
-body.duo-active .edit-fab { bottom: 100px; }
 
 .main { max-width: 1320px; margin: auto; padding: 0 20px 240px 20px; }
 
@@ -394,16 +391,12 @@ body.duo-active .edit-fab { bottom: 100px; }
 .twitch-sidebar.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
 /* En mode multi, le panneau partenaire occupe la droite : le tchat Twitch
-   passe donc juste après le sommaire (quelle que soit sa position réelle,
-   d'où le max() imbriqué) au lieu de se superposer au panneau. */
+   passe donc à gauche du sommaire au lieu de se superposer au panneau.
+   Sa hauteur est aussi réduite pour ne pas descendre jusqu'au bouton Édition. */
 body.duo-active .twitch-sidebar {
-  left: max(20px, calc(max(20px, calc(50vw - 930px)) - 340px));
+  left: max(20px, calc(50vw - 1270px));
   right: auto;
-}
-/* Pas assez de place pour caser sommaire + tchat + panneau multi proprement :
-   on cache le tchat plutôt que de risquer un chevauchement. */
-@media (max-width: 2600px) {
-  body.duo-active .twitch-sidebar { display: none !important; }
+  height: calc(100vh - 320px);
 }
 .twitch-header {
   border-top-left-radius: var(--radius-md);
@@ -969,6 +962,23 @@ body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
   font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;
 }
 .duo-copy-btn:hover { background: rgba(99,102,241,0.12); border-color: var(--accent-primary); }
+
+.duo-toggle-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 9px 12px; font-size: 13px; font-weight: 600; color: var(--text-main);
+}
+.duo-toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
+.duo-toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+.duo-toggle-slider {
+  position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(128,128,128,0.35); transition: 0.25s; border-radius: 22px;
+}
+.duo-toggle-slider::before {
+  position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px;
+  background-color: white; transition: 0.25s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.duo-toggle-switch input:checked + .duo-toggle-slider { background: var(--accent-gradient); }
+.duo-toggle-switch input:checked + .duo-toggle-slider::before { transform: translateX(18px); }
 
 .duo-card-highlight {
   animation: duoCardPulse 1.2s ease-in-out 2;
@@ -2725,8 +2735,20 @@ function updateDuoWidgetUI() {
         Session active avec <strong style="color:var(--text-main);">${duoPartnerName || 'ton ami'}</strong>
       </div>
       <button class="group-btn" onclick="copyDuoCode(this)">📋 Copier le code (${duoCode || ''})</button>
-      <button class="group-btn" onclick="toggleDuoAutoAdd()">${duoAutoAddEnabled ? '✅' : '🚫'} Ajout auto des cartes</button>
-      <button class="group-btn" onclick="toggleDuoAudioSync()">${duoAudioSyncEnabled ? '✅' : '🚫'} Écoute synchronisée</button>
+      <div class="duo-toggle-row">
+        <span>Ajout auto des cartes</span>
+        <label class="duo-toggle-switch">
+          <input type="checkbox" ${duoAutoAddEnabled ? 'checked' : ''} onchange="toggleDuoAutoAdd()">
+          <span class="duo-toggle-slider"></span>
+        </label>
+      </div>
+      <div class="duo-toggle-row">
+        <span>Écoute synchronisée</span>
+        <label class="duo-toggle-switch">
+          <input type="checkbox" ${duoAudioSyncEnabled ? 'checked' : ''} onchange="toggleDuoAudioSync()">
+          <span class="duo-toggle-slider"></span>
+        </label>
+      </div>
       <button class="group-btn btn-group-danger" onclick="leaveDuoSession()">🚪 Quitter la session</button>
     `;
   } else if (duoState === 'waiting') {
