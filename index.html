@@ -6,7 +6,8 @@
 <title>KPOP Tier List</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/tmi.js@1.8.5/dist/tmi.min.js"></script>
+<!-- tmi.js retiré : son CDN ne sert plus les fichiers correctement (projet abandonné).
+     Le chat Twitch est désormais géré en WebSocket IRC natif, voir plus bas dans le script. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
 <style>
@@ -968,20 +969,19 @@ body.dark .auth-icon-btn { background: rgba(0,0,0,0.2); }
   padding: 10px 12px; font-size: 13px; font-weight: 600; color: var(--text-main);
   border-radius: 10px; cursor: pointer; transition: background 0.15s ease;
 }
-.duo-toggle-row:hover { background: rgba(128,128,128,0.1); }
-.duo-toggle-switch { position: relative; display: inline-block; width: 38px; height: 21px; flex-shrink: 0; }
+.duo-toggle-row:hover { background: rgba(128,128,128,0.08); }
+.duo-toggle-switch { position: relative; display: inline-block; width: 32px; height: 18px; flex-shrink: 0; }
 .duo-toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; pointer-events: none; }
 .duo-toggle-slider {
   position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-  background-color: rgba(128,128,128,0.28); transition: background 0.25s ease; border-radius: 22px;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.15);
+  background-color: rgba(128,128,128,0.25); transition: background-color 0.2s ease; border-radius: 20px;
 }
 .duo-toggle-slider::before {
-  position: absolute; content: ""; height: 15px; width: 15px; left: 3px; top: 3px;
-  background-color: white; transition: transform 0.25s ease; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.35);
+  position: absolute; content: ""; height: 13px; width: 13px; left: 2.5px; top: 2.5px;
+  background-color: white; transition: transform 0.2s ease; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.25);
 }
-.duo-toggle-switch input:checked + .duo-toggle-slider { background: var(--accent-gradient); box-shadow: none; }
-.duo-toggle-switch input:checked + .duo-toggle-slider::before { transform: translateX(17px); }
+.duo-toggle-switch input:checked + .duo-toggle-slider { background-color: var(--accent-primary); }
+.duo-toggle-switch input:checked + .duo-toggle-slider::before { transform: translateX(14px); }
 
 .duo-pyramid-legend { display: flex; gap: 16px; font-size: 11px; color: var(--text-muted); margin: 4px 0 10px 0; }
 .duo-pyramid-legend span { display: flex; align-items: center; gap: 5px; }
@@ -3139,53 +3139,88 @@ async function togglePreview(songId, event) {
   }
 }
 
-// --- GESTION TWITCH ---
+// --- GESTION TWITCH (WebSocket IRC natif, sans librairie externe) ---
 let activeTwitchSongId = null;
 let twitchVotes = {};
-let twitchClient = null;
+let twitchSocket = null;
 let twitchConnected = false;
-let twitchLibLoadFailed = false;
+let twitchLibLoadFailed = false; // gardé pour compat, toujours false désormais
 const savedTwitchChannel = localStorage.getItem('twitchChannelName') || 'Dantebose';
 
-console.log('[K-TIER Twitch] Démarrage. typeof tmi =', typeof tmi, '| chaîne =', savedTwitchChannel);
+// Connexion anonyme en lecture seule au chat Twitch via IRC-WebSocket —
+// ne dépend d'aucune librairie tierce ni d'aucun CDN externe.
+function connectTwitchIRC(channelName) {
+  if (!channelName) return;
+  if (twitchSocket) {
+    try { twitchSocket.onclose = null; twitchSocket.close(); } catch (e) {}
+  }
+  twitchConnected = false;
 
-try {
-  if (typeof tmi !== 'undefined') {
-    twitchClient = new tmi.Client({
-      connection: { secure: true, reconnect: true },
-      channels: [savedTwitchChannel]
-    });
-    console.log('[K-TIER Twitch] Client tmi.js créé, tentative de connexion...');
-    twitchClient.connect()
-      .then(() => console.log('[K-TIER Twitch] connect() résolu avec succès.'))
-      .catch(e => console.warn('[K-TIER Twitch] connect() a échoué:', e));
-    twitchClient.on('connected', () => { twitchConnected = true; console.log('[K-TIER Twitch] Événement "connected" reçu sur', savedTwitchChannel); });
-    twitchClient.on('disconnected', (reason) => { twitchConnected = false; console.warn('[K-TIER Twitch] Événement "disconnected":', reason); });
-    setTimeout(() => {
-      if (!twitchConnected) console.warn('[K-TIER Twitch] Toujours pas connecté après 8 secondes. État brut du client:', twitchClient.readyState ? twitchClient.readyState() : 'inconnu');
-    }, 8000);
-    twitchClient.on('message', (channel, tags, message, self) => {
-      if (self || !activeTwitchSongId) return;
-      if (message.toLowerCase().startsWith('!note ')) {
-        const noteStr = message.split(' ')[1];
-        if(noteStr) {
-          const note = parseFloat(noteStr.replace(',', '.'));
-          if (!isNaN(note) && note >= 0 && note <= 10) {
-            twitchVotes[tags.username] = note;
-            let sum = 0; let count = 0;
-            for (let u in twitchVotes) { sum += twitchVotes[u]; count++; }
-            const avg = (sum / count).toFixed(1);
-            const resDiv = document.getElementById("twitchLiveResult");
-            if (resDiv) resDiv.innerHTML = `Moyenne: <strong style="color:var(--accent-primary); font-size:16px;">${avg} / 10</strong> <span style="font-size:12px; opacity:0.8;">(${count} votes)</span>`;
-          }
-        }
+  try {
+    twitchSocket = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
+  } catch (e) {
+    console.warn('[K-TIER Twitch] Impossible de créer le WebSocket:', e);
+    return;
+  }
+
+  const anonUser = 'justinfan' + Math.floor(10000 + Math.random() * 80000);
+
+  twitchSocket.onopen = () => {
+    twitchSocket.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
+    twitchSocket.send('PASS SCHMOOPIIE');
+    twitchSocket.send('NICK ' + anonUser);
+    twitchSocket.send('JOIN #' + channelName.toLowerCase());
+    console.log('[K-TIER Twitch] WebSocket ouvert, connexion à #' + channelName.toLowerCase() + '...');
+  };
+
+  twitchSocket.onmessage = (event) => {
+    const lines = String(event.data).split('\r\n').filter(Boolean);
+    lines.forEach(line => {
+      if (line.startsWith('PING')) {
+        twitchSocket.send('PONG :tmi.twitch.tv');
+        return;
+      }
+      if (line.includes(' 001 ')) {
+        twitchConnected = true;
+        console.log('[K-TIER Twitch] Connecté sur #' + channelName.toLowerCase());
+        return;
+      }
+      if (line.includes('PRIVMSG')) {
+        const userMatch = line.match(/:([^!]+)!/);
+        const msgMatch = line.match(/PRIVMSG #[^ ]+ :(.*)$/);
+        if (userMatch && msgMatch) handleTwitchChatMessage(userMatch[1], msgMatch[1].trim());
       }
     });
-  } else {
-    twitchLibLoadFailed = true;
-    console.warn('[K-TIER Twitch] tmi est undefined : la librairie ne s\'est pas chargée.');
-  }
-} catch (e) { console.warn("[K-TIER Twitch] Exception lors de l'initialisation:", e); twitchLibLoadFailed = true; }
+  };
+
+  twitchSocket.onclose = () => {
+    twitchConnected = false;
+    console.warn('[K-TIER Twitch] Connexion fermée.');
+  };
+  twitchSocket.onerror = (e) => {
+    console.warn('[K-TIER Twitch] Erreur WebSocket:', e);
+  };
+
+  setTimeout(() => {
+    if (!twitchConnected) console.warn('[K-TIER Twitch] Toujours pas connecté après 8 secondes.');
+  }, 8000);
+}
+
+function handleTwitchChatMessage(username, message) {
+  if (!activeTwitchSongId) return;
+  if (!message.toLowerCase().startsWith('!note ')) return;
+  const noteStr = message.split(' ')[1];
+  if (!noteStr) return;
+  const note = parseFloat(noteStr.replace(',', '.'));
+  if (isNaN(note) || note < 0 || note > 10) return;
+
+  twitchVotes[username] = note;
+  let sum = 0, count = 0;
+  for (let u in twitchVotes) { sum += twitchVotes[u]; count++; }
+  const avg = (sum / count).toFixed(1);
+  const resDiv = document.getElementById("twitchLiveResult");
+  if (resDiv) resDiv.innerHTML = `Moyenne: <strong style="color:var(--accent-primary); font-size:16px;">${avg} / 10</strong> <span style="font-size:12px; opacity:0.8;">(${count} votes)</span>`;
+}
 
 function startTwitchVote(songId, title) {
   activeTwitchSongId = songId;
@@ -3194,9 +3229,7 @@ function startTwitchVote(songId, title) {
   document.getElementById("twitchVoteTitle").innerText = title;
   const resultEl = document.getElementById("twitchLiveResult");
 
-  if (typeof tmi === 'undefined' || twitchLibLoadFailed) {
-    resultEl.innerHTML = "Moyenne: - / 10 (0 vote)<br><span style='color:#ef4444; font-size:10px; display:block; margin-top:5px;'>⚠ La librairie de chat n'a pas pu se charger (bloqueur de pub/vie privée ?). Essaie de désactiver ton bloqueur pour ce site puis recharge la page.</span>";
-  } else if (!twitchConnected) {
+  if (!twitchConnected) {
     resultEl.innerHTML = "Moyenne: - / 10 (0 vote)<br><span style='color:#f59e0b; font-size:10px; display:block; margin-top:5px;'>⏳ Pas encore connecté au chat. Vérifie le nom de la chaîne renseigné dans le panneau Twitch, ou patiente quelques secondes.</span>";
   } else {
     resultEl.innerHTML = "Moyenne: - / 10 (0 vote)";
@@ -3365,10 +3398,7 @@ function changeTwitchChannel() {
   const iframe = document.getElementById("twitchIframe");
   if(!channel) { iframe.src = ""; return; }
   localStorage.setItem('twitchChannelName', channel);
-  if(twitchClient) {
-    twitchClient.getChannels().forEach(ch => twitchClient.part(ch));
-    twitchClient.join(channel).catch(e => console.log('Erreur join:', e));
-  }
+  connectTwitchIRC(channel);
   let parentDomain = window.location.hostname || "localhost";
   iframe.src = `https://www.twitch.tv/embed/${channel}/chat?parent=${parentDomain}&darkpopout`;
 }
