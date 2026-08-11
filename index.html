@@ -147,9 +147,11 @@ button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.
   max-width: 700px;
   margin: 40px auto 30px auto;
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 10px;
   padding: 8px;
-  height: 56px;
+  min-height: 56px;
   background: var(--card-bg);
   border: var(--card-border);
   border-radius: var(--radius-md);
@@ -340,6 +342,7 @@ body.dark .btn-group {
 .edit-fab:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
 .edit-fab.active-state { background: var(--accent-gradient); color: white; box-shadow: 0 6px 24px rgba(99,102,241,0.5); border-color: transparent; }
 @media (max-width: 768px) { .edit-fab { bottom: 100px; left: 15px; padding: 0 14px; height: 42px; } }
+body.duo-active .edit-fab { bottom: 100px; }
 
 .main { max-width: 1320px; margin: auto; padding: 0 20px 240px 20px; }
 
@@ -391,10 +394,16 @@ body.dark .btn-group {
 .twitch-sidebar.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
 /* En mode multi, le panneau partenaire occupe la droite : le tchat Twitch
-   passe donc à gauche du sommaire au lieu de se superposer au panneau. */
+   passe donc juste après le sommaire (quelle que soit sa position réelle,
+   d'où le max() imbriqué) au lieu de se superposer au panneau. */
 body.duo-active .twitch-sidebar {
-  left: max(20px, calc(50vw - 1270px));
+  left: max(20px, calc(max(20px, calc(50vw - 930px)) - 340px));
   right: auto;
+}
+/* Pas assez de place pour caser sommaire + tchat + panneau multi proprement :
+   on cache le tchat plutôt que de risquer un chevauchement. */
+@media (max-width: 2600px) {
+  body.duo-active .twitch-sidebar { display: none !important; }
 }
 .twitch-header {
   border-top-left-radius: var(--radius-md);
@@ -2183,6 +2192,8 @@ let duoPartnerTierlistId = null;
 let duoMyTierlistId = null;
 let duoRemoteData = null;
 let duoView = 'board'; // 'board' | 'stats'
+let duoAutoAddEnabled = true;   // ajout automatique des cartes de l'autre
+let duoAudioSyncEnabled = true; // écoute synchronisée des extraits
 
 let toastTimer = null;
 function showToast(message, icon) {
@@ -2442,10 +2453,32 @@ function listenDuoSession(code) {
   // le partenaire ne fait qu'envoyer un "modèle" de carte à recopier).
   duoChannel.on('broadcast', { event: 'duo-newsong' }, ({ payload }) => {
     if (!payload || !currentUser || payload.from === currentUser.id) return;
-    addIncomingDuoSong(payload.song);
+    if (duoAutoAddEnabled) addIncomingDuoSong(payload.song);
+  });
+
+  // Extrait audio lancé par le partenaire : on l'écoute en même temps (si activé).
+  duoChannel.on('broadcast', { event: 'duo-play' }, ({ payload }) => {
+    if (!payload || !currentUser || payload.from === currentUser.id) return;
+    if (duoAudioSyncEnabled) playDuoRemoteAudio(payload);
+  });
+  duoChannel.on('broadcast', { event: 'duo-stop' }, ({ payload }) => {
+    if (!payload || !currentUser || payload.from === currentUser.id) return;
+    if (isDuoRemotePlayback) stopPreview(true);
   });
 
   duoChannel.subscribe();
+}
+
+function toggleDuoAutoAdd() {
+  duoAutoAddEnabled = !duoAutoAddEnabled;
+  updateDuoWidgetUI();
+  showToast(duoAutoAddEnabled ? "Ajout automatique des cartes activé." : "Ajout automatique des cartes désactivé.", duoAutoAddEnabled ? '✅' : '🚫');
+}
+
+function toggleDuoAudioSync() {
+  duoAudioSyncEnabled = !duoAudioSyncEnabled;
+  updateDuoWidgetUI();
+  showToast(duoAudioSyncEnabled ? "Écoute synchronisée activée." : "Écoute synchronisée désactivée.", duoAudioSyncEnabled ? '✅' : '🚫');
 }
 
 // Recopie chez soi une chanson que le partenaire vient d'ajouter de son côté.
@@ -2562,30 +2595,35 @@ function highlightDuoChanges(prevData, newData) {
   (newData.tiers || []).forEach(t => t.songs.forEach(s => allIds.add(s.id)));
   (newData.pool || []).forEach(s => allIds.add(s.id));
 
-  const changedIds = [];
+  const changedIds = [];       // tout changement (pour le petit flash visuel)
+  const tierPlacementIds = []; // uniquement les placements dans un tier (pour le scroll)
   allIds.forEach(id => {
     const before = duoSongLocationKey(prevData, id);
     const after = duoSongLocationKey(newData, id);
-    if (before !== after) changedIds.push(id);
+    if (before === after) return;
+    changedIds.push(id);
+    if (after && after.startsWith('tier-')) tierPlacementIds.push(id);
   });
   if (changedIds.length === 0) return;
 
   const body = document.getElementById('duoRemoteBody');
   if (!body) return;
 
-  let firstCardEl = null;
+  let firstTierCardEl = null;
   changedIds.forEach(id => {
     const cardEl = body.querySelector(`[data-remote-song-id="${id}"]`);
     if (cardEl) {
       cardEl.classList.add('duo-card-highlight');
       setTimeout(() => cardEl.classList.remove('duo-card-highlight'), 3000);
-      if (!firstCardEl) firstCardEl = cardEl;
+      if (tierPlacementIds.includes(id) && !firstTierCardEl) firstTierCardEl = cardEl;
     }
   });
 
-  if (firstCardEl && duoView === 'board') {
-    firstCardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  } else {
+  // On ne fait défiler la vue que si une carte a été RANGÉE dans un tier —
+  // un simple ajout à la réserve ne bouscule jamais le scroll de l'autre.
+  if (firstTierCardEl && duoView === 'board') {
+    firstTierCardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } else if (tierPlacementIds.length > 0) {
     showToast(`${duoPartnerName || 'Ton ami'} vient de bouger une carte.`, '🔄');
   }
 }
@@ -2635,6 +2673,9 @@ function resetDuoState() {
   duoChannel = null; duoCode = null; duoState = 'solo'; duoRemoteData = null;
   duoPartnerName = null; duoPartnerUserId = null; duoPartnerTierlistId = null; duoMyTierlistId = null;
   duoView = 'board';
+  duoAutoAddEnabled = true;
+  duoAudioSyncEnabled = true;
+  if (isDuoRemotePlayback) stopPreview(true);
   document.body.classList.remove('duo-active');
   const panel = document.getElementById('duoRemotePanel');
   if (panel) {
@@ -2684,6 +2725,8 @@ function updateDuoWidgetUI() {
         Session active avec <strong style="color:var(--text-main);">${duoPartnerName || 'ton ami'}</strong>
       </div>
       <button class="group-btn" onclick="copyDuoCode(this)">📋 Copier le code (${duoCode || ''})</button>
+      <button class="group-btn" onclick="toggleDuoAutoAdd()">${duoAutoAddEnabled ? '✅' : '🚫'} Ajout auto des cartes</button>
+      <button class="group-btn" onclick="toggleDuoAudioSync()">${duoAudioSyncEnabled ? '✅' : '🚫'} Écoute synchronisée</button>
       <button class="group-btn btn-group-danger" onclick="leaveDuoSession()">🚪 Quitter la session</button>
     `;
   } else if (duoState === 'waiting') {
@@ -2772,36 +2815,45 @@ function scoreMapFor(dataset) {
   return map;
 }
 
+// Taux d'accord PAR CHANSON : ratio entre la plus petite et la plus grande
+// note (même tier => 100%. Toi 7, lui 5 => 5/7 ≈ 71%).
+function duoAgreementRatio(a, b) {
+  const lo = Math.min(a, b), hi = Math.max(a, b);
+  if (hi <= 0) return 1;
+  return lo / hi;
+}
+
+const DUO_AGREE_THRESHOLD = 0.85; // au-dessus : "d'accord" ; en dessous : "pas d'accord"
+
 function calcDuoComparison() {
   if (!duoRemoteData) return null;
   const myMap = scoreMapFor(data);
   const theirMap = scoreMapFor(duoRemoteData);
 
   const myKeys = Object.keys(myMap);
-  const theirKeys = Object.keys(theirMap);
   const commonKeys = myKeys.filter(k => theirMap[k]);
 
-  const comparisons = commonKeys.map(k => ({
-    artist: myMap[k].artist, title: myMap[k].title,
-    myScore: myMap[k].score, theirScore: theirMap[k].score,
-    diff: Math.abs(myMap[k].score - theirMap[k].score)
-  }));
+  const comparisons = commonKeys.map(k => {
+    const myScore = myMap[k].score, theirScore = theirMap[k].score;
+    const ratio = duoAgreementRatio(myScore, theirScore);
+    return { artist: myMap[k].artist, title: myMap[k].title, myScore, theirScore, ratio };
+  });
 
-  const agreements = comparisons.filter(c => c.diff <= 2);
-  const disagreements = [...comparisons].sort((a, b) => b.diff - a.diff).slice(0, 5);
-  const bestAgreements = [...comparisons].filter(c => c.diff <= 1).sort((a, b) => a.diff - b.diff).slice(0, 5);
+  const agreeList = comparisons.filter(c => c.ratio >= DUO_AGREE_THRESHOLD).sort((a, b) => b.ratio - a.ratio);
+  const disagreeList = comparisons.filter(c => c.ratio < DUO_AGREE_THRESHOLD).sort((a, b) => a.ratio - b.ratio);
 
   const myAvg = myKeys.length ? myKeys.reduce((s, k) => s + myMap[k].score, 0) / myKeys.length : 0;
+  const theirKeys = Object.keys(theirMap);
   const theirAvg = theirKeys.length ? theirKeys.reduce((s, k) => s + theirMap[k].score, 0) / theirKeys.length : 0;
-  const avgDiff = commonKeys.length ? comparisons.reduce((s, c) => s + c.diff, 0) / commonKeys.length : 0;
-  const agreementPct = commonKeys.length ? Math.round((agreements.length / commonKeys.length) * 100) : 0;
+  const agreementPct = commonKeys.length ? Math.round((comparisons.reduce((s, c) => s + c.ratio, 0) / commonKeys.length) * 100) : 0;
 
   return {
     commonCount: commonKeys.length,
-    onlyMine: myKeys.filter(k => !theirMap[k]).length,
-    onlyTheirs: theirKeys.filter(k => !myMap[k]).length,
-    myAvg, theirAvg, avgDiff, agreementPct,
-    disagreements, bestAgreements
+    myAvg, theirAvg, agreementPct,
+    agreeCount: agreeList.length,
+    disagreeCount: disagreeList.length,
+    bestAgreements: agreeList.slice(0, 5),
+    disagreements: disagreeList.slice(0, 5)
   };
 }
 
@@ -2815,13 +2867,24 @@ function renderDuoStats() {
     return;
   }
 
+  const diff = s.myAvg - s.theirAvg;
+  let verdict;
+  if (Math.abs(diff) < 0.3) {
+    verdict = "Vous notez globalement pareil.";
+  } else if (diff > 0) {
+    verdict = `Tu notes en moyenne ${diff.toFixed(1)} pt de plus que ${duoPartnerName || 'ton ami'}.`;
+  } else {
+    verdict = `${duoPartnerName || 'Ton ami'} note en moyenne ${Math.abs(diff).toFixed(1)} pt de plus que toi.`;
+  }
+
   let html = `
     <div class="stat-row"><strong>Chansons en commun :</strong> <span>${s.commonCount}</span></div>
     <div class="stat-row"><strong>Taux d'accord :</strong> <span>${s.agreementPct}%</span></div>
+    <div class="stat-row"><strong>D'accord sur :</strong> <span>${s.agreeCount} chanson(s)</span></div>
+    <div class="stat-row"><strong>Pas d'accord sur :</strong> <span>${s.disagreeCount} chanson(s)</span></div>
     <div class="stat-row"><strong>Ta moyenne :</strong> <span>${s.myAvg.toFixed(1)} / 10</span></div>
     <div class="stat-row"><strong>Moyenne de ${duoPartnerName || 'ton ami'} :</strong> <span>${s.theirAvg.toFixed(1)} / 10</span></div>
-    <div class="stat-row"><strong>Écart moyen de notation :</strong> <span>${s.avgDiff.toFixed(1)} pts</span></div>
-    <div class="stat-row"><strong>Titres seulement chez toi / lui :</strong> <span>${s.onlyMine} / ${s.onlyTheirs}</span></div>
+    <div class="profile-meta-line" style="margin-top:4px;">${verdict}</div>
   `;
 
   if (s.bestAgreements.length > 0) {
@@ -2829,7 +2892,7 @@ function renderDuoStats() {
     s.bestAgreements.forEach(c => {
       html += `<div class="rank-item top" style="padding:6px 8px;">
         <span class="rank-name" style="font-size:12px;">${c.artist} — ${c.title}</span>
-        <span class="rank-avg" style="font-size:11px;">${c.myScore.toFixed(1)} / ${c.theirScore.toFixed(1)}</span>
+        <span class="rank-avg" style="font-size:11px;">${Math.round(c.ratio * 100)}%</span>
       </div>`;
     });
   }
@@ -2842,6 +2905,8 @@ function renderDuoStats() {
         <span class="rank-avg" style="font-size:11px;">Toi ${c.myScore.toFixed(1)} / Lui ${c.theirScore.toFixed(1)}</span>
       </div>`;
     });
+  } else if (s.disagreeCount === 0) {
+    html += `<div class="profile-meta-line" style="margin-top:10px;">😌 Aucun vrai désaccord pour l'instant.</div>`;
   }
 
   el.innerHTML = html;
@@ -2863,7 +2928,9 @@ function setVolume(val) {
   updateSliderBg(val);
 }
 
-function stopPreview() {
+let isDuoRemotePlayback = false;
+
+function stopPreview(fromRemote) {
   audio.pause();
   audio.src = '';
   if (currentPlayingId) {
@@ -2872,6 +2939,29 @@ function stopPreview() {
     currentPlayingId = null;
   }
   document.getElementById('miniPlayer').classList.remove('visible');
+
+  if (!fromRemote && isDuoRemotePlayback === false && duoChannel && duoState === 'active' && duoAudioSyncEnabled && currentUser) {
+    duoChannel.send({ type: 'broadcast', event: 'duo-stop', payload: { from: currentUser.id } });
+  }
+  isDuoRemotePlayback = false;
+}
+
+// Joue l'extrait que le partenaire vient de lancer de son côté, pour l'écouter en même temps.
+function playDuoRemoteAudio(payload) {
+  if (!payload || !payload.previewUrl) return;
+  audio.pause();
+  audio.src = payload.previewUrl;
+  audio.volume = volumeSlider.value / 100;
+  audio.play();
+  isDuoRemotePlayback = true;
+  currentPlayingId = null; // ce n'est pas une de mes cartes
+
+  document.getElementById('playerCover').style.backgroundImage = `url(${payload.cover || ''})`;
+  document.getElementById('playerArtist').textContent = payload.artist || '';
+  document.getElementById('playerTitle').textContent = `${payload.title || ''} 🎧 avec ${duoPartnerName || 'ton ami'}`;
+  document.getElementById('miniPlayer').classList.add('visible');
+
+  audio.onended = () => stopPreview(true);
 }
 
 async function togglePreview(songId, event) {
@@ -2889,6 +2979,7 @@ async function togglePreview(songId, event) {
     if (prevBtn) { prevBtn.innerHTML = '▶'; prevBtn.classList.remove('playing'); }
   }
   audio.pause();
+  isDuoRemotePlayback = false;
 
   const btn = event.currentTarget;
   btn.innerHTML = '⏳';
@@ -2944,6 +3035,14 @@ async function togglePreview(songId, event) {
     document.getElementById('miniPlayer').classList.add('visible');
 
     audio.onended = () => stopPreview();
+
+    // En session multi : le partenaire entend le même extrait, en même temps (si activé).
+    if (duoChannel && duoState === 'active' && duoAudioSyncEnabled && currentUser) {
+      duoChannel.send({
+        type: 'broadcast', event: 'duo-play',
+        payload: { previewUrl: urlToPlay, artist: song.artist, title: song.title, cover: song.cover, from: currentUser.id }
+      });
+    }
   }
 }
 
@@ -4468,8 +4567,8 @@ async function finalizeAndAddSong(mainArtist, displayTitle, cover, previewUrl, h
   filterCards();
   if (pollsEnabled) startTwitchVote(newSong.id, `${mainArtist} - ${displayTitle}`);
 
-  // En session multi : le partenaire reçoit automatiquement la même carte.
-  if (duoChannel && duoState === 'active' && currentUser) {
+  // En session multi : le partenaire reçoit automatiquement la même carte (si activé).
+  if (duoChannel && duoState === 'active' && currentUser && duoAutoAddEnabled) {
     duoChannel.send({ type: 'broadcast', event: 'duo-newsong', payload: { song: newSong, from: currentUser.id } });
   }
 
